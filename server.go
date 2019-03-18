@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/GeertJohan/go.rice"
 	"github.com/shirou/gopsutil/host"
 	"html/template"
 	"log"
 	"net/http"
-	"path/filepath"
 	"runtime"
 	"sync"
 	"time"
@@ -189,8 +189,9 @@ func main() {
 	go UpdateFoo()
 	go UpdateUptime()
 
-	fs := http.FileServer(http.Dir("static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	box := rice.MustFindBox("static")
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))
+
 	http.HandleFunc("/", serveRoot)
 	http.HandleFunc("/info/", serveInfo)
 	http.HandleFunc("/api/", serveStaticApi)
@@ -253,18 +254,23 @@ func serveRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveInfo(w http.ResponseWriter, r *http.Request) {
-	lp := filepath.Join("templates", "view.html")
-
-	tmpl, err := template.ParseFiles(lp)
+	// find rice.Box
+	templateBox, err := rice.FindBox("templates")
 	if err != nil {
-		// Log the detailed error
-		log.Println(err.Error())
-		// Return a generic "Internal Server Error" message
-		http.Error(w, http.StatusText(500), 500)
-		return
+		log.Fatal(err)
+	}
+	// get file contents as string
+	templateString, err := templateBox.String("info.tmpl")
+	if err != nil {
+		log.Fatal(err)
+	}
+	// parse and execute the template
+	tmplMessage, err := template.New("info").Parse(templateString)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	if err := tmpl.ExecuteTemplate(w, "view.html", metrics); err != nil {
+	if err := tmplMessage.Execute(w, metrics); err != nil {
 		log.Println(err.Error())
 		http.Error(w, http.StatusText(500), 500)
 	}
