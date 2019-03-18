@@ -229,11 +229,8 @@ func serveRoot(w http.ResponseWriter, r *http.Request) {
 	<body>
 		<ul>	
 			<li><a href="/api/">API</a></li>
+			<li><a href="/info/">Info Page</a></li>
 		</ul>
-		<br>
-
-		<hr>
-		%s
 		<br>
 
 		<hr>
@@ -247,7 +244,8 @@ func serveRoot(w http.ResponseWriter, r *http.Request) {
 	</html>
 	`
 
-	values := []interface{}{r.RemoteAddr, r.RequestURI, r.URL.Path}
+	//values := []interface{}{r.RemoteAddr, r.RequestURI, r.URL.Path}
+	values := []interface{}{r.RemoteAddr, r.URL.Path}
 
 	html := fmt.Sprintf(htmlRaw, values...)
 
