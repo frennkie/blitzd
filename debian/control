@@ -1,0 +1,15 @@
+Source: blitzinfod
+Section: utils
+Priority: optional
+Maintainer: Robert Habermann <frennkie@gmail.com>
+Build-Depends: debhelper (>= 10)
+Standards-Version: 4.1.2
+Homepage: https://github.com/frennkie/blitzinfod
+Vcs-Git: https://github.com/frennkie/blitzinfod
+Vcs-Browser: https://github.com/frennkie/blitzinfod
+
+Package: blitzinfod
+Architecture: any
+Depends: libcap2-bin, ${shlibs:Depends}, ${misc:Depends}
+Description: Blitz Info Daemon
+ This is a long description, indented with spaces
