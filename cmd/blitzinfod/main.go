@@ -3,21 +3,25 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/GeertJohan/go.rice"
+	rice "github.com/GeertJohan/go.rice"
+	"github.com/frennkie/blitzinfod/internal/data"
 	"github.com/shirou/gopsutil/host"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"html/template"
 	"log"
 	"net/http"
 	"runtime"
 	"sync"
 	"time"
-
-	"github.com/jessevdk/go-flags"
 )
 
 const (
-	defaultHost = "localhost"
-	defaultPort = 7080
+	defaultRESTPort     = "7080"
+	defaultRESTHostPort = "localhost:" + defaultRESTPort
+
+	//defaultRPCPort     = "39735"
+	//defaultRPCHostPort = "localhost:" + defaultRPCPort
 
 	defaultExpireTime = 300 * time.Second // 5 minutes
 
@@ -29,35 +33,18 @@ const (
 )
 
 var (
-	metrics    Cache
+	metrics    data.Cache
 	metricsMux sync.Mutex
 
 	// maxTime (Metric does not expire): "3000-01-01T00:00:00Z"
 	maxTime = time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	buildVersion = "0.8.15"
+	buildTime    = "0"
 )
 
-type Cache struct {
-	OperatingSystem Metric `json:"os"`
-	Arch            Metric `json:"arch"`
-	Foo             Metric `json:"foo"`
-	Uptime          Metric `json:"uptime"`
-}
-
-type Metric struct {
-	Interval     float64   `json:"interval"`
-	Timeout      float64   `json:"timeout"`
-	Title        string    `json:"title"`
-	Value        string    `json:"value"`
-	Text         string    `json:"text"`
-	Prefix       string    `json:"prefix"`
-	Suffix       string    `json:"suffix"`
-	Style        string    `json:"style"`
-	UpdatedAt    time.Time `json:"updated_at"`
-	ExpiredAfter time.Time `json:"expired_after"`
-}
-
-func NewMetric(title string) Metric {
-	metric := Metric{}
+func NewMetric(title string) data.Metric {
+	metric := data.Metric{}
 
 	metric.Title = title
 
@@ -78,7 +65,7 @@ func NewMetric(title string) Metric {
 }
 
 // SetOperatingSystem sets the "os" from "runtime.GOOS" and returns it as a "Metric"
-func SetOperatingSystem() Metric {
+func SetOperatingSystem() data.Metric {
 	metric := NewMetric("os")
 
 	metric.Interval = 0
@@ -90,7 +77,7 @@ func SetOperatingSystem() Metric {
 	return metric
 }
 
-func SetArch() Metric {
+func SetArch() data.Metric {
 	metric := NewMetric("arch")
 
 	metric.Interval = 0
@@ -143,43 +130,33 @@ func UpdateUptime() {
 	}
 }
 
-// config defines the configuration options for lnd.
-//
-// See loadConfig for further details regarding the configuration
-// loading+parsing process.
-type config struct {
-	ShowVersion bool `short:"V" long:"version" description:"Display version information and exit"`
-
-	Host string `short:"H" long:"host" description:"The host to listen on"`
-	Port uint16 `short:"P" long:"port" description:"The port to listen on"`
-}
-
-func loadConfig() (*config, error) {
-	defaultCfg := config{
-		Host: defaultHost,
-		Port: defaultPort,
-	}
-
-	// Pre-parse the command line options to pick up an alternative config
-	// file.
-	preCfg := defaultCfg
-	if _, err := flags.Parse(&preCfg); err != nil {
-		return nil, err
-	}
-
-	return &preCfg, nil
-
-}
-
 func main() {
+	var rootCmd = &cobra.Command{
+		Version: buildVersion,
+		Use:     "model",
+		Short:   "RaspiBlitz Info Daemon",
+		Long: `A service that retrieves and caches details about your RaspiBlitz.
+                More info at: https://github.com/frennkie/model`,
+		Run: func(cmd *cobra.Command, args []string) {
+			// Do Stuff Here
+			blitzinfod()
 
-	// Load the configuration, and parse any command line options. This
-	// function will also set up logging properly.
-	loadedConfig, err := loadConfig()
-	if err != nil {
-		return
+		},
 	}
-	cfg := loadedConfig
+
+	rootCmd.PersistentFlags().StringP("restHostPort", "R", defaultRESTHostPort, "REST: Listen on Host:Port")
+	_ = viper.BindPFlag("restHostPort", rootCmd.PersistentFlags().Lookup("restHostPort"))
+	viper.SetDefault("restHostPort", defaultRESTHostPort)
+
+	//rootCmd.PersistentFlags().StringP("rpcHostPort", "H", defaultRPCHostPort, "RPC: Listen on Host:Port")
+	//_ = viper.BindPFlag("rpcHostPort", rootCmd.PersistentFlags().Lookup("rpcHostPort"))
+	//viper.SetDefault("rpcHostPort", defaultRPCHostPort)
+
+	_ = rootCmd.Execute()
+}
+
+func blitzinfod() {
+	log.Printf("Starting version: %s, built at %s", buildVersion, buildTime)
 
 	// set static Metrics
 	metrics.Arch = SetArch()
@@ -189,15 +166,21 @@ func main() {
 	go UpdateFoo()
 	go UpdateUptime()
 
-	box := rice.MustFindBox("static")
+	box := rice.MustFindBox("../../web/")
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))
 
 	http.HandleFunc("/", serveRoot)
 	http.HandleFunc("/info/", serveInfo)
 	http.HandleFunc("/api/", serveStaticApi)
 
-	log.Printf("Listening on host: http://%s:%d", cfg.Host, cfg.Port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), nil))
+	RESTHostPort := viper.GetString("RESTHostPort")
+	log.Printf("REST: Listening on host: http://%s", RESTHostPort)
+
+	//rpcHostPort := viper.GetString("rpcHostPort")
+	//log.Printf("RPC: Listening on host: gRPC://%s", rpcHostPort)
+
+	// now ListenAndServer
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s", RESTHostPort), nil))
 
 }
 
@@ -253,9 +236,9 @@ func serveRoot(w http.ResponseWriter, r *http.Request) {
 	_, _ = fmt.Fprintf(w, "%s", html)
 }
 
-func serveInfo(w http.ResponseWriter, r *http.Request) {
+func serveInfo(w http.ResponseWriter, _ *http.Request) {
 	// find rice.Box
-	templateBox, err := rice.FindBox("templates")
+	templateBox, err := rice.FindBox("../../web")
 	if err != nil {
 		log.Fatal(err)
 	}

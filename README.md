@@ -25,3 +25,8 @@ go get github.com/GeertJohan/go.rice/rice
 ```bash
 foo
 ```
+
+
+### Resources
+
+https://github.com/golang-standards/project-layout
