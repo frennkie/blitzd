@@ -1,5 +1,7 @@
 .idea
 
+build/
+
 blitzinfod-armv7l
 blitzinfod-x86_64
 blitzinfod-amd64
