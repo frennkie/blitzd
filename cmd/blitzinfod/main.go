@@ -140,7 +140,16 @@ func UpdateNslookup() {
 		m := NewMetric("nslookup")
 		m.Interval = time.Duration(60 * time.Second).Seconds()
 
-		result, err := utils.TimeoutExec("nslookup", "google.com")
+		cmdName := "nslookup"
+		var cmdArgs []string
+
+		if runtime.GOOS == "windows" {
+			cmdArgs = []string{"google.com"}
+		} else {
+			cmdArgs = []string{"google.com"}
+		}
+
+		result, err := utils.TimeoutExec(cmdName, cmdArgs)
 		if err != nil {
 			log.Printf("Error Updating: %s - %s", m.Title, err)
 		} else {
@@ -165,7 +174,16 @@ func UpdatePing() {
 		m := NewMetric("ping")
 		m.Interval = time.Duration(60 * time.Second).Seconds()
 
-		result, err := utils.TimeoutExec("ping", "-n", "2", "8.8.8.8")
+		cmdName := "ping"
+		var cmdArgs []string
+
+		if runtime.GOOS == "windows" {
+			cmdArgs = []string{"-n", "2", "8.8.8.8"}
+		} else {
+			cmdArgs = []string{"-c", "2", "8.8.8.8"}
+		}
+
+		result, err := utils.TimeoutExec(cmdName, cmdArgs)
 		if err != nil {
 			log.Printf("Error Updating: %s - %s", m.Title, err)
 		} else {

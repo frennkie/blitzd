@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func TimeoutExec(cmdName string, cmdArgs ...string) (string, error) {
+func TimeoutExec(cmdName string, cmdArgs []string) (string, error) {
 	// Create a new context and add a timeout to it
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel() // The cancel should be deferred so resources are cleaned up
