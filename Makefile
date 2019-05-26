@@ -134,7 +134,7 @@ package-purge:
 package-clean:
 	dh_clean
 package-version:
-	dch -i
+	debchange -i -D unstable
 
 
 help:
