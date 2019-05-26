@@ -32,6 +32,8 @@ MY_ARCH := $(shell uname -m)
 GOBUILD := go build -v
 RICE := /home/robbie/work/go/bin/rice embed-go
 
+RICE_BIN=/home/robbie/work/go/bin/rice
+
 
 # functions ##################################################################
 do-listing=\
@@ -47,26 +49,27 @@ all:
 	: # do nothing
 
 
-build-all:
-	$(RICE)
-	@echo "### Building amd64"
-	GOARCH=amd64 $(GOBUILD) -o blitzinfod-amd64 server.go rice-box.go
-	@echo "### Building armhf"
-	GOARCH=arm GOARM=7 $(GOBUILD) -o blitzinfod-armhf server.go rice-box.go
+rice-embed-go:
+	@echo "### Rice: Embedding static assets"
+	cd cmd/blitzinfod/ && $(RICE_BIN) embed-go
+
+
+build-all: build-amd64 build-armhf
+	@echo "### Build: all - done"
 
 
 # ARCH "amd64"
-build-amd64:
-	@echo "### Building amd64"
-	$(RICE)
-	GOARCH=amd64 $(GOBUILD) -o blitzinfod-amd64 server.go rice-box.go
+build-amd64: rice-embed-go
+	@echo "### Build: amd64"
+	GOARCH=amd64 $(GOBUILD) -o build/amd64/blitzinfod cmd/blitzinfod/main.go cmd/blitzinfod/rice-box.go
+	GOARCH=amd64 $(GOBUILD) -o build/amd64/blitzinfo-cli cmd/blitzinfo-cli/main.go
 
 
 # ARCH "armhf"
-build-armhf:
-	@echo "### Building armhf"
-	$(RICE)
-	GOARCH=arm GOARM=7 $(GOBUILD) -o blitzinfod-armhf server.go rice-box.go
+build-armhf: rice-embed-go
+	@echo "### Build: armhf"
+	GOARCH=arm GOARM=7 $(GOBUILD) -o build/armhf/blitzinfod cmd/blitzinfod/main.go cmd/blitzinfod/rice-box.go
+	GOARCH=arm GOARM=7 $(GOBUILD) -o build/armhf/blitzinfo-cli cmd/blitzinfo-cli/main.go
 
 
 install:
@@ -83,8 +86,14 @@ uninstall:
 
 clean:
 	@echo "### Clean"
-	# -rm -f blitzinfod-armhf
-	# -rm -f blitzinfod-amd64
+	-rm -rf debian/.debhelper/
+	-rm -rf debian/blitzinfod/
+	-rm -f debian/debhelper-build-stamp
+
+
+distclean:
+	@echo "### Distclean"
+	-rm -rf build/
 	-rm -rf debian/.debhelper/
 	-rm -rf debian/blitzinfod/
 	-rm -f debian/debhelper-build-stamp
@@ -103,6 +112,7 @@ package-armhf:
 	@echo ""
 	cd .. && for f in $(PACKAGE_FILES); do \
 		[ -f $$f ] && mv $$f $(D)/$(PD)/unstable || :; done
+
 
 package-amd64:
 	@echo 'packaging blitzinfod amd64 for XXX Debian unstable...'
