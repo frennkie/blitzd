@@ -33,8 +33,6 @@ const (
 	Green  = "green"
 	Yellow = "yellow"
 	Purple = "purple"
-
-	newline = "\r\n" // TODO windows newline
 )
 
 var (
@@ -153,7 +151,7 @@ func UpdateNslookup() {
 		if err != nil {
 			log.Printf("Error Updating: %s - %s", m.Title, err)
 		} else {
-			split := strings.Split(result, newline)
+			split := strings.Split(result, utils.GetNewLine())
 			last := strings.TrimSpace(split[len(split)-3])
 
 			m.Value = last
@@ -188,7 +186,7 @@ func UpdatePing() {
 			log.Printf("Error Updating: %s - %s", m.Title, err)
 		} else {
 
-			split := strings.Split(result, newline)
+			split := strings.Split(result, utils.GetNewLine())
 			last := strings.TrimSpace(split[len(split)-2])
 
 			m.Value = last
