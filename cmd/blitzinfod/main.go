@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	rice "github.com/GeertJohan/go.rice"
-	"github.com/frennkie/blitzinfod/internal/data"
+	"github.com/frennkie/blitzinfod/internal/utils"
 	"github.com/shirou/gopsutil/host"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -12,8 +12,11 @@ import (
 	"log"
 	"net/http"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/frennkie/blitzinfod/internal/data"
 )
 
 const (
@@ -30,6 +33,8 @@ const (
 	Green  = "green"
 	Yellow = "yellow"
 	Purple = "purple"
+
+	newline = "\r\n" // TODO windows newline
 )
 
 var (
@@ -130,6 +135,57 @@ func UpdateUptime() {
 	}
 }
 
+func UpdateNslookup() {
+	for {
+		m := NewMetric("nslookup")
+		m.Interval = time.Duration(60 * time.Second).Seconds()
+
+		result, err := utils.TimeoutExec("nslookup", "google.com")
+		if err != nil {
+			log.Printf("Error Updating: %s - %s", m.Title, err)
+		} else {
+			split := strings.Split(result, newline)
+			last := strings.TrimSpace(split[len(split)-3])
+
+			m.Value = last
+
+			// update data in MetricCache
+			log.Printf("Updating: %s", m.Title)
+			metricsMux.Lock()
+			metrics.Nslookup = m
+			metricsMux.Unlock()
+
+		}
+		time.Sleep(time.Duration(m.Interval) * time.Second)
+	}
+}
+
+func UpdatePing() {
+	for {
+		m := NewMetric("ping")
+		m.Interval = time.Duration(60 * time.Second).Seconds()
+
+		result, err := utils.TimeoutExec("ping", "-n", "2", "8.8.8.8")
+		if err != nil {
+			log.Printf("Error Updating: %s - %s", m.Title, err)
+		} else {
+
+			split := strings.Split(result, newline)
+			last := strings.TrimSpace(split[len(split)-2])
+
+			m.Value = last
+
+			// update data in MetricCache
+			log.Printf("Updating: %s", m.Title)
+			metricsMux.Lock()
+			metrics.Ping = m
+			metricsMux.Unlock()
+
+		}
+		time.Sleep(time.Duration(m.Interval) * time.Second)
+	}
+}
+
 func main() {
 	var rootCmd = &cobra.Command{
 		Version: buildVersion,
@@ -165,6 +221,8 @@ func blitzinfod() {
 	// start Update of Metrics as goroutines
 	go UpdateFoo()
 	go UpdateUptime()
+	go UpdateNslookup()
+	go UpdatePing()
 
 	box := rice.MustFindBox("../../web/")
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))

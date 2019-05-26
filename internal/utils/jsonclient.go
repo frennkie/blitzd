@@ -1,7 +1,8 @@
-package jsonclient
+package utils
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 )
@@ -13,7 +14,13 @@ func GetJson(url string, target interface{}) error {
 	if err != nil {
 		return err
 	}
-	defer r.Body.Close()
+
+	defer func() {
+		err := r.Body.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	return json.NewDecoder(r.Body).Decode(target)
 }

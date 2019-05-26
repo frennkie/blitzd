@@ -7,6 +7,8 @@ type Cache struct {
 	Arch            Metric `json:"arch"`
 	Foo             Metric `json:"foo"`
 	Uptime          Metric `json:"uptime"`
+	Nslookup        Metric `json:"nslookup"`
+	Ping            Metric `json:"ping"`
 }
 
 type Metric struct {

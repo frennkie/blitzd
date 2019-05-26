@@ -10,13 +10,13 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(cmdAll)
+	rootCmd.AddCommand(cmdUptime)
 }
 
-var cmdAll = &cobra.Command{
-	Use:   "all",
-	Short: "Print full json blob",
-	Long:  `Print full json blob`,
+var cmdUptime = &cobra.Command{
+	Use:   "uptime",
+	Short: "uptime",
+	Long:  `System uptime`,
 	Run: func(cmd *cobra.Command, args []string) {
 		hostPort := viper.GetString("restHostPort")
 		url := "http://" + hostPort + "/api/"
@@ -28,9 +28,6 @@ var cmdAll = &cobra.Command{
 			os.Exit(1)
 		}
 
-		println("Arch: " + myCache.Arch.Value)
-		println("OS: " + myCache.OperatingSystem.Value)
-		println("Foo: " + myCache.Foo.Value)
-		println("Uptime: " + myCache.Uptime.Value)
+		println(myCache.Uptime.Value)
 	},
 }
