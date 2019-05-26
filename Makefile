@@ -125,7 +125,7 @@ package-armhf: build-armhf
 	mkdir -p $(PD)/unstable
 	rm -f $(PD)/unstable/*
 	sed -i 's,\(^$(P) ('$(VERSION)') \)[a-z]*,\1unstable,' debian/changelog
-	debuild -i -I -I.git -Ipackage -a armhf -us -uc
+	debuild -i -I -I.git -Ipackage -a armhf
 	@echo ""
 
 
