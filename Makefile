@@ -111,7 +111,7 @@ package: package-amd64 package-armhf package-move
 	@echo 'Packaging all - done'
 
 
-package-amd64:
+package-amd64: build-amd64
 	@echo 'Package: amd64'
 	mkdir -p $(PD)/unstable
 	rm -f $(PD)/unstable/*
@@ -120,12 +120,12 @@ package-amd64:
 	@echo ""
 
 
-package-armhf:
+package-armhf: build-armhf
 	@echo 'Package: armhf'
 	mkdir -p $(PD)/unstable
 	rm -f $(PD)/unstable/*
 	sed -i 's,\(^$(P) ('$(VERSION)') \)[a-z]*,\1unstable,' debian/changelog
-	debuild -i -I -I.git -Ipackage -a armhf
+	debuild -i -I -I.git -Ipackage -a armhf -us -uc
 	@echo ""
 
 
