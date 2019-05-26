@@ -3,13 +3,7 @@ Upstream-Name: blitzinfod
 Source: <https://github.com/frennkie/blitzinfod>
 
 Files: *
-Copyright: <years> <put author's name and email here>
-           <years> <likewise for another author>
-License: MIT
-
-Files: debian/*
 Copyright: 2019 Robert Habermann <frennkie@gmail.com>
-License: MIT
 
 License: MIT
  Permission is hereby granted, free of charge, to any person obtaining a
