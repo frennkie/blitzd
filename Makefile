@@ -3,7 +3,7 @@
 # Beware: This uses tab intend (instead of spaces)
 
 # vars #######################################################################
-VERSION=1.2
+VERSION := $(shell grep -e "^blitzinfod " debian/changelog | head -1 | cut -d "(" -f2 | cut -d ")" -f1)
 P=blitzinfod
 D=blitzinfod
 PD=package/$(VERSION)
@@ -11,28 +11,27 @@ PD=package/$(VERSION)
 PREFIX=/usr/local
 
 # Target/Destination Host
-#DEB_HOST_ARCH  := $(shell dpkg-architecture -qDEB_HOST_ARCH)
-
+DEB_HOST_ARCH  := $(shell dpkg-architecture -qDEB_HOST_ARCH)
 # Building Host
-#DEB_BUILD_ARCH := $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+DEB_BUILD_ARCH := $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 
 
 INSTALLED_FILES=\
-  $(DESTDIR)$(PREFIX)/bin/infoblitz
+  $(DESTDIR)$(PREFIX)/bin/blitzinfod \
+  $(DESTDIR)$(PREFIX)/bin/blitzinfo-cli \
+  /etc/blitzinfod.conf
+
 
 PACKAGE_FILES=\
   $(P)_$(VERSION)*.deb \
   $(P)_$(VERSION)*.dsc \
-  $(P)_$(VERSION)*.tar.gz \
+  $(P)_$(VERSION)*.tar.xz \
   $(P)_$(VERSION)*.changes \
-  $(P)_$(VERSION)*.build
-
-MY_ARCH := $(shell uname -m)
+  $(P)_$(VERSION)*.build \
+  $(P)_$(VERSION)*.buildinfo
 
 GOBUILD := go build -v
-RICE := /home/robbie/work/go/bin/rice embed-go
-
-RICE_BIN=/home/robbie/work/go/bin/rice
+RICE_BIN := /home/robbie/work/go/bin/rice
 
 
 # functions ##################################################################
@@ -73,30 +72,33 @@ build-armhf: rice-embed-go
 
 
 install:
-	@echo "### Install"
-	install -d -m 755                     $(DESTDIR)$(PREFIX)/bin
-	install -m 0755 blitzinfod-$(DEB_HOST_ARCH)    $(DESTDIR)$(PREFIX)/bin
-	# install -m 0755 blitzinfod-armv7l    $(DESTDIR)$(PREFIX)/bin
+	@echo "### Install: Arch=$(DEB_HOST_ARCH)"
+	install -d -m 755 $(DESTDIR)$(PREFIX)/bin
+	install -d -m 755 $(DESTDIR)/etc
+	install -m 0755 build/$(DEB_HOST_ARCH)/blitzinfod 	$(DESTDIR)$(PREFIX)/bin
+	install -m 0755 build/$(DEB_HOST_ARCH)/blitzinfo-cli 	$(DESTDIR)$(PREFIX)/bin
+	install -m 0755 configs/blitzinfod.conf 	$(DESTDIR)/etc
 
 
 uninstall:
 	@echo "### Uninstall"
-	-rm -f $(DESTDIR)$(PREFIX)/bin/blitzinfod-$(DEB_HOST_ARCH)
+	-rm -f $(DESTDIR)$(PREFIX)/bin/blitzinfod
+	-rm -f $(DESTDIR)$(PREFIX)/bin/blitzinfo-cli
+	-rm -f $(DESTDIR)/etc/blitzinfod.conf
 
 
-clean:
+clean: distclean
 	@echo "### Clean"
-	-rm -rf debian/.debhelper/
-	-rm -rf debian/blitzinfod/
-	-rm -f debian/debhelper-build-stamp
+	-rm -rf build/
 
 
 distclean:
-	@echo "### Distclean"
-	-rm -rf build/
+	@echo "### Distclean (this is called by debuild)"
 	-rm -rf debian/.debhelper/
+	-rm -f debian/blitzinfod.substvars
 	-rm -rf debian/blitzinfod/
 	-rm -f debian/debhelper-build-stamp
+	-rm -f debian/files
 
 
 list:
