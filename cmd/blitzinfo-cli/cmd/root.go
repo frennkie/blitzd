@@ -18,9 +18,9 @@ const (
 var rootCmd = &cobra.Command{
 	Version: "1.2.3",
 	Use:     "blitzinfo-cli",
-	Short:   "blitzinfo-cli is the CLI for model",
-	Long: `An easy way to access data from model.
-                More info at: https://github.com/frennkie/model`,
+	Short:   "blitzinfo-cli is the CLI for blitzinfod",
+	Long: `An easy way to access data from blitzinfod.
+                More info at: https://github.com/frennkie/blitzinfod`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Do Stuff Here
 		fmt.Println("Stuff")

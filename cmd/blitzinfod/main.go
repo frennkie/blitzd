@@ -205,10 +205,10 @@ func UpdatePing() {
 func main() {
 	var rootCmd = &cobra.Command{
 		Version: buildVersion,
-		Use:     "model",
+		Use:     "blitzinfod",
 		Short:   "RaspiBlitz Info Daemon",
 		Long: `A service that retrieves and caches details about your RaspiBlitz.
-                More info at: https://github.com/frennkie/model`,
+                More info at: https://github.com/frennkie/blitzinfod`,
 		Run: func(cmd *cobra.Command, args []string) {
 			// Do Stuff Here
 			blitzinfod()

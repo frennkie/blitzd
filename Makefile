@@ -46,8 +46,11 @@ do-listing=\
 #########################################################
 
 
-all:
+nothing:
 	: # do nothing
+
+
+all: package dist fix-sign clean
 
 
 rice-embed-go:
@@ -71,6 +74,17 @@ build-armhf: rice-embed-go
 	@echo "### Build: armhf"
 	GOARCH=arm GOARM=7 $(GOBUILD) -o build/armhf/blitzinfod cmd/blitzinfod/main.go cmd/blitzinfod/rice-box.go
 	GOARCH=arm GOARM=7 $(GOBUILD) -o build/armhf/blitzinfo-cli cmd/blitzinfo-cli/main.go
+
+
+dist:
+	@echo "### Dist"
+	cd build/amd64/ && tar czf ../../package/$(VERSION)/unstable/blitzinfod_$(VERSION)_amd64.tgz blitzinfod blitzinfo-cli
+	cd build/armhf/ && tar czf ../../package/$(VERSION)/unstable/blitzinfod_$(VERSION)_armhf.tgz blitzinfod blitzinfo-cli
+
+
+fix-sign:
+	@echo "### Fix Debian Signature for armhf"
+	cd package/$(VERSION)/unstable && debsign blitzinfod_$(VERSION)_armhf.changes -a armhf
 
 
 install:
@@ -125,7 +139,7 @@ package-armhf: build-armhf
 	mkdir -p $(PD)/unstable
 	rm -f $(PD)/unstable/*
 	sed -i 's,\(^$(P) ('$(VERSION)') \)[a-z]*,\1unstable,' debian/changelog
-	debuild -i -I -I.git -Ipackage -a armhf
+	debuild -uc -us -i -I -I.git -Ipackage -a armhf
 	@echo ""
 
 
