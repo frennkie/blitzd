@@ -1,4 +1,13 @@
-blitzinfod (1.0) unstable; urgency=medium
+blitzinfod (0.4) unstable; urgency=medium
+
+  * Another Proof-of-Concept Release
+  * Now used debian packages
+  * Server binary is now called blitzinfod
+  * New CLI created for easy access: blitzinfo-cli
+
+ -- Robert Habermann <frennkie@gmail.com>  Sun, 26 May 2019 17:15:35 +0000
+
+blitzinfod (0.1) unstable; urgency=medium
 
   * Initial Release.
 
