@@ -19,7 +19,7 @@ DEB_BUILD_ARCH := $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 INSTALLED_FILES=\
   $(DESTDIR)$(PREFIX)/bin/blitzinfod \
   $(DESTDIR)$(PREFIX)/bin/blitzinfo-cli \
-  $(DESTDIR)/etc/blitzinfod.conf
+  $(DESTDIR)/etc/blitzinfod.conf \
   $(DESTDIR)/lib/systemd/system/blitzinfod.service
 
 
