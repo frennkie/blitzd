@@ -19,16 +19,18 @@ DEB_BUILD_ARCH := $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 INSTALLED_FILES=\
   $(DESTDIR)$(PREFIX)/bin/blitzinfod \
   $(DESTDIR)$(PREFIX)/bin/blitzinfo-cli \
-  /etc/blitzinfod.conf
+  $(DESTDIR)/etc/blitzinfod.conf
+  $(DESTDIR)/lib/systemd/system/blitzinfod.service
 
 
 PACKAGE_FILES=\
   $(P)_$(VERSION)*.deb \
   $(P)_$(VERSION)*.dsc \
   $(P)_$(VERSION)*.tar.xz \
-  $(P)_$(VERSION)*.changes \
   $(P)_$(VERSION)*.build \
-  $(P)_$(VERSION)*.buildinfo
+  $(P)_$(VERSION)*.buildinfo \
+  $(P)_$(VERSION)*.changes
+
 
 GOBUILD := go build -v
 RICE_BIN := /home/robbie/work/go/bin/rice
@@ -36,7 +38,7 @@ RICE_BIN := /home/robbie/work/go/bin/rice
 
 # functions ##################################################################
 do-listing=\
-  echo; echo '[Listing installed files:]'; ls -l --color $(INSTALLED_FILES) || :
+  echo; echo 'Listing installed files:'; ls -l --color $(INSTALLED_FILES) || :
 
 
 #########################################################
@@ -53,7 +55,7 @@ rice-embed-go:
 	cd cmd/blitzinfod/ && $(RICE_BIN) embed-go
 
 
-build-all: build-amd64 build-armhf
+build: build-amd64 build-armhf
 	@echo "### Build: all - done"
 
 
@@ -105,24 +107,30 @@ list:
 	@$(do-listing)
 
 
-package-armhf:
-	@echo 'packaging blitzinfod armhf for XXX Debian unstable...'
-	mkdir -p $(PD)/unstable
-	rm -f $(PD)/unstable/*
-	sed -i 's,\(^$(P) ('$(VERSION)') \)[a-z]*,\1unstable,' debian/changelog
-	debuild -i -I -I.git -Ipackage -a armhf
-	@echo ""
-	cd .. && for f in $(PACKAGE_FILES); do \
-		[ -f $$f ] && mv $$f $(D)/$(PD)/unstable || :; done
+package: package-amd64 package-armhf package-move
+	@echo 'Packaging all - done'
 
 
 package-amd64:
-	@echo 'packaging blitzinfod amd64 for XXX Debian unstable...'
+	@echo 'Package: amd64'
 	mkdir -p $(PD)/unstable
 	rm -f $(PD)/unstable/*
 	sed -i 's,\(^$(P) ('$(VERSION)') \)[a-z]*,\1unstable,' debian/changelog
 	debuild -i -I -I.git -Ipackage -a amd64
 	@echo ""
+
+
+package-armhf:
+	@echo 'Package: armhf'
+	mkdir -p $(PD)/unstable
+	rm -f $(PD)/unstable/*
+	sed -i 's,\(^$(P) ('$(VERSION)') \)[a-z]*,\1unstable,' debian/changelog
+	debuild -i -I -I.git -Ipackage -a armhf
+	@echo ""
+
+
+package-move:
+	@echo 'Move: Packages from parent to sub directory'
 	cd .. && for f in $(PACKAGE_FILES); do \
 		[ -f $$f ] && mv $$f $(D)/$(PD)/unstable || :; done
 
@@ -147,7 +155,11 @@ help:
 	@echo '   make clean                     clean                       '
 	@echo '   make list                      list installed files        '
 	@echo '   make build                     build infoblitz from go src '
+	@echo '   make build-amd64               build infoblitz from go src '
+	@echo '   make build-armhf               build infoblitz from go src '
 	@echo '   make package                   create .deb/.dcs packagings '
+	@echo '   make package-amd64             create .deb/.dcs packagings '
+	@echo '   make package-armhf             create .deb/.dcs packagings '
 	@echo '   make package-clean             delete tmp packaging files  '
 	@echo '   make package-info              apt-cache showpkg           '
 	@echo '   make package-purge             apt-get purge               '

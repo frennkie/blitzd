@@ -6,6 +6,11 @@ export DH_VERBOSE = 1
 %:
 	dh $@
 
+
+# https://github.com/lxc/lxd-pkg-ubuntu/blob/dpm-xenial/debian/rules
+#dh $@ --with systemd --buildsystem=golang --with=golang
+
+
 override_dh_usrlocal:
 
 override_dh_installinit:
