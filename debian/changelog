@@ -1,3 +1,10 @@
+blitzinfod (0.7) unstable; urgency=medium
+
+  * add lsb-release Metric
+  * rename API to /api/v1/
+
+ -- Robert Habermann <frennkie@gmail.com>  Tue, 28 May 2019 19:51:42 +0000
+
 blitzinfod (0.6) unstable; urgency=medium
 
   * Another Proof-of-Concept Release
