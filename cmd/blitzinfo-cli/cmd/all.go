@@ -19,7 +19,7 @@ var cmdAll = &cobra.Command{
 	Long:  `Print full json blob`,
 	Run: func(cmd *cobra.Command, args []string) {
 		hostPort := viper.GetString("restHostPort")
-		url := "http://" + hostPort + "/api/"
+		url := "http://" + hostPort + data.APIv1
 
 		myCache := new(data.Cache)
 

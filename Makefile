@@ -159,6 +159,10 @@ package-version:
 	debchange -i -D unstable
 
 
+goget:
+@echo 'Install: Missing Go libs'
+	go get ./...
+
 help:
 	@echo 'Makefile for infoblitz Debian Packaging                       '
 	@echo '                                                              '
@@ -178,6 +182,7 @@ help:
 	@echo '   make package-info              apt-cache showpkg           '
 	@echo '   make package-purge             apt-get purge               '
 	@echo '   make package-version           update the changelog        '
+	@echo '   make goget                     install missing go libs     '
 	@echo '                                                              '
 
 

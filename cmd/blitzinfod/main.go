@@ -1,16 +1,16 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	rice "github.com/GeertJohan/go.rice"
+	"github.com/frennkie/blitzinfod/internal/serve"
 	"github.com/frennkie/blitzinfod/internal/utils"
 	"github.com/shirou/gopsutil/host"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -26,8 +26,6 @@ const (
 	//defaultRPCPort     = "39735"
 	//defaultRPCHostPort = "localhost:" + defaultRPCPort
 
-	defaultExpireTime = 300 * time.Second // 5 minutes
-
 	Normal = "normal"
 	Red    = "red"
 	Green  = "green"
@@ -38,9 +36,6 @@ const (
 var (
 	metrics    data.Cache
 	metricsMux sync.Mutex
-
-	// maxTime (Metric does not expire): "3000-01-01T00:00:00Z"
-	maxTime = time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	buildVersion = "0.8.15"
 	buildTime    = "0"
@@ -62,42 +57,63 @@ func NewMetric(title string) data.Metric {
 
 	now := time.Now()
 	metric.UpdatedAt = now
-	metric.ExpiredAfter = now.Add(defaultExpireTime)
+	metric.ExpiredAfter = now.Add(data.DefaultExpireTime)
 
+	return metric
+}
+
+func NewMetricStatic(title string) data.Metric {
+	metric := NewMetric(title)
+	metric.Kind = data.Static
+	metric.Interval = 0
+	metric.Timeout = 0
+	metric.ExpiredAfter = data.MaxTime
+	return metric
+}
+
+func NewMetricTimeBased(title string) data.Metric {
+	metric := NewMetric(title)
+	metric.Kind = data.TimeBased
+	return metric
+}
+
+func NewMetricEventBased(title string) data.Metric {
+	metric := NewMetric(title)
+	metric.Kind = data.EventBased
+	metric.Interval = 0
+	metric.ExpiredAfter = data.MaxTime
 	return metric
 }
 
 // SetOperatingSystem sets the "os" from "runtime.GOOS" and returns it as a "Metric"
 func SetOperatingSystem() data.Metric {
-	metric := NewMetric("os")
+	title := "os"
+	log.Printf("setting: %s", title)
 
-	metric.Interval = 0
-	metric.Timeout = 0
-	metric.ExpiredAfter = maxTime
-
+	metric := NewMetricStatic(title)
 	metric.Value = runtime.GOOS
 
 	return metric
 }
 
 func SetArch() data.Metric {
-	metric := NewMetric("arch")
+	title := "arch"
+	log.Printf("setting: %s", title)
 
-	metric.Interval = 0
-	metric.Timeout = 0
-	metric.ExpiredAfter = maxTime
-
+	metric := NewMetricStatic(title)
 	metric.Value = runtime.GOARCH
 
 	return metric
 }
 
 func UpdateFoo() {
+	title := "foo"
+	log.Printf("starting goroutine: %s", title)
 	// "warm-up" ToDo(frennkie) remove "Foo"
 	time.Sleep(1 * time.Second)
 
 	for {
-		foo := NewMetric("foo")
+		foo := NewMetric(title)
 		foo.Value = "foo"
 
 		// update data in MetricCache
@@ -112,8 +128,10 @@ func UpdateFoo() {
 }
 
 func UpdateUptime() {
+	title := "uptime"
+	log.Printf("starting goroutine: %s", title)
 	for {
-		m := NewMetric("uptime")
+		m := NewMetricTimeBased(title)
 		m.Interval = time.Duration(1 * time.Second).Seconds()
 
 		uptime, err := host.Uptime()
@@ -134,8 +152,10 @@ func UpdateUptime() {
 }
 
 func UpdateNslookup() {
+	title := "nslookup"
+	log.Printf("starting goroutine: %s", title)
 	for {
-		m := NewMetric("nslookup")
+		m := NewMetric(title)
 		m.Interval = time.Duration(60 * time.Second).Seconds()
 
 		cmdName := "nslookup"
@@ -168,8 +188,10 @@ func UpdateNslookup() {
 }
 
 func UpdatePing() {
+	title := "ping"
+	log.Printf("starting goroutine: %s", title)
 	for {
-		m := NewMetric("ping")
+		m := NewMetric(title)
 		m.Interval = time.Duration(60 * time.Second).Seconds()
 
 		cmdName := "ping"
@@ -200,6 +222,60 @@ func UpdatePing() {
 		}
 		time.Sleep(time.Duration(m.Interval) * time.Second)
 	}
+}
+
+func UpdateFileBar() {
+	title := "file-bar"
+	absFilePath := "/tmp/foo"
+
+	if _, err := os.Stat(absFilePath); os.IsNotExist(err) {
+		log.Printf("file does not exist - skipping: %s", absFilePath)
+		return
+	}
+
+	log.Printf("starting goroutine: %s (%s)", title, absFilePath)
+
+	UpdateFileBarFunc(title, absFilePath)
+	go utils.FileWatcher(title, absFilePath, UpdateFileBarFunc)
+}
+
+func UpdateFileBarFunc(title string, absFilePath string) {
+	log.Printf("event-based update: %s (%s)", title, absFilePath)
+	m := NewMetricEventBased(title)
+
+	m.Value = fmt.Sprintf("%s", "foobar")
+
+	metricsMux.Lock()
+	metrics.FileBar = m
+	metricsMux.Unlock()
+
+}
+
+func UpdateLsbRelease() {
+	title := "lsb-release"
+	absFilePath := "/etc/lsb-release"
+
+	if _, err := os.Stat(absFilePath); os.IsNotExist(err) {
+		log.Printf("file does not exist - skipping: %s", absFilePath)
+		return
+	}
+
+	log.Printf("starting goroutine: %s (%s)", title, absFilePath)
+
+	UpdateLsbReleaseFunc(title, absFilePath)
+	go utils.FileWatcher(title, absFilePath, UpdateLsbReleaseFunc)
+}
+
+func UpdateLsbReleaseFunc(title string, absFilePath string) {
+	log.Printf("event-based update: %s (%s)", title, absFilePath)
+	m := NewMetricEventBased(title)
+
+	m.Value = fmt.Sprintf("%s", "foolsb")
+
+	metricsMux.Lock()
+	metrics.LsbRelease = m
+	metricsMux.Unlock()
+
 }
 
 func main() {
@@ -240,12 +316,18 @@ func blitzinfod() {
 	go UpdateNslookup()
 	go UpdatePing()
 
+	if runtime.GOOS != "windows" {
+		go UpdateLsbRelease()
+		go UpdateFileBar()
+	}
+
 	box := rice.MustFindBox("../../web/")
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))
 
-	http.HandleFunc("/", serveRoot)
-	http.HandleFunc("/info/", serveInfo)
-	http.HandleFunc("/api/", serveStaticApi)
+	http.HandleFunc("/", serve.Root)
+	http.HandleFunc("/info/", serve.Info(&metrics))
+	http.HandleFunc(data.APIv1, serve.StaticApi(&metrics))
+	http.HandleFunc(data.APIv1+"bar/", serve.StaticApi(&metrics))
 
 	RESTHostPort := viper.GetString("RESTHostPort")
 	log.Printf("REST: Listening on host: http://%s", RESTHostPort)
@@ -256,79 +338,4 @@ func blitzinfod() {
 	// now ListenAndServer
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s", RESTHostPort), nil))
 
-}
-
-func serveStaticApi(w http.ResponseWriter, _ *http.Request) {
-
-	js, err := json.Marshal(metrics)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	_, err = w.Write(js)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-}
-
-func serveRoot(w http.ResponseWriter, r *http.Request) {
-
-	htmlRaw := `
-	<!DOCTYPE html>
-	<html lang="en">
-	<head>
-	<meta charset="UTF-8">
-	<title>BlitzInfo Daemon</title>
-	</head>
-	<body>
-		<ul>	
-			<li><a href="/api/">API</a></li>
-			<li><a href="/info/">Info Page</a></li>
-		</ul>
-		<br>
-
-		<hr>
-		%s
-		<br>
-
-		<hr>
-		Request: 
-		<pre>%s</pre>
-	</body>
-	</html>
-	`
-
-	//values := []interface{}{r.RemoteAddr, r.RequestURI, r.URL.Path}
-	values := []interface{}{r.RemoteAddr, r.URL.Path}
-
-	html := fmt.Sprintf(htmlRaw, values...)
-
-	_, _ = fmt.Fprintf(w, "%s", html)
-}
-
-func serveInfo(w http.ResponseWriter, _ *http.Request) {
-	// find rice.Box
-	templateBox, err := rice.FindBox("../../web")
-	if err != nil {
-		log.Fatal(err)
-	}
-	// get file contents as string
-	templateString, err := templateBox.String("info.tmpl")
-	if err != nil {
-		log.Fatal(err)
-	}
-	// parse and execute the template
-	tmplMessage, err := template.New("info").Parse(templateString)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := tmplMessage.Execute(w, metrics); err != nil {
-		log.Println(err.Error())
-		http.Error(w, http.StatusText(500), 500)
-	}
 }

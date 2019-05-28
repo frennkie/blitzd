@@ -19,7 +19,7 @@ var cmdUptime = &cobra.Command{
 	Long:  `System uptime`,
 	Run: func(cmd *cobra.Command, args []string) {
 		hostPort := viper.GetString("restHostPort")
-		url := "http://" + hostPort + "/api/"
+		url := "http://" + hostPort + data.APIv1
 
 		myCache := new(data.Cache)
 
