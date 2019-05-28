@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/frennkie/blitzinfod/internal/serve"
@@ -106,11 +107,10 @@ func SetArch() data.Metric {
 	return metric
 }
 
+// ToDo(frennkie) remove "Foo"
 func UpdateFoo() {
 	title := "foo"
 	log.Printf("starting goroutine: %s", title)
-	// "warm-up" ToDo(frennkie) remove "Foo"
-	time.Sleep(1 * time.Second)
 
 	for {
 		foo := NewMetric(title)
@@ -124,7 +124,6 @@ func UpdateFoo() {
 
 		time.Sleep(time.Duration(foo.Interval) * time.Second)
 	}
-
 }
 
 func UpdateUptime() {
@@ -270,7 +269,26 @@ func UpdateLsbReleaseFunc(title string, absFilePath string) {
 	log.Printf("event-based update: %s (%s)", title, absFilePath)
 	m := NewMetricEventBased(title)
 
-	m.Value = fmt.Sprintf("%s", "foolsb")
+	file, err := os.Open(absFilePath)
+
+	if err != nil {
+		log.Fatalf("failed opening file: %s", err)
+	}
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+	var txtlines []string
+
+	for scanner.Scan() {
+		txtlines = append(txtlines, scanner.Text())
+	}
+
+	_ = file.Close()
+
+	tmp := txtlines[len(txtlines)-1]
+	tmp2 := strings.Split(tmp, "=")[1]
+	tmp3 := strings.Replace(tmp2, "\"", "", -1)
+	m.Value = tmp3
 
 	metricsMux.Lock()
 	metrics.LsbRelease = m
@@ -327,7 +345,6 @@ func blitzinfod() {
 	http.HandleFunc("/", serve.Root)
 	http.HandleFunc("/info/", serve.Info(&metrics))
 	http.HandleFunc(data.APIv1, serve.StaticApi(&metrics))
-	http.HandleFunc(data.APIv1+"bar/", serve.StaticApi(&metrics))
 
 	RESTHostPort := viper.GetString("RESTHostPort")
 	log.Printf("REST: Listening on host: http://%s", RESTHostPort)
