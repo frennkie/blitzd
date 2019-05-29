@@ -2,7 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/frennkie/blitzinfod/internal/data"
+	"github.com/frennkie/blitzd/internal/data"
 	"net/http"
 )
 

@@ -4,9 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	rice "github.com/GeertJohan/go.rice"
-	"github.com/frennkie/blitzinfod/internal/api"
-	"github.com/frennkie/blitzinfod/internal/serve"
-	"github.com/frennkie/blitzinfod/internal/utils"
+	"github.com/frennkie/blitzd/internal/api"
+	"github.com/frennkie/blitzd/internal/data"
+	"github.com/frennkie/blitzd/internal/serve"
+	"github.com/frennkie/blitzd/internal/utils"
 	"github.com/mitchellh/go-homedir"
 	"github.com/shirou/gopsutil/host"
 	"github.com/spf13/cobra"
@@ -19,13 +20,11 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/frennkie/blitzinfod/internal/data"
 )
 
 const (
-	defaultCfgFile      = "/etc/blitzinfod.toml"
-	defaultCfgFileWin32 = "C:\\blitzinfod.toml"
+	defaultCfgFile      = "/etc/blitzd.toml"
+	defaultCfgFileWin32 = "C:\\blitzd.toml"
 	defaultRESTPort     = "7080"
 	defaultRESTHostPort = "localhost:" + defaultRESTPort
 
@@ -306,18 +305,18 @@ func UpdateLsbReleaseFunc(title string, absFilePath string) {
 func main() {
 	var rootCmd = &cobra.Command{
 		Version: buildVersion,
-		Use:     "blitzinfod",
-		Short:   "RaspiBlitz Info Daemon",
+		Use:     "blitzd",
+		Short:   "RaspiBlitz Daemon",
 		Long: `A service that retrieves and caches details about your RaspiBlitz.
-                More info at: https://github.com/frennkie/blitzinfod`,
+                More info at: https://github.com/frennkie/blitzd`,
 		Run: func(cmd *cobra.Command, args []string) {
-			blitzinfod()
+			blitzd()
 		},
 	}
 
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.blitzinfod.cfg")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.blitzd.cfg")
 	_ = viper.BindPFlag("config", rootCmd.PersistentFlags().Lookup("config"))
 
 	rootCmd.PersistentFlags().StringP("restHostPort", "R", defaultRESTHostPort, "REST: Listen on Host:Port")
@@ -333,8 +332,8 @@ func main() {
 
 func initConfig() {
 	// If config is specified by flag then ONLY read that file.
-	// Otherwise read default (/etc/blitzinfod.toml) and - if it exists - merge any
-	// settings from file "blitzinfod.toml" in home directory!
+	// Otherwise read default (/etc/blitzd.toml) and - if it exists - merge any
+	// settings from file "blitzd.toml" in home directory!
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -364,7 +363,7 @@ func initConfig() {
 			os.Exit(1)
 		}
 
-		customConfig := filepath.FromSlash(home + "/blitzinfod.toml")
+		customConfig := filepath.FromSlash(home + "/blitzd.toml")
 		if _, err := os.Stat(customConfig); os.IsNotExist(err) {
 			log.Printf("custom config file does not exist - skipping: %s", customConfig)
 			return
@@ -382,7 +381,7 @@ func initConfig() {
 
 }
 
-func blitzinfod() {
+func blitzd() {
 	log.Printf("Starting version: %s, built at %s", buildVersion, buildTime)
 
 	// set static Metrics

@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: blitzinfod
-Source: <https://github.com/frennkie/blitzinfod>
+Upstream-Name: blitzd
+Source: <https://github.com/frennkie/blitzd>
 
 Files: *
 Copyright: 2019 Robert Habermann <frennkie@gmail.com>

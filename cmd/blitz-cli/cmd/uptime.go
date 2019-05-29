@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/frennkie/blitzinfod/internal/data"
-	"github.com/frennkie/blitzinfod/internal/utils"
+	"github.com/frennkie/blitzd/internal/data"
+	"github.com/frennkie/blitzd/internal/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"

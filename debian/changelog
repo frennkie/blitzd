@@ -1,11 +1,11 @@
-blitzinfod (0.7) unstable; urgency=medium
+blitzd (0.7) unstable; urgency=medium
 
   * add lsb-release Metric
   * rename API to /api/v1/
 
  -- Robert Habermann <frennkie@gmail.com>  Tue, 28 May 2019 19:51:42 +0000
 
-blitzinfod (0.6) unstable; urgency=medium
+blitzd (0.6) unstable; urgency=medium
 
   * Another Proof-of-Concept Release
   * Now using debian packages
@@ -14,7 +14,7 @@ blitzinfod (0.6) unstable; urgency=medium
 
  -- Robert Habermann <frennkie@gmail.com>  Sun, 26 May 2019 17:15:35 +0000
 
-blitzinfod (0.1) unstable; urgency=medium
+blitzd (0.1) unstable; urgency=medium
 
   * Initial Release.
 

@@ -2,7 +2,7 @@ package serve
 
 import (
 	rice "github.com/GeertJohan/go.rice"
-	"github.com/frennkie/blitzinfod/internal/data"
+	"github.com/frennkie/blitzd/internal/data"
 	"html/template"
 	"log"
 	"net/http"

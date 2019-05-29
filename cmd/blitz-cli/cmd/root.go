@@ -17,10 +17,10 @@ const (
 
 var rootCmd = &cobra.Command{
 	Version: "1.2.3",
-	Use:     "blitzinfo-cli",
-	Short:   "blitzinfo-cli is the CLI for blitzinfod",
-	Long: `An easy way to access data from blitzinfod.
-                More info at: https://github.com/frennkie/blitzinfod`,
+	Use:     "blitz-cli",
+	Short:   "blitz-cli is the CLI for blitzd",
+	Long: `An easy way to access data from blitzd.
+                More info at: https://github.com/frennkie/blitzd`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Do Stuff Here
 		fmt.Println("Stuff")

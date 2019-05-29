@@ -1,11 +1,11 @@
-# Makefile for blitzinfod
+# Makefile for blitzd
 # Heavily inspired by https://github.com/hamishcunningham/wiringpi
 # Beware: This uses tab intend (instead of spaces)
 
 # vars #######################################################################
-VERSION := $(shell grep -e "^blitzinfod " debian/changelog | head -1 | cut -d "(" -f2 | cut -d ")" -f1)
-P=blitzinfod
-D=blitzinfod
+VERSION := $(shell grep -e "^blitzd " debian/changelog | head -1 | cut -d "(" -f2 | cut -d ")" -f1)
+P=blitzd
+D=blitzd
 PD=package/$(VERSION)
 
 PREFIX=/usr/local
@@ -17,10 +17,10 @@ DEB_BUILD_ARCH := $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 
 
 INSTALLED_FILES=\
-  $(DESTDIR)$(PREFIX)/bin/blitzinfod \
-  $(DESTDIR)$(PREFIX)/bin/blitzinfo-cli \
-  $(DESTDIR)/etc/blitzinfod.conf \
-  $(DESTDIR)/lib/systemd/system/blitzinfod.service
+  $(DESTDIR)$(PREFIX)/bin/blitzd \
+  $(DESTDIR)$(PREFIX)/bin/blitz-cli \
+  $(DESTDIR)/etc/blitzd.conf \
+  $(DESTDIR)/lib/systemd/system/blitzd.service
 
 
 PACKAGE_FILES=\
@@ -55,7 +55,7 @@ all: package dist fix-sign clean
 
 rice-embed-go:
 	@echo "### Rice: Embedding static assets"
-	cd cmd/blitzinfod/ && $(RICE_BIN) embed-go
+	cd cmd/blitzd/ && $(RICE_BIN) embed-go
 
 
 build: build-amd64 build-armhf
@@ -65,42 +65,42 @@ build: build-amd64 build-armhf
 # ARCH "amd64"
 build-amd64: rice-embed-go
 	@echo "### Build: amd64"
-	GOARCH=amd64 $(GOBUILD) -o build/amd64/blitzinfod cmd/blitzinfod/main.go cmd/blitzinfod/rice-box.go
-	GOARCH=amd64 $(GOBUILD) -o build/amd64/blitzinfo-cli cmd/blitzinfo-cli/main.go
+	GOARCH=amd64 $(GOBUILD) -o build/amd64/blitzd cmd/blitzd/main.go cmd/blitzd/rice-box.go
+	GOARCH=amd64 $(GOBUILD) -o build/amd64/blitz-cli cmd/blitz-cli/main.go
 
 
 # ARCH "armhf"
 build-armhf: rice-embed-go
 	@echo "### Build: armhf"
-	GOARCH=arm GOARM=7 $(GOBUILD) -o build/armhf/blitzinfod cmd/blitzinfod/main.go cmd/blitzinfod/rice-box.go
-	GOARCH=arm GOARM=7 $(GOBUILD) -o build/armhf/blitzinfo-cli cmd/blitzinfo-cli/main.go
+	GOARCH=arm GOARM=7 $(GOBUILD) -o build/armhf/blitzd cmd/blitzd/main.go cmd/blitzd/rice-box.go
+	GOARCH=arm GOARM=7 $(GOBUILD) -o build/armhf/blitz-cli cmd/blitz-cli/main.go
 
 
 dist:
 	@echo "### Dist"
-	cd build/amd64/ && tar czf ../../package/$(VERSION)/unstable/blitzinfod_$(VERSION)_amd64.tgz blitzinfod blitzinfo-cli
-	cd build/armhf/ && tar czf ../../package/$(VERSION)/unstable/blitzinfod_$(VERSION)_armhf.tgz blitzinfod blitzinfo-cli
+	cd build/amd64/ && tar czf ../../package/$(VERSION)/unstable/blitzd_$(VERSION)_amd64.tgz blitzd blitz-cli
+	cd build/armhf/ && tar czf ../../package/$(VERSION)/unstable/blitzd_$(VERSION)_armhf.tgz blitzd blitz-cli
 
 
 fix-sign:
 	@echo "### Fix Debian Signature for armhf"
-	cd package/$(VERSION)/unstable && debsign blitzinfod_$(VERSION)_armhf.changes -a armhf
+	cd package/$(VERSION)/unstable && debsign blitzd_$(VERSION)_armhf.changes -a armhf
 
 
 install:
 	@echo "### Install: Arch=$(DEB_HOST_ARCH)"
 	install -d -m 755 $(DESTDIR)$(PREFIX)/bin
 	install -d -m 755 $(DESTDIR)/etc
-	install -m 0755 build/$(DEB_HOST_ARCH)/blitzinfod 	$(DESTDIR)$(PREFIX)/bin
-	install -m 0755 build/$(DEB_HOST_ARCH)/blitzinfo-cli 	$(DESTDIR)$(PREFIX)/bin
-	install -m 0755 configs/blitzinfod.conf 	$(DESTDIR)/etc
+	install -m 0755 build/$(DEB_HOST_ARCH)/blitzd 	$(DESTDIR)$(PREFIX)/bin
+	install -m 0755 build/$(DEB_HOST_ARCH)/blitz-cli 	$(DESTDIR)$(PREFIX)/bin
+	install -m 0755 configs/blitzd.conf 	$(DESTDIR)/etc
 
 
 uninstall:
 	@echo "### Uninstall"
-	-rm -f $(DESTDIR)$(PREFIX)/bin/blitzinfod
-	-rm -f $(DESTDIR)$(PREFIX)/bin/blitzinfo-cli
-	-rm -f $(DESTDIR)/etc/blitzinfod.conf
+	-rm -f $(DESTDIR)$(PREFIX)/bin/blitzd
+	-rm -f $(DESTDIR)$(PREFIX)/bin/blitz-cli
+	-rm -f $(DESTDIR)/etc/blitzd.conf
 
 
 clean: distclean
@@ -111,8 +111,8 @@ clean: distclean
 distclean:
 	@echo "### Distclean (this is called by debuild)"
 	-rm -rf debian/.debhelper/
-	-rm -f debian/blitzinfod.substvars
-	-rm -rf debian/blitzinfod/
+	-rm -f debian/blitzd.substvars
+	-rm -rf debian/blitzd/
 	-rm -f debian/debhelper-build-stamp
 	-rm -f debian/files
 

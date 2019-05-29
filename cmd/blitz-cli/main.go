@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/frennkie/blitzinfod/cmd/blitzinfo-cli/cmd"
+	"github.com/frennkie/blitzd/cmd/blitz-cli/cmd"
 )
 
 func main() {
