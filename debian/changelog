@@ -1,3 +1,9 @@
+blitzd (0.8) unstable; urgency=medium
+
+  * rename to blitzd (and blitz-cli)
+
+ -- Robert Habermann <frennkie@gmail.com>  Wed, 29 May 2019 20:23:27 +0000
+
 blitzd (0.7) unstable; urgency=medium
 
   * add lsb-release Metric
