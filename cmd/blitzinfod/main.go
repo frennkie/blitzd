@@ -4,14 +4,17 @@ import (
 	"bufio"
 	"fmt"
 	rice "github.com/GeertJohan/go.rice"
+	"github.com/frennkie/blitzinfod/internal/api"
 	"github.com/frennkie/blitzinfod/internal/serve"
 	"github.com/frennkie/blitzinfod/internal/utils"
+	"github.com/mitchellh/go-homedir"
 	"github.com/shirou/gopsutil/host"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -21,6 +24,8 @@ import (
 )
 
 const (
+	defaultCfgFile      = "/etc/blitzinfod.toml"
+	defaultCfgFileWin32 = "C:\\blitzinfod.toml"
 	defaultRESTPort     = "7080"
 	defaultRESTHostPort = "localhost:" + defaultRESTPort
 
@@ -35,6 +40,7 @@ const (
 )
 
 var (
+	cfgFile    string
 	metrics    data.Cache
 	metricsMux sync.Mutex
 
@@ -250,6 +256,7 @@ func UpdateFileBarFunc(title string, absFilePath string) {
 
 }
 
+// TODO replace with /etc/issue
 func UpdateLsbRelease() {
 	title := "lsb-release"
 	absFilePath := "/etc/lsb-release"
@@ -304,11 +311,14 @@ func main() {
 		Long: `A service that retrieves and caches details about your RaspiBlitz.
                 More info at: https://github.com/frennkie/blitzinfod`,
 		Run: func(cmd *cobra.Command, args []string) {
-			// Do Stuff Here
 			blitzinfod()
-
 		},
 	}
+
+	cobra.OnInitialize(initConfig)
+
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.blitzinfod.cfg")
+	_ = viper.BindPFlag("config", rootCmd.PersistentFlags().Lookup("config"))
 
 	rootCmd.PersistentFlags().StringP("restHostPort", "R", defaultRESTHostPort, "REST: Listen on Host:Port")
 	_ = viper.BindPFlag("restHostPort", rootCmd.PersistentFlags().Lookup("restHostPort"))
@@ -319,6 +329,57 @@ func main() {
 	//viper.SetDefault("rpcHostPort", defaultRPCHostPort)
 
 	_ = rootCmd.Execute()
+}
+
+func initConfig() {
+	// If config is specified by flag then ONLY read that file.
+	// Otherwise read default (/etc/blitzinfod.toml) and - if it exists - merge any
+	// settings from file "blitzinfod.toml" in home directory!
+	if cfgFile != "" {
+		// Use config file from the flag.
+		viper.SetConfigFile(cfgFile)
+
+		if err := viper.ReadInConfig(); err != nil {
+			fmt.Println("Can't read config:", err)
+			os.Exit(1)
+		}
+
+	} else {
+		// First read default config from /etc (or C:\ on Win32)
+		if runtime.GOOS == "windows" {
+			viper.SetConfigFile(filepath.FromSlash(defaultCfgFileWin32))
+		} else {
+			viper.SetConfigFile(filepath.FromSlash(defaultCfgFile))
+		}
+
+		if err := viper.ReadInConfig(); err != nil {
+			fmt.Println("Can't read config:", err)
+			os.Exit(1)
+		}
+
+		// Find home directory.
+		home, err := homedir.Dir()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		customConfig := filepath.FromSlash(home + "/blitzinfod.toml")
+		if _, err := os.Stat(customConfig); os.IsNotExist(err) {
+			log.Printf("custom config file does not exist - skipping: %s", customConfig)
+			return
+		}
+
+		viper.SetConfigFile(filepath.FromSlash(customConfig))
+		if err := viper.MergeInConfig(); err != nil {
+			fmt.Println("Can't read config for merge:", err)
+			os.Exit(1)
+		}
+
+		log.Printf("Merged config file: %s", customConfig)
+
+	}
+
 }
 
 func blitzinfod() {
@@ -344,7 +405,8 @@ func blitzinfod() {
 
 	http.HandleFunc("/", serve.Root)
 	http.HandleFunc("/info/", serve.Info(&metrics))
-	http.HandleFunc(data.APIv1, serve.StaticApi(&metrics))
+	http.HandleFunc(data.APIv1, api.All(&metrics))
+	http.HandleFunc(data.APIv1+"config/", api.Config())
 
 	RESTHostPort := viper.GetString("RESTHostPort")
 	log.Printf("REST: Listening on host: http://%s", RESTHostPort)

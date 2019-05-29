@@ -1,4 +1,4 @@
-package serve
+package api
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func StaticApi(metrics *data.Cache) http.HandlerFunc {
+func All(metrics *data.Cache) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		js, err := json.Marshal(metrics)
