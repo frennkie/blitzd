@@ -25,6 +25,7 @@ import (
 const (
 	defaultCfgFile      = "/etc/blitzd.toml"
 	defaultCfgFileWin32 = "C:\\blitzd.toml"
+
 	defaultRESTPort     = "7080"
 	defaultRESTHostPort = "localhost:" + defaultRESTPort
 
@@ -308,7 +309,7 @@ func main() {
 		Use:     "blitzd",
 		Short:   "RaspiBlitz Daemon",
 		Long: `A service that retrieves and caches details about your RaspiBlitz.
-                More info at: https://github.com/frennkie/blitzd`,
+More info at: https://github.com/frennkie/blitzd`,
 		Run: func(cmd *cobra.Command, args []string) {
 			blitzd()
 		},

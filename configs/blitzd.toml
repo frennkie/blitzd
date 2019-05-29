@@ -1,10 +1,10 @@
-# blitzd.conf
+# blitzd.toml
 # This is the configuration file for blitzd.
 # The file format is TOML (https://github.com/toml-lang/toml).
 
 # Do not make any changes to this file because they would be overwritten on
 # the next update or removed on uninstall. Instead create a file in
-# ~/.blitzd.conf and override the values there.
+# ~/.blitzd.toml and override the values there.
 
 resthostport = "localhost:7080"
 

@@ -19,7 +19,7 @@ DEB_BUILD_ARCH := $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 INSTALLED_FILES=\
   $(DESTDIR)$(PREFIX)/bin/blitzd \
   $(DESTDIR)$(PREFIX)/bin/blitz-cli \
-  $(DESTDIR)/etc/blitzd.conf \
+  $(DESTDIR)/etc/blitzd.toml \
   $(DESTDIR)/lib/systemd/system/blitzd.service
 
 
@@ -93,14 +93,14 @@ install:
 	install -d -m 755 $(DESTDIR)/etc
 	install -m 0755 build/$(DEB_HOST_ARCH)/blitzd 	$(DESTDIR)$(PREFIX)/bin
 	install -m 0755 build/$(DEB_HOST_ARCH)/blitz-cli 	$(DESTDIR)$(PREFIX)/bin
-	install -m 0755 configs/blitzd.conf 	$(DESTDIR)/etc
+	install -m 0755 configs/blitzd.toml 	$(DESTDIR)/etc
 
 
 uninstall:
 	@echo "### Uninstall"
 	-rm -f $(DESTDIR)$(PREFIX)/bin/blitzd
 	-rm -f $(DESTDIR)$(PREFIX)/bin/blitz-cli
-	-rm -f $(DESTDIR)/etc/blitzd.conf
+	-rm -f $(DESTDIR)/etc/blitzd.toml
 
 
 clean: distclean
