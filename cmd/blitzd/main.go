@@ -218,8 +218,6 @@ func blitzd() {
 	// ToDo fix.. every sub url matches
 	http.HandleFunc(data.APIv1, api.All())
 	http.HandleFunc(data.APIv1+"config/", api.Config())
-	http.HandleFunc(data.APIv1+"lnd/", api.Lnd())
-	http.HandleFunc(data.APIv1+"system/", api.System())
 
 	RESTHostPort := viper.GetString("RESTHostPort")
 	log.Printf("REST: Listening on host: http://%s", RESTHostPort)
