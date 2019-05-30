@@ -2,7 +2,7 @@ package network
 
 import "fmt"
 
-func init() {
+func Init() {
 	fmt.Println("network init called")
 
 	go Nslookup()

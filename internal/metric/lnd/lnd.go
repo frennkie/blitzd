@@ -2,7 +2,7 @@ package lnd
 
 import "fmt"
 
-func init() {
+func Init() {
 	fmt.Println("lnd init called")
 
 	go Foo()
