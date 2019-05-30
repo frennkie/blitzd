@@ -21,16 +21,66 @@ import (
 )
 
 var (
-	BuildVersion = "0.8.15" // ToDo (semi-)automatically update this?!
-	BuildTime    = "0"      // ToDo set this a build time?!
+	// e.g. -ldflags '-X github.com/frennkie/blitzd/internal/blitzd.BuildTime=`date`'
+	BuildVersion   = "unset"
+	BuildTime      = "unset"
+	BuildGitCommit = "unset"
 )
 
 func Init() {
 	log.Printf("Starting version: %s, built at %s", BuildVersion, BuildTime)
+	log.Printf("Git Commit Hash: %s", BuildGitCommit)
 
-	//if _, err := os.Stat(customConfig); os.IsNotExist(err) {
-	//	log.Printf("custom config file does not exist - skipping: %s", customConfig)
-	//	return
+	if util.FileExists(viper.GetString("servercrt")) && util.FileExists(viper.GetString("serverkey")) {
+		log.Printf("Using Key-Pair: %s/%s", viper.GetString("servercrt"), viper.GetString("serverkey"))
+	} else {
+		log.Printf("Need to generate Key-Pair for: Server")
+		err := util.GenCertPair(viper.GetString("servercrt"), viper.GetString("serverkey"))
+		if err != nil {
+			log.Fatalf("Failed to generate Key-Pair for: Server: %s", err)
+		}
+	}
+
+	if util.FileExists(viper.GetString("clientcrt")) && util.FileExists(viper.GetString("clientkey")) {
+		log.Printf("Using Key-Pair: %s/%s", viper.GetString("clientcrt"), viper.GetString("clientkey"))
+	} else {
+		log.Printf("Need to generate Key-Pair for: Client")
+		err := util.GenCertPair(viper.GetString("clientcrt"), viper.GetString("clientkey"))
+		if err != nil {
+			log.Fatalf("Failed to generate Key-Pair for: Client: %s", err)
+		}
+	}
+
+	log.Printf("Client TLS Cert: %s", viper.GetString("client.tlscert"))
+	log.Printf("Client TLS Key: %s", viper.GetString("client.tlskey"))
+
+	log.Printf("Server TLS Cert: %s", viper.GetString("server.tlscert"))
+	log.Printf("Server TLS Key: %s", viper.GetString("server.tlskey"))
+
+	if viper.GetBool("server.http.enabled") {
+		log.Printf("HTTP Server: enabled (Port: %d)", viper.GetInt("server.http.port"))
+	} else {
+		log.Printf("HTTP Server: disabled")
+	}
+
+	if viper.GetBool("server.https.enabled") {
+		log.Printf("HTTPS Server: enabled (Port: %d)", viper.GetInt("server.https.port"))
+	} else {
+		log.Printf("HTTPS Server: disabled")
+	}
+
+	if viper.GetBool("server.rpc.enabled") {
+		log.Printf("RPC Server: enabled (Port: %d)", viper.GetInt("server.rpc.port"))
+	} else {
+		log.Printf("RPC Server: disabled")
+	}
+
+	if viper.GetBool("server.http.enabled") {
+		go serve.Welcome()
+	}
+
+	//if viper.GetBool("server.https.enabled") {
+	//	go serve.Info(&metric.Metrics)
 	//}
 
 	lnd.Init()
@@ -61,6 +111,8 @@ func Init() {
 
 	// now ListenAndServer
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s", RESTHostPort), nil))
+
+	//select{}
 
 }
 

@@ -60,6 +60,9 @@ func setDefaults() {
 	viper.SetDefault("restHostPort", defaultRESTHostPort)
 	viper.SetDefault("rpcHostPort", defaultRPCHostPort)
 
+	viper.SetDefault("server.http.enabled", true)
+	viper.SetDefault("server.http.port", 30080)
+
 }
 
 func InitConfig() {
@@ -85,7 +88,7 @@ func InitConfig() {
 	}
 
 	// check custom config
-	customCfgPath := filepath.FromSlash(BlitzdDir + "/" + defaultBlitzdConfigName)
+	customCfgPath := filepath.FromSlash(filepath.Join(BlitzdDir, defaultBlitzdConfigName))
 	if _, err := os.Stat(customCfgPath); os.IsNotExist(err) {
 		log.Printf("custom config file does not exist - skipping: %s", customCfgPath)
 	} else {
@@ -109,6 +112,7 @@ func InitConfig() {
 		fmt.Println("Config file changed: ", e.Name)
 	})
 
-}
+	// store copy of parsed/merged config
+	_ = viper.WriteConfigAs(filepath.Join(BlitzdDir, "saved.toml"))
 
-//_ = viper.WriteConfigAs(filepath.Join(defaultBlitzDir, "saved.toml"))
+}
