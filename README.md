@@ -30,3 +30,15 @@ foo
 ### Resources
 
 https://github.com/golang-standards/project-layout
+
+
+### Configuration
+
+Configuration values can be set in the following ways in the given order (the last will *win*):
+
+* `/etc/blitzd.toml`
+* `$HOME/.blitzd/config.toml` (this path can be customized on CLI)
+* `env` (system environment)
+* command line flags (where available)
+
+**Please note:** blitzd must be restarted after every configuration change!

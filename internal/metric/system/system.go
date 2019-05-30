@@ -5,7 +5,7 @@ import (
 	"github.com/frennkie/blitzd/internal/metric"
 )
 
-func init() {
+func Init() {
 	fmt.Println("system init called")
 
 	// set static Metrics
