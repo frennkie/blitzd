@@ -1,6 +1,8 @@
 package data
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	DefaultExpireTime = 300 * time.Second // 5 minutes

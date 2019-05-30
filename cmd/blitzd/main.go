@@ -6,10 +6,13 @@ import (
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/frennkie/blitzd/internal/api"
 	"github.com/frennkie/blitzd/internal/data"
+	"github.com/frennkie/blitzd/internal/metric"
+	_ "github.com/frennkie/blitzd/internal/metric/lnd"
+	_ "github.com/frennkie/blitzd/internal/metric/network"
+	_ "github.com/frennkie/blitzd/internal/metric/system"
 	"github.com/frennkie/blitzd/internal/serve"
-	"github.com/frennkie/blitzd/internal/utils"
+	"github.com/frennkie/blitzd/internal/util"
 	"github.com/mitchellh/go-homedir"
-	"github.com/shirou/gopsutil/host"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -18,8 +21,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"sync"
-	"time"
 )
 
 const (
@@ -40,194 +41,11 @@ const (
 )
 
 var (
-	cfgFile    string
-	metrics    data.Cache
-	metricsMux sync.Mutex
+	cfgFile string
 
 	buildVersion = "0.8.15"
 	buildTime    = "0"
 )
-
-func NewMetric(title string) data.Metric {
-	metric := data.Metric{}
-
-	metric.Title = title
-
-	metric.Interval = time.Duration(5 * time.Second).Seconds()
-	metric.Timeout = time.Duration(10 * time.Second).Seconds()
-
-	metric.Value = "N/A"
-	metric.Text = "N/A"
-	metric.Prefix = ""
-	metric.Suffix = ""
-	metric.Style = Purple
-
-	now := time.Now()
-	metric.UpdatedAt = now
-	metric.ExpiredAfter = now.Add(data.DefaultExpireTime)
-
-	return metric
-}
-
-func NewMetricStatic(title string) data.Metric {
-	metric := NewMetric(title)
-	metric.Kind = data.Static
-	metric.Interval = 0
-	metric.Timeout = 0
-	metric.ExpiredAfter = data.MaxTime
-	return metric
-}
-
-func NewMetricTimeBased(title string) data.Metric {
-	metric := NewMetric(title)
-	metric.Kind = data.TimeBased
-	return metric
-}
-
-func NewMetricEventBased(title string) data.Metric {
-	metric := NewMetric(title)
-	metric.Kind = data.EventBased
-	metric.Interval = 0
-	metric.ExpiredAfter = data.MaxTime
-	return metric
-}
-
-// SetOperatingSystem sets the "os" from "runtime.GOOS" and returns it as a "Metric"
-func SetOperatingSystem() data.Metric {
-	title := "os"
-	log.Printf("setting: %s", title)
-
-	metric := NewMetricStatic(title)
-	metric.Value = runtime.GOOS
-
-	return metric
-}
-
-func SetArch() data.Metric {
-	title := "arch"
-	log.Printf("setting: %s", title)
-
-	metric := NewMetricStatic(title)
-	metric.Value = runtime.GOARCH
-
-	return metric
-}
-
-// ToDo(frennkie) remove "Foo"
-func UpdateFoo() {
-	title := "foo"
-	log.Printf("starting goroutine: %s", title)
-
-	for {
-		foo := NewMetric(title)
-		foo.Value = "foo"
-
-		// update data in MetricCache
-		log.Printf("Updating: %s", foo.Title)
-		metricsMux.Lock()
-		metrics.Foo = foo
-		metricsMux.Unlock()
-
-		time.Sleep(time.Duration(foo.Interval) * time.Second)
-	}
-}
-
-func UpdateUptime() {
-	title := "uptime"
-	log.Printf("starting goroutine: %s", title)
-	for {
-		m := NewMetricTimeBased(title)
-		m.Interval = time.Duration(1 * time.Second).Seconds()
-
-		uptime, err := host.Uptime()
-		if err != nil {
-			log.Printf("Error Updating: %s - %s", m.Title, err)
-		} else {
-			m.Value = fmt.Sprintf("%d", uptime)
-
-			// update data in MetricCache
-			log.Printf("Updating: %s", m.Title)
-			metricsMux.Lock()
-			metrics.Uptime = m
-			metricsMux.Unlock()
-
-			time.Sleep(time.Duration(m.Interval) * time.Second)
-		}
-	}
-}
-
-func UpdateNslookup() {
-	title := "nslookup"
-	log.Printf("starting goroutine: %s", title)
-	for {
-		m := NewMetric(title)
-		m.Interval = time.Duration(60 * time.Second).Seconds()
-
-		cmdName := "nslookup"
-		var cmdArgs []string
-
-		if runtime.GOOS == "windows" {
-			cmdArgs = []string{"google.com"}
-		} else {
-			cmdArgs = []string{"google.com"}
-		}
-
-		result, err := utils.TimeoutExec(cmdName, cmdArgs)
-		if err != nil {
-			log.Printf("Error Updating: %s - %s", m.Title, err)
-		} else {
-			split := strings.Split(result, utils.GetNewLine())
-			last := strings.TrimSpace(split[len(split)-3])
-
-			m.Value = last
-
-			// update data in MetricCache
-			log.Printf("Updating: %s", m.Title)
-			metricsMux.Lock()
-			metrics.Nslookup = m
-			metricsMux.Unlock()
-
-		}
-		time.Sleep(time.Duration(m.Interval) * time.Second)
-	}
-}
-
-func UpdatePing() {
-	title := "ping"
-	log.Printf("starting goroutine: %s", title)
-	for {
-		m := NewMetric(title)
-		m.Interval = time.Duration(60 * time.Second).Seconds()
-
-		cmdName := "ping"
-		var cmdArgs []string
-
-		if runtime.GOOS == "windows" {
-			cmdArgs = []string{"-n", "2", "8.8.8.8"}
-		} else {
-			cmdArgs = []string{"-c", "2", "8.8.8.8"}
-		}
-
-		result, err := utils.TimeoutExec(cmdName, cmdArgs)
-		if err != nil {
-			log.Printf("Error Updating: %s - %s", m.Title, err)
-		} else {
-
-			split := strings.Split(result, utils.GetNewLine())
-			last := strings.TrimSpace(split[len(split)-2])
-
-			m.Value = last
-
-			// update data in MetricCache
-			log.Printf("Updating: %s", m.Title)
-			metricsMux.Lock()
-			metrics.Ping = m
-			metricsMux.Unlock()
-
-		}
-		time.Sleep(time.Duration(m.Interval) * time.Second)
-	}
-}
 
 func UpdateFileBar() {
 	title := "file-bar"
@@ -241,18 +59,18 @@ func UpdateFileBar() {
 	log.Printf("starting goroutine: %s (%s)", title, absFilePath)
 
 	UpdateFileBarFunc(title, absFilePath)
-	go utils.FileWatcher(title, absFilePath, UpdateFileBarFunc)
+	go util.FileWatcher(title, absFilePath, UpdateFileBarFunc)
 }
 
 func UpdateFileBarFunc(title string, absFilePath string) {
 	log.Printf("event-based update: %s (%s)", title, absFilePath)
-	m := NewMetricEventBased(title)
+	m := data.NewMetricEventBased(title)
 
 	m.Value = fmt.Sprintf("%s", "foobar")
 
-	metricsMux.Lock()
-	metrics.FileBar = m
-	metricsMux.Unlock()
+	metric.MetricsMux.Lock()
+	metric.Metrics.FileBar = m
+	metric.MetricsMux.Unlock()
 
 }
 
@@ -269,12 +87,12 @@ func UpdateLsbRelease() {
 	log.Printf("starting goroutine: %s (%s)", title, absFilePath)
 
 	UpdateLsbReleaseFunc(title, absFilePath)
-	go utils.FileWatcher(title, absFilePath, UpdateLsbReleaseFunc)
+	go util.FileWatcher(title, absFilePath, UpdateLsbReleaseFunc)
 }
 
 func UpdateLsbReleaseFunc(title string, absFilePath string) {
 	log.Printf("event-based update: %s (%s)", title, absFilePath)
-	m := NewMetricEventBased(title)
+	m := data.NewMetricEventBased(title)
 
 	file, err := os.Open(absFilePath)
 
@@ -297,9 +115,9 @@ func UpdateLsbReleaseFunc(title string, absFilePath string) {
 	tmp3 := strings.Replace(tmp2, "\"", "", -1)
 	m.Value = tmp3
 
-	metricsMux.Lock()
-	metrics.LsbRelease = m
-	metricsMux.Unlock()
+	metric.MetricsMux.Lock()
+	metric.Metrics.LsbRelease = m
+	metric.MetricsMux.Unlock()
 
 }
 
@@ -385,16 +203,6 @@ func initConfig() {
 func blitzd() {
 	log.Printf("Starting version: %s, built at %s", buildVersion, buildTime)
 
-	// set static Metrics
-	metrics.Arch = SetArch()
-	metrics.OperatingSystem = SetOperatingSystem()
-
-	// start Update of Metrics as goroutines
-	go UpdateFoo()
-	go UpdateUptime()
-	go UpdateNslookup()
-	go UpdatePing()
-
 	if runtime.GOOS != "windows" {
 		go UpdateLsbRelease()
 		go UpdateFileBar()
@@ -404,9 +212,14 @@ func blitzd() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))
 
 	http.HandleFunc("/", serve.Root)
-	http.HandleFunc("/info/", serve.Info(&metrics))
-	http.HandleFunc(data.APIv1, api.All(&metrics))
+	// ToDo fix metrics
+	http.HandleFunc("/info/", serve.Info(&metric.Metrics))
+
+	// ToDo fix.. every sub url matches
+	http.HandleFunc(data.APIv1, api.All())
 	http.HandleFunc(data.APIv1+"config/", api.Config())
+	http.HandleFunc(data.APIv1+"lnd/", api.Lnd())
+	http.HandleFunc(data.APIv1+"system/", api.System())
 
 	RESTHostPort := viper.GetString("RESTHostPort")
 	log.Printf("REST: Listening on host: http://%s", RESTHostPort)

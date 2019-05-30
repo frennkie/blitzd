@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/frennkie/blitzd/internal/data"
-	"github.com/frennkie/blitzd/internal/utils"
+	"github.com/frennkie/blitzd/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -23,7 +23,7 @@ var cmdArch = &cobra.Command{
 
 		myCache := new(data.Cache)
 
-		if err := utils.GetJson(url, myCache); err != nil {
+		if err := util.GetJson(url, myCache); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
