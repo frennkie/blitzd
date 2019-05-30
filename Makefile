@@ -4,9 +4,15 @@
 
 # vars #######################################################################
 VERSION := $(shell grep -e "^blitzd " debian/changelog | head -1 | cut -d "(" -f2 | cut -d ")" -f1)
+DATE := $(shell date --iso-8601=seconds)
 P=blitzd
 D=blitzd
 PD=package/$(VERSION)
+
+PKG=github.com/frennkie/blitzd
+BUILDFLAGS="-X $(PKG)/internal/blitzd.BuildTime=$(DATE) -X $(PKG)/internal/blitzd.BuildVersion=$(VERSION)"
+# BUILDFLAGS=" -X $(PKG)/internal/blitzd.BuildVersion=$(VERSION)"
+# BUILDFLAGS="-X $(PKG)/internal/blitzd.BuildVersion=0.47.11"
 
 PREFIX=/usr/local
 
@@ -57,6 +63,11 @@ rice-embed-go:
 	@echo "### Rice: Embedding static assets"
 	cd cmd/blitzd/ && $(RICE_BIN) embed-go
 
+	@echo "### Dirty-Hack!"
+	cd internal/blitzd/ && $(RICE_BIN) embed-go
+	mv internal/blitzd/rice-box.go cmd/blitzd/
+	sed -i 's/package blitzd/package main/' cmd/blitzd/rice-box.go
+
 
 build: build-amd64 build-armhf
 	@echo "### Build: all - done"
@@ -65,15 +76,15 @@ build: build-amd64 build-armhf
 # ARCH "amd64"
 build-amd64: rice-embed-go
 	@echo "### Build: amd64"
-	GOARCH=amd64 $(GOBUILD) -o build/amd64/blitzd cmd/blitzd/main.go cmd/blitzd/rice-box.go
-	GOARCH=amd64 $(GOBUILD) -o build/amd64/blitz-cli cmd/blitz-cli/main.go
+	GOARCH=amd64 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/amd64/blitzd cmd/blitzd/main.go cmd/blitzd/rice-box.go
+	GOARCH=amd64 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/amd64/blitz-cli cmd/blitz-cli/main.go
 
 
 # ARCH "armhf"
 build-armhf: rice-embed-go
 	@echo "### Build: armhf"
-	GOARCH=arm GOARM=7 $(GOBUILD) -o build/armhf/blitzd cmd/blitzd/main.go cmd/blitzd/rice-box.go
-	GOARCH=arm GOARM=7 $(GOBUILD) -o build/armhf/blitz-cli cmd/blitz-cli/main.go
+	GOARCH=arm GOARM=7 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/armhf/blitzd cmd/blitzd/main.go cmd/blitzd/rice-box.go
+	GOARCH=arm GOARM=7 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/armhf/blitz-cli cmd/blitz-cli/main.go
 
 
 dist:
