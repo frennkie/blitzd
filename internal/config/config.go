@@ -36,14 +36,14 @@ const (
 	defaultTLSClientCertFilename   = "blitzd_client.crt"
 	defaultTLSClientKeyFilename    = "blitzd_client.key"
 
-	defaultHttpPort     = "39080"
-	defaultHttpHostPort = "localhost:" + defaultHttpPort
+	defaultHttpHost = "localhost"
+	defaultHttpPort = 39080
 
-	defaultHttpsPort     = "39443"
-	defaultHttpsHostPort = "localhost:" + defaultHttpsPort
+	defaultHttpsHost = "localhost"
+	defaultHttpsPort = 39443
 
-	defaultRPCPort     = "39735"
-	defaultRPCHostPort = "localhost:" + defaultRPCPort
+	defaultRPCHost = "localhost"
+	defaultRPCPort = 39735
 )
 
 var (
@@ -76,16 +76,16 @@ func setDefaults() {
 	viper.SetDefault("client.tlscert", filepath.Join(BlitzdDir, defaultTLSClientCertFilename))
 	viper.SetDefault("client.tlskey", filepath.Join(BlitzdDir, defaultTLSClientKeyFilename))
 
-	viper.SetDefault("restHostPort", defaultHttpHostPort)
-	viper.SetDefault("rpcHostPort", defaultRPCHostPort)
-
 	viper.SetDefault("server.http.enabled", true)
-	viper.SetDefault("server.http.port", 30080)
+	viper.SetDefault("server.http.host", defaultHttpHost)
+	viper.SetDefault("server.http.port", defaultHttpPort)
 
 	viper.SetDefault("server.https.enabled", true)
-	viper.SetDefault("server.https.port", 30080)
+	viper.SetDefault("server.https.host", defaultHttpsHost)
+	viper.SetDefault("server.https.port", defaultHttpsPort)
 
 	viper.SetDefault("server.rpc.enabled", true)
+	viper.SetDefault("server.rpc.host", defaultRPCHost)
 	viper.SetDefault("server.rpc.port", defaultRPCPort)
 
 }
@@ -140,4 +140,34 @@ func InitConfig() {
 	// store copy of parsed/merged config
 	_ = viper.WriteConfigAs(filepath.Join(BlitzdDir, "saved.toml"))
 
+}
+
+func GetServerHttpHostPort() string {
+	host := viper.GetString("server.http.host")
+	port := fmt.Sprintf("%d", viper.GetInt("server.http.port"))
+	if host == "0.0.0.0" {
+		return host + ":" + port
+	} else {
+		return "localhost:" + port
+	}
+}
+
+func GetServerHttpsHostPort() string {
+	host := viper.GetString("server.https.host")
+	port := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
+	if host == "0.0.0.0" {
+		return host + ":" + port
+	} else {
+		return "localhost:" + port
+	}
+}
+
+func GetServerRpcHostPort() string {
+	host := viper.GetString("server.rpc.host")
+	port := fmt.Sprintf("%d", viper.GetInt("server.rpc.port"))
+	if host == "0.0.0.0" {
+		return host + ":" + port
+	} else {
+		return "localhost:" + port
+	}
 }

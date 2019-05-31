@@ -2,6 +2,7 @@ package serve
 
 import (
 	"fmt"
+	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/web"
 	"github.com/spf13/viper"
 	"log"
@@ -50,7 +51,7 @@ func Welcome() {
 
 	})
 
-	welcomeHostPort := fmt.Sprintf("localhost:%d", viper.GetInt("server.http.port"))
+	welcomeHostPort := config.GetServerHttpHostPort()
 	log.Printf("Starting Welcome Server (http://%s)", welcomeHostPort)
 	log.Fatal(http.ListenAndServe(welcomeHostPort, welcomeMux))
 }

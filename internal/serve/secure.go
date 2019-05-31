@@ -3,6 +3,7 @@ package serve
 import (
 	"fmt"
 	auth "github.com/abbot/go-http-auth"
+	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/web"
 	"github.com/shurcooL/httpfs/html/vfstemplate"
@@ -116,9 +117,8 @@ func Secure(metrics *data.Cache) {
 		}
 	}))
 
-	infoHostPort := fmt.Sprintf("localhost:%d", viper.GetInt("server.https.port"))
+	infoHostPort := config.GetServerHttpsHostPort()
 	log.Printf("Starting Secure Info/REST Server (https://%s)", infoHostPort)
-	//log.Fatal(http.ListenAndServe(infoHostPort, infoMux))
 	log.Fatal(http.ListenAndServeTLS(infoHostPort,
 		viper.GetString("server.tlscert"), viper.GetString("server.tlskey"), infoMux))
 }
