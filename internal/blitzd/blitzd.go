@@ -28,31 +28,30 @@ func Init() {
 	log.Printf("Starting version: %s, built at %s", BuildVersion, BuildTime)
 	log.Printf("Git Commit Hash: %s", BuildGitCommit)
 
-	if util.FileExists(viper.GetString("servercrt")) && util.FileExists(viper.GetString("serverkey")) {
-		log.Printf("Using Key-Pair: %s;%s", viper.GetString("servercrt"), viper.GetString("serverkey"))
+	if util.FileExists(viper.GetString("server.tlscert")) && util.FileExists(viper.GetString("server.tlskey")) {
+		log.Printf("Using Key-Pair: %s;%s", viper.GetString("server.tlscert"), viper.GetString("server.tlskey"))
 	} else {
-		log.Printf("Need to generate Key-Pair for: Server")
-		err := util.GenCertPair(viper.GetString("servercrt"), viper.GetString("serverkey"))
+		// ToDo add some checking (e.g. for existing files) here?!
+		log.Printf("Need to generate Key-Pair")
+		err := util.GenRootCaSignedClientServerCert(
+			viper.GetString("server.cacert"),
+			viper.GetString("server.tlscert"),
+			viper.GetString("server.tlskey"),
+			viper.GetString("client.tlscert"),
+			viper.GetString("client.tlskey"),
+		)
 		if err != nil {
 			log.Fatalf("Failed to generate Key-Pair for: Server: %s", err)
 		}
 	}
 
-	if util.FileExists(viper.GetString("clientcrt")) && util.FileExists(viper.GetString("clientkey")) {
-		log.Printf("Using Key-Pair: %s;%s", viper.GetString("clientcrt"), viper.GetString("clientkey"))
-	} else {
-		log.Printf("Need to generate Key-Pair for: Client")
-		err := util.GenCertPair(viper.GetString("clientcrt"), viper.GetString("clientkey"))
-		if err != nil {
-			log.Fatalf("Failed to generate Key-Pair for: Client: %s", err)
-		}
-	}
-
-	log.Printf("Client TLS Cert: %s", viper.GetString("client.tlscert"))
-	log.Printf("Client TLS Key: %s", viper.GetString("client.tlskey"))
-
+	log.Printf("Server Root CA: %s", viper.GetString("server.cacert"))
 	log.Printf("Server TLS Cert: %s", viper.GetString("server.tlscert"))
 	log.Printf("Server TLS Key: %s", viper.GetString("server.tlskey"))
+
+	log.Printf("Client Root CA: %s", viper.GetString("client.cacert"))
+	log.Printf("Client TLS Cert: %s", viper.GetString("client.tlscert"))
+	log.Printf("Client TLS Key: %s", viper.GetString("client.tlskey"))
 
 	if viper.GetBool("server.http.enabled") {
 		log.Printf("HTTP Server: enabled (Port: %d)", viper.GetInt("server.http.port"))

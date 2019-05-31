@@ -7,6 +7,7 @@ import (
 	"github.com/frennkie/blitzd/internal/util"
 	"github.com/frennkie/blitzd/web"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"log"
 	"net/http"
 )
@@ -58,7 +59,13 @@ var genCertCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Printf("gencert called")
 		//util.GenRootCa("ca.crt", "ca.key", "fobar", false)
-		err := util.GenRootCaSignedClientServerCert(false)
+		err := util.GenRootCaSignedClientServerCert(
+			viper.GetString("server.cacert"),
+			viper.GetString("server.tlscert"),
+			viper.GetString("server.tlskey"),
+			viper.GetString("client.tlscert"),
+			viper.GetString("client.tlskey"),
+		)
 		if err != nil {
 			log.Printf("an error occured")
 		}

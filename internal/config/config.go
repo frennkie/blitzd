@@ -20,11 +20,13 @@ const (
 
 	defaultEnvPrefix = "BLITZD"
 
-	defaultTLSServerCrtFilename = "blitzd_server.crt"
-	defaultTLSServerKeyFilename = "blitzd_server.key"
+	defaultTLSServerCaCertFilename = "blitzd_ca.crt"
+	defaultTLSServerCertFilename   = "blitzd_server.crt"
+	defaultTLSServerKeyFilename    = "blitzd_server.key"
 
-	defaultTLSClientCrtFilename = "blitzd_client.crt"
-	defaultTLSClientKeyFilename = "blitzd_client.key"
+	defaultTLSClientCaCertFilename = "blitzd_ca.crt"
+	defaultTLSClientCertFilename   = "blitzd_client.crt"
+	defaultTLSClientKeyFilename    = "blitzd_client.key"
 
 	defaultRESTPort     = "7080"
 	defaultRESTHostPort = "localhost:" + defaultRESTPort
@@ -52,10 +54,12 @@ func setDefaults() {
 	viper.SetDefault("customCfgPath", "")
 	viper.SetDefault("defaultCfgPath", "")
 
-	viper.SetDefault("servercrt", filepath.Join(BlitzdDir, defaultTLSServerCrtFilename))
-	viper.SetDefault("serverkey", filepath.Join(BlitzdDir, defaultTLSServerKeyFilename))
-	viper.SetDefault("clientcrt", filepath.Join(BlitzdDir, defaultTLSClientCrtFilename))
-	viper.SetDefault("clientkey", filepath.Join(BlitzdDir, defaultTLSClientKeyFilename))
+	viper.SetDefault("server.cacert", filepath.Join(BlitzdDir, defaultTLSServerCaCertFilename))
+	viper.SetDefault("server.tlscert", filepath.Join(BlitzdDir, defaultTLSServerCertFilename))
+	viper.SetDefault("server.tlskey", filepath.Join(BlitzdDir, defaultTLSServerKeyFilename))
+	viper.SetDefault("client.cacert", filepath.Join(BlitzdDir, defaultTLSClientCaCertFilename))
+	viper.SetDefault("client.tlscert", filepath.Join(BlitzdDir, defaultTLSClientCertFilename))
+	viper.SetDefault("client.tlskey", filepath.Join(BlitzdDir, defaultTLSClientKeyFilename))
 
 	viper.SetDefault("restHostPort", defaultRESTHostPort)
 	viper.SetDefault("rpcHostPort", defaultRPCHostPort)
