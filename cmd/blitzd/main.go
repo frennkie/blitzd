@@ -1,12 +1,30 @@
 package main
 
 import (
+	"fmt"
 	"github.com/frennkie/blitzd/internal/blitzd"
 	"github.com/frennkie/blitzd/internal/config"
+	"github.com/frennkie/blitzd/internal/util"
+	"github.com/frennkie/blitzd/web"
 	"github.com/spf13/cobra"
+	"log"
+	"net/http"
 )
 
-var RootCmd = &cobra.Command{
+func main() {
+	cobra.OnInitialize(config.InitConfig)
+
+	rootCmd.PersistentFlags().StringVar(&config.BlitzdDir, "dir",
+		config.DefaultBlitzdDir, "blitzd home directory (default is $HOME/.blitzd")
+
+	rootCmd.AddCommand(demoCmd)
+	rootCmd.AddCommand(genCertCmd)
+
+	_ = rootCmd.Execute()
+
+}
+
+var rootCmd = &cobra.Command{
 	Version: blitzd.BuildVersion + " (built: " + blitzd.BuildTime + ")",
 	Use:     "blitzd",
 	Short:   "RaspiBlitz Daemon",
@@ -17,12 +35,21 @@ More info at: https://github.com/frennkie/blitzd`,
 	},
 }
 
-func main() {
-	cobra.OnInitialize(config.InitConfig)
+func staticHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Handling Request for: %s", r.URL)
+	http.StripPrefix("/static/", http.FileServer(web.Assets))
+}
 
-	RootCmd.PersistentFlags().StringVar(&config.BlitzdDir, "dir",
-		config.DefaultBlitzdDir, "blitzd home directory (default is $HOME/.blitzd")
+var demoCmd = &cobra.Command{
+	Use:   "demo",
+	Short: "Demo Code",
+	Run: func(cmd *cobra.Command, args []string) {
+		http.Handle("/favicon.ico", http.FileServer(web.Assets))
+		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(web.Assets)))
 
-	_ = RootCmd.Execute()
+		log.Printf("HTTP Server: http://localhost:18080/")
+		log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:18080"), nil))
+	},
+}
 
 }

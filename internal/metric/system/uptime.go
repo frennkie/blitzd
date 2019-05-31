@@ -24,9 +24,10 @@ func Uptime() {
 
 			// update data in MetricCache
 			//log.Printf("Updating: %s", m.Title)
-			metric.SystemMux.Lock()
-			metric.System.Uptime = m
-			metric.SystemMux.Unlock()
+
+			metric.MetricsMux.Lock()
+			metric.Metrics.System.Uptime = m
+			metric.MetricsMux.Unlock()
 
 			time.Sleep(time.Duration(m.Interval) * time.Second)
 		}

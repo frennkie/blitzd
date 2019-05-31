@@ -2,17 +2,6 @@
 
 
 [[projects]]
-  digest = "1:07f7314344b2771963ada0b2a4a426c59d782dac227dcfff2499188a186446c0"
-  name = "github.com/GeertJohan/go.rice"
-  packages = [
-    ".",
-    "embedded",
-  ]
-  pruneopts = "UT"
-  revision = "cd53cd147dd5288bc2fb990fb983e58e301abb5e"
-  version = "v1.0.0"
-
-[[projects]]
   digest = "1:e92f5581902c345eb4ceffdcd4a854fb8f73cf436d47d837d1ec98ef1fe0a214"
   name = "github.com/StackExchange/wmi"
   packages = ["."]
@@ -44,14 +33,6 @@
   ]
   pruneopts = "UT"
   revision = "9e5f4b9a998d263e3ce9c56664a7816001ac8000"
-
-[[projects]]
-  digest = "1:8e8da6cc8cca12851d4e089d970a0f7387b3a6bcc8c459ff432213b03076a66d"
-  name = "github.com/daaku/go.zipexe"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "74d766ac1dde7458348221869a7d1e7e5fa0597e"
-  version = "v1.0.1"
 
 [[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
@@ -155,6 +136,26 @@
   revision = "bb4de0191aa41b5507caa14b0650cdbddcd9280b"
 
 [[projects]]
+  branch = "master"
+  digest = "1:5fcb3594ac8de58e44b8565b752f45ef32cb48e0e2500d7acc0c3595076c5ffe"
+  name = "github.com/shurcooL/httpfs"
+  packages = [
+    "html/vfstemplate",
+    "path/vfspath",
+    "vfsutil",
+  ]
+  pruneopts = "UT"
+  revision = "6a4d4a70508bfeac7afc814c5e4345e1c640b6b2"
+
+[[projects]]
+  branch = "master"
+  digest = "1:98450c86949b8cdc4637b80c1c686ca955e503d3fbae9296d1f49c532895d281"
+  name = "github.com/shurcooL/vfsgen"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "6a9ea43bcacdf716a5c1b38efff722c07adf0069"
+
+[[projects]]
   digest = "1:bb495ec276ab82d3dd08504bbc0594a65de8c3b22c6f2aaa92d05b73fbf3a82e"
   name = "github.com/spf13/afero"
   packages = [
@@ -251,12 +252,12 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/GeertJohan/go.rice",
-    "github.com/GeertJohan/go.rice/embedded",
     "github.com/btcsuite/btcutil",
     "github.com/fsnotify/fsnotify",
     "github.com/pkg/errors",
     "github.com/shirou/gopsutil/host",
+    "github.com/shurcooL/httpfs/html/vfstemplate",
+    "github.com/shurcooL/vfsgen",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
   ]

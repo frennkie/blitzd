@@ -8,9 +8,11 @@ import (
 func Init() {
 	fmt.Println("system init called")
 
-	// set static Metrics
-	metric.System.Arch = Arch()
-	metric.System.OperatingSystem = OperatingSystem()
+	// set static MetricsOld
+	metric.MetricsMux.Lock()
+	metric.Metrics.System.Arch = Arch()
+	metric.Metrics.System.OperatingSystem = OperatingSystem()
+	metric.MetricsMux.Unlock()
 
 	// start goroutine for event-based
 

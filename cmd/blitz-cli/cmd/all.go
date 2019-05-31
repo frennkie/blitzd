@@ -21,7 +21,7 @@ var cmdAll = &cobra.Command{
 		hostPort := viper.GetString("restHostPort")
 		url := "http://" + hostPort + data.APIv1
 
-		myCache := new(data.Cache)
+		myCache := new(data.CacheOld)
 
 		if err := util.GetJson(url, myCache); err != nil {
 			fmt.Println(err)

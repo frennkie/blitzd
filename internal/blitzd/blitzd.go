@@ -3,8 +3,6 @@ package blitzd
 import (
 	"bufio"
 	"fmt"
-	rice "github.com/GeertJohan/go.rice"
-	"github.com/frennkie/blitzd/internal/api"
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/internal/metric"
 	"github.com/frennkie/blitzd/internal/metric/lnd"
@@ -14,7 +12,6 @@ import (
 	"github.com/frennkie/blitzd/internal/util"
 	"github.com/spf13/viper"
 	"log"
-	"net/http"
 	"os"
 	"runtime"
 	"strings"
@@ -80,8 +77,7 @@ func Init() {
 	}
 
 	if viper.GetBool("server.https.enabled") {
-		go serve.Info(&metric.Metrics)
-		//go serve.Info()
+		go serve.Secure(&metric.Metrics)
 	}
 
 	lnd.Init()
@@ -93,16 +89,8 @@ func Init() {
 		go UpdateFileBar()
 	}
 
-	box := rice.MustFindBox("../../web/")
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))
-
-	http.HandleFunc("/", serve.Root)
 	// ToDo fix metrics
-	//http.HandleFunc("/info/", serve.Info(&metric.Metrics))
-
-	// ToDo fix.. every sub url matches
-	http.HandleFunc(data.APIv1, api.All())
-	http.HandleFunc(data.APIv1+"config/", api.Config())
+	//http.HandleFunc("/info/", serve.Secure(&metric.MetricsOld))
 
 	//if viper.GetBool("server.http.enabled") {
 	//	log.Printf("HTTP Server: enabled - http://localhost:%d/", viper.GetInt("server.http.port"))
@@ -136,9 +124,9 @@ func UpdateFileBarFunc(title string, absFilePath string) {
 
 	m.Value = fmt.Sprintf("%s", "foobar")
 
-	metric.MetricsMux.Lock()
-	metric.Metrics.FileBar = m
-	metric.MetricsMux.Unlock()
+	metric.MetricsOldMux.Lock()
+	metric.MetricsOld.FileBar = m
+	metric.MetricsOldMux.Unlock()
 
 }
 
@@ -183,8 +171,8 @@ func UpdateLsbReleaseFunc(title string, absFilePath string) {
 	tmp3 := strings.Replace(tmp2, "\"", "", -1)
 	m.Value = tmp3
 
-	metric.MetricsMux.Lock()
-	metric.Metrics.LsbRelease = m
-	metric.MetricsMux.Unlock()
+	metric.MetricsOldMux.Lock()
+	metric.MetricsOld.LsbRelease = m
+	metric.MetricsOldMux.Unlock()
 
 }

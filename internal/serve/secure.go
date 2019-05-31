@@ -2,15 +2,17 @@ package serve
 
 import (
 	"fmt"
-	rice "github.com/GeertJohan/go.rice"
 	"github.com/frennkie/blitzd/internal/data"
+	"github.com/frennkie/blitzd/web"
+	"github.com/shurcooL/httpfs/html/vfstemplate"
 	"github.com/spf13/viper"
+	"html/template"
 	"log"
 	"net/http"
 )
 
 /*
-func Info(metrics *data.Cache) http.HandlerFunc {
+func Secure(metrics *data.CacheOld) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		// find rice.Box
@@ -40,7 +42,7 @@ func Info(metrics *data.Cache) http.HandlerFunc {
 
 /*
 
-func Info(metrics *data.Cache) http.HandlerFunc {
+func Secure(metrics *data.CacheOld) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		infoMux := http.NewServeMux()
@@ -58,32 +60,10 @@ func Info(metrics *data.Cache) http.HandlerFunc {
 			//http.FileServer(box.HTTPBox())
 		})
 
-		// slash
-		infoMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			// find rice.Box
-			templateBox, err := rice.FindBox("../../web")
-			if err != nil {
-				log.Fatal(err)
-			}
-			// get file contents as string
-			templateString, err := templateBox.String("info.tmpl")
-			if err != nil {
-				log.Fatal(err)
-			}
-			// parse and execute the template
-			tmplMessage, err := template.New("info").Parse(templateString)
-			if err != nil {
-				log.Fatal(err)
-			}
 
-			if err := tmplMessage.Execute(w, metrics); err != nil {
-				log.Println(err.Error())
-				http.Error(w, http.StatusText(500), 500)
-			}
-		})
 
 		InfoHostPort := fmt.Sprintf("localhost:%d", viper.GetInt("server.https.port"))
-		log.Printf("Starting Info Server (http://%s)", InfoHostPort)
+		log.Printf("Starting Secure Server (http://%s)", InfoHostPort)
 		log.Fatal(http.ListenAndServeTLS(fmt.Sprintf("%s", InfoHostPort),
 			viper.GetString("server.tlscert"), viper.GetString("server.tlskey"), infoMux))
 	}
@@ -94,7 +74,7 @@ func Info(metrics *data.Cache) http.HandlerFunc {
 
 /*
 
-func Info(metrics *data.Cache) {
+func Secure(metrics *data.CacheOld) {
 
 	infoMux := http.NewServeMux()
 
@@ -143,7 +123,7 @@ func Info(metrics *data.Cache) {
 	})
 
 	infoHostPort := fmt.Sprintf("localhost:%d", viper.GetInt("server.https.port"))
-	log.Printf("Starting Info Server (http://%s)", infoHostPort)
+	log.Printf("Starting Secure Server (http://%s)", infoHostPort)
 	log.Fatal(http.ListenAndServe(infoHostPort, infoMux))
 }
 
@@ -151,26 +131,17 @@ func Info(metrics *data.Cache) {
 
 */
 
-func Info(metrics *data.Cache) {
+func Secure(metrics *data.Cache) {
 
 	infoMux := http.NewServeMux()
 
-	// favicon
-	infoMux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "../../web/favicon.png")
-	})
-
-	// static
-	infoMux.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
-		box := rice.MustFindBox("../../web/")
-		infoMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))
-		//http.ServeFile(w, r, "../../web/status.css")
-		//http.FileServer(box.HTTPBox())
-	})
+	// favicon && /static
+	infoMux.Handle("/favicon.ico", http.FileServer(web.Assets))
+	infoMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(web.Assets)))
 
 	infoMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// "/" matches everything - so only respond to exactly "/", "/info" and "/info/"
-		if r.URL.Path != "/" && r.URL.Path != "/info" && r.URL.Path != "/info/" {
+		if r.URL.Path != "/" && r.URL.Path != "/about" && r.URL.Path != "/about/" {
 			http.NotFound(w, r)
 			return
 		}
@@ -182,8 +153,11 @@ func Info(metrics *data.Cache) {
 <title>BlitzInfo Daemon</title>
 </head>
 <body>
+	<h1>About</h1>
 	<ul>
-		<li><a href="https://%s:%s/">Info Page 23</a></li>
+		<li>Me: %s</li>
+		<li><a href="%s/api/">REST API</a></li>
+		<li><a href="%s/info/">Info</a></li>
 	</ul>
 	<br>
 
@@ -197,10 +171,12 @@ func Info(metrics *data.Cache) {
 </body>
 </html>`
 
-		infoHost := "localhost"
-		infoPort := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
+		secureSchema := "http"
+		secureHost := "localhost"
+		securePort := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
+		secureBase := fmt.Sprintf("%s://%s:%s", secureSchema, secureHost, securePort)
 
-		values := []interface{}{infoHost, infoPort, r.RemoteAddr, r.URL.Path}
+		values := []interface{}{secureBase, secureBase, secureBase, r.RemoteAddr, r.URL.Path}
 
 		html := fmt.Sprintf(htmlRaw, values...)
 
@@ -208,7 +184,39 @@ func Info(metrics *data.Cache) {
 
 	})
 
+	infoMux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
+
+		htmlRaw := `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BlitzInfo Daemon - REST API</title>
+</head>
+<body>
+	<h1>REST API</h1>
+</body>
+</html>`
+
+		_, _ = fmt.Fprintf(w, "%s", fmt.Sprintf(htmlRaw))
+
+	})
+
+	infoMux.HandleFunc("/info/", func(w http.ResponseWriter, r *http.Request) {
+
+		infoTemplate, err := vfstemplate.ParseFiles(web.Assets, template.New("info.tmpl"), "info.tmpl")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := infoTemplate.Execute(w, metrics); err != nil {
+			log.Println(err.Error())
+			http.Error(w, http.StatusText(500), 500)
+		}
+	})
+
 	infoHostPort := fmt.Sprintf("localhost:%d", viper.GetInt("server.https.port"))
-	log.Printf("Starting Info Server (http://%s)", infoHostPort)
-	log.Fatal(http.ListenAndServe(infoHostPort, infoMux))
+	log.Printf("Starting Secure Info/REST Server (https://%s)", infoHostPort)
+	//log.Fatal(http.ListenAndServe(infoHostPort, infoMux))
+	log.Fatal(http.ListenAndServeTLS(infoHostPort,
+		viper.GetString("server.tlscert"), viper.GetString("server.tlskey"), infoMux))
 }

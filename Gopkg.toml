@@ -26,10 +26,6 @@
 
 
 [[constraint]]
-  name = "github.com/GeertJohan/go.rice"
-  version = "1.0.0"
-
-[[constraint]]
   name = "github.com/fsnotify/fsnotify"
   version = "1.4.7"
 

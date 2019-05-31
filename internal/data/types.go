@@ -3,6 +3,12 @@ package data
 import "time"
 
 type Cache struct {
+	Lnd     Lnd     `json:"lnd"`
+	Network Network `json:"network"`
+	System  System  `json:"system"`
+}
+
+type CacheOld struct {
 	OperatingSystem Metric `json:"os"`
 	Arch            Metric `json:"arch"`
 	Foo             Metric `json:"foo"`

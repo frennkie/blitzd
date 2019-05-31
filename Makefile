@@ -39,7 +39,6 @@ PACKAGE_FILES=\
 
 
 GOBUILD := go build -v
-RICE_BIN := /home/robbie/work/go/bin/rice
 
 
 # functions ##################################################################
@@ -59,14 +58,9 @@ nothing:
 all: package dist fix-sign clean
 
 
-rice-embed-go:
-	@echo "### Rice: Embedding static assets"
-	cd cmd/blitzd/ && $(RICE_BIN) embed-go
-
-	@echo "### Dirty-Hack!"
-	cd internal/blitzd/ && $(RICE_BIN) embed-go
-	mv internal/blitzd/rice-box.go cmd/blitzd/
-	sed -i 's/package blitzd/package main/' cmd/blitzd/rice-box.go
+vfsgen:
+	@echo "### VFS: Embedding static assets"
+	go generate web/web.go
 
 
 build: build-amd64 build-armhf
@@ -74,16 +68,16 @@ build: build-amd64 build-armhf
 
 
 # ARCH "amd64"
-build-amd64: rice-embed-go
+build-amd64: vfsgen
 	@echo "### Build: amd64"
-	GOARCH=amd64 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/amd64/blitzd cmd/blitzd/main.go cmd/blitzd/rice-box.go
+	GOARCH=amd64 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/amd64/blitzd cmd/blitzd/main.go
 	GOARCH=amd64 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/amd64/blitz-cli cmd/blitz-cli/main.go
 
 
 # ARCH "armhf"
-build-armhf: rice-embed-go
+build-armhf: vfsgen
 	@echo "### Build: armhf"
-	GOARCH=arm GOARM=7 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/armhf/blitzd cmd/blitzd/main.go cmd/blitzd/rice-box.go
+	GOARCH=arm GOARM=7 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/armhf/blitzd cmd/blitzd/main.go
 	GOARCH=arm GOARM=7 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/armhf/blitz-cli cmd/blitz-cli/main.go
 
 

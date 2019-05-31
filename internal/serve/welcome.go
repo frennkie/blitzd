@@ -2,6 +2,7 @@ package serve
 
 import (
 	"fmt"
+	"github.com/frennkie/blitzd/web"
 	"github.com/spf13/viper"
 	"log"
 	"net/http"
@@ -9,6 +10,10 @@ import (
 
 func Welcome() {
 	welcomeMux := http.NewServeMux()
+
+	welcomeMux.Handle("/favicon.ico", http.FileServer(web.Assets))
+	welcomeMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(web.Assets)))
+
 	// "/" matches everything
 	welcomeMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
@@ -20,7 +25,7 @@ func Welcome() {
 </head>
 <body>
 	<ul>
-		<li><a href="https://%s:%s/">Info Page</a></li>
+		<li><a href="https://%s:%s/">Secure Page</a></li>
 	</ul>
 	<br>
 
