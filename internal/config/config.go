@@ -28,8 +28,11 @@ const (
 	defaultTLSClientCertFilename   = "blitzd_client.crt"
 	defaultTLSClientKeyFilename    = "blitzd_client.key"
 
-	defaultRESTPort     = "7080"
-	defaultRESTHostPort = "localhost:" + defaultRESTPort
+	defaultHttpPort     = "38080"
+	defaultHttpHostPort = "localhost:" + defaultHttpPort
+
+	defaultHttpsPort     = "38443"
+	defaultHttpsHostPort = "localhost:" + defaultHttpsPort
 
 	defaultRPCPort     = "39735"
 	defaultRPCHostPort = "localhost:" + defaultRPCPort
@@ -61,11 +64,17 @@ func setDefaults() {
 	viper.SetDefault("client.tlscert", filepath.Join(BlitzdDir, defaultTLSClientCertFilename))
 	viper.SetDefault("client.tlskey", filepath.Join(BlitzdDir, defaultTLSClientKeyFilename))
 
-	viper.SetDefault("restHostPort", defaultRESTHostPort)
+	viper.SetDefault("restHostPort", defaultHttpHostPort)
 	viper.SetDefault("rpcHostPort", defaultRPCHostPort)
 
 	viper.SetDefault("server.http.enabled", true)
 	viper.SetDefault("server.http.port", 30080)
+
+	viper.SetDefault("server.https.enabled", true)
+	viper.SetDefault("server.https.port", 30080)
+
+	viper.SetDefault("server.rpc.enabled", true)
+	viper.SetDefault("server.rpc.port", defaultRPCPort)
 
 }
 

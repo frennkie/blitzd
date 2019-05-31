@@ -55,12 +55,14 @@ func Init() {
 
 	if viper.GetBool("server.http.enabled") {
 		log.Printf("HTTP Server: enabled (Port: %d)", viper.GetInt("server.http.port"))
+		go serve.Welcome()
 	} else {
 		log.Printf("HTTP Server: disabled")
 	}
 
 	if viper.GetBool("server.https.enabled") {
 		log.Printf("HTTPS Server: enabled (Port: %d)", viper.GetInt("server.https.port"))
+		go serve.Secure(&metric.Metrics)
 	} else {
 		log.Printf("HTTPS Server: disabled")
 	}
@@ -69,14 +71,6 @@ func Init() {
 		log.Printf("RPC Server: enabled (Port: %d)", viper.GetInt("server.rpc.port"))
 	} else {
 		log.Printf("RPC Server: disabled")
-	}
-
-	if viper.GetBool("server.http.enabled") {
-		go serve.Welcome()
-	}
-
-	if viper.GetBool("server.https.enabled") {
-		go serve.Secure(&metric.Metrics)
 	}
 
 	lnd.Init()
@@ -90,13 +84,6 @@ func Init() {
 
 	// ToDo fix metrics
 	//http.HandleFunc("/info/", serve.Secure(&metric.MetricsOld))
-
-	//if viper.GetBool("server.http.enabled") {
-	//	log.Printf("HTTP Server: enabled - http://localhost:%d/", viper.GetInt("server.http.port"))
-	//
-	//	// now ListenAndServer
-	//	log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:%d", viper.GetInt("server.http.port")), nil))
-	//}
 
 	select {}
 

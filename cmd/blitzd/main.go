@@ -36,11 +36,6 @@ More info at: https://github.com/frennkie/blitzd`,
 	},
 }
 
-func staticHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Handling Request for: %s", r.URL)
-	http.StripPrefix("/static/", http.FileServer(web.Assets))
-}
-
 var demoCmd = &cobra.Command{
 	Use:   "demo",
 	Short: "Demo Code",
