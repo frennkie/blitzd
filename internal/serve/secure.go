@@ -12,7 +12,11 @@ import (
 	"net/http"
 )
 
-func Secret(user, realm string) string {
+// this currently uses basic auth.
+// Mutual TLS could also be an idea:
+// https://venilnoronha.io/a-step-by-step-guide-to-mtls-in-go
+
+func secret(user, realm string) string {
 	if user == viper.GetString("admin.username") {
 		// password is "changeme"
 
@@ -23,7 +27,7 @@ func Secret(user, realm string) string {
 
 func Secure(metrics *data.Cache) {
 
-	authenticator := auth.NewBasicAuthenticator("example.com", Secret)
+	authenticator := auth.NewBasicAuthenticator("example.com", secret)
 
 	infoMux := http.NewServeMux()
 
