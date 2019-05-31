@@ -2,6 +2,7 @@ package serve
 
 import (
 	"fmt"
+	auth "github.com/abbot/go-http-auth"
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/web"
 	"github.com/shurcooL/httpfs/html/vfstemplate"
@@ -11,127 +12,18 @@ import (
 	"net/http"
 )
 
-/*
-func Secure(metrics *data.CacheOld) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func Secret(user, realm string) string {
+	if user == viper.GetString("admin.username") {
+		// password is "changeme"
 
-		// find rice.Box
-		templateBox, err := rice.FindBox("../../web")
-		if err != nil {
-			log.Fatal(err)
-		}
-		// get file contents as string
-		templateString, err := templateBox.String("info.tmpl")
-		if err != nil {
-			log.Fatal(err)
-		}
-		// parse and execute the template
-		tmplMessage, err := template.New("info").Parse(templateString)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if err := tmplMessage.Execute(w, metrics); err != nil {
-			log.Println(err.Error())
-			http.Error(w, http.StatusText(500), 500)
-		}
+		return viper.GetString("admin.password")
 	}
+	return ""
 }
-
-*/
-
-/*
-
-func Secure(metrics *data.CacheOld) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-		infoMux := http.NewServeMux()
-
-		// favicon
-		infoMux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, "../../web/favicon.png")
-		})
-
-		// static
-		infoMux.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
-			//box := rice.MustFindBox("../../web/")
-			//http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))
-			http.ServeFile(w, r, "../../web/status.css")
-			//http.FileServer(box.HTTPBox())
-		})
-
-
-
-		InfoHostPort := fmt.Sprintf("localhost:%d", viper.GetInt("server.https.port"))
-		log.Printf("Starting Secure Server (http://%s)", InfoHostPort)
-		log.Fatal(http.ListenAndServeTLS(fmt.Sprintf("%s", InfoHostPort),
-			viper.GetString("server.tlscert"), viper.GetString("server.tlskey"), infoMux))
-	}
-
-}
-
-*/
-
-/*
-
-func Secure(metrics *data.CacheOld) {
-
-	infoMux := http.NewServeMux()
-
-	// favicon
-	infoMux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "../../web/favicon.png")
-	})
-
-	// static
-	infoMux.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
-		box := rice.MustFindBox("../../web/")
-		infoMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))
-		//http.ServeFile(w, r, "../../web/status.css")
-		//http.FileServer(box.HTTPBox())
-	})
-
-	// slash
-	infoMux.HandleFunc("/info/", func(w http.ResponseWriter, r *http.Request) {
-		// find rice.Box
-		templateBox, err := rice.FindBox("../../web")
-		if err != nil {
-			log.Fatal(err)
-		}
-		// get file contents as string
-		templateString, err := templateBox.String("info.tmpl")
-		if err != nil {
-			log.Fatal(err)
-		}
-		// parse and execute the template
-		tmplMessage, err := template.New("info").Parse(templateString)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if err := tmplMessage.Execute(w, metrics); err != nil {
-			log.Println(err.Error())
-			http.Error(w, http.StatusText(500), 500)
-		}
-	})
-
-	infoMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusNotFound)
-
-		_, _ = io.WriteString(w, "Not found\n")
-	})
-
-	infoHostPort := fmt.Sprintf("localhost:%d", viper.GetInt("server.https.port"))
-	log.Printf("Starting Secure Server (http://%s)", infoHostPort)
-	log.Fatal(http.ListenAndServe(infoHostPort, infoMux))
-}
-
-
-
-*/
 
 func Secure(metrics *data.Cache) {
+
+	authenticator := auth.NewBasicAuthenticator("example.com", Secret)
 
 	infoMux := http.NewServeMux()
 
@@ -171,7 +63,7 @@ func Secure(metrics *data.Cache) {
 </body>
 </html>`
 
-		secureSchema := "http"
+		secureSchema := "https"
 		secureHost := "localhost"
 		securePort := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
 		secureBase := fmt.Sprintf("%s://%s:%s", secureSchema, secureHost, securePort)
@@ -184,7 +76,7 @@ func Secure(metrics *data.Cache) {
 
 	})
 
-	infoMux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
+	infoMux.HandleFunc("/api/", authenticator.Wrap(func(w http.ResponseWriter, r *auth.AuthenticatedRequest) {
 
 		htmlRaw := `<!DOCTYPE html>
 <html lang="en">
@@ -194,14 +86,20 @@ func Secure(metrics *data.Cache) {
 </head>
 <body>
 	<h1>REST API</h1>
+	<h2>Hello: %s</h2>
 </body>
 </html>`
 
-		_, _ = fmt.Fprintf(w, "%s", fmt.Sprintf(htmlRaw))
+		values := []interface{}{r.Username}
 
-	})
+		html := fmt.Sprintf(htmlRaw, values...)
 
-	infoMux.HandleFunc("/info/", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = fmt.Fprintf(w, "%s", html)
+
+	}))
+
+	//infoMux.HandleFunc("/info/", func(w http.ResponseWriter, r *http.Request) {
+	infoMux.HandleFunc("/info/", authenticator.Wrap(func(w http.ResponseWriter, r *auth.AuthenticatedRequest) {
 
 		infoTemplate, err := vfstemplate.ParseFiles(web.Assets, template.New("info.tmpl"), "info.tmpl")
 		if err != nil {
@@ -212,7 +110,7 @@ func Secure(metrics *data.Cache) {
 			log.Println(err.Error())
 			http.Error(w, http.StatusText(500), 500)
 		}
-	})
+	}))
 
 	infoHostPort := fmt.Sprintf("localhost:%d", viper.GetInt("server.https.port"))
 	log.Printf("Starting Secure Info/REST Server (https://%s)", infoHostPort)

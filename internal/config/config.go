@@ -18,7 +18,13 @@ const (
 	defaultCfgFile      = "/etc/blitzd.toml"
 	defaultCfgFileWin32 = "C:\\blitzd.toml" // Win32 mostly used for development
 
-	defaultBlitzdAlias = "MyBlitz42"
+	// default admin user is: admin
+	// default password for admin is: changeme
+	// run this to create a new password: htpasswd -n -B admin
+	defaultAdminUsername = "admin"
+	defaultAdminPassword = "$2y$05$nNUGiiHDDric6W/Zml05Ku0Ij04mf62NTd/JRWQya8uxLpoGR3yJS"
+
+	defaultAlias = "MyBlitz42"
 
 	defaultEnvPrefix = "BLITZD"
 
@@ -30,10 +36,10 @@ const (
 	defaultTLSClientCertFilename   = "blitzd_client.crt"
 	defaultTLSClientKeyFilename    = "blitzd_client.key"
 
-	defaultHttpPort     = "38080"
+	defaultHttpPort     = "39080"
 	defaultHttpHostPort = "localhost:" + defaultHttpPort
 
-	defaultHttpsPort     = "38443"
+	defaultHttpsPort     = "39443"
 	defaultHttpsHostPort = "localhost:" + defaultHttpsPort
 
 	defaultRPCPort     = "39735"
@@ -59,7 +65,9 @@ func setDefaults() {
 	viper.SetDefault("customCfgPath", "")
 	viper.SetDefault("defaultCfgPath", "")
 
-	viper.SetDefault("alias", defaultBlitzdAlias)
+	viper.SetDefault("alias", defaultAlias)
+	viper.SetDefault("admin.password", defaultAdminPassword)
+	viper.SetDefault("admin.username", defaultAdminUsername)
 
 	viper.SetDefault("server.cacert", filepath.Join(BlitzdDir, defaultTLSServerCaCertFilename))
 	viper.SetDefault("server.tlscert", filepath.Join(BlitzdDir, defaultTLSServerCertFilename))

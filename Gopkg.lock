@@ -10,6 +10,14 @@
   version = "1.0.0"
 
 [[projects]]
+  digest = "1:c455036fb289e0cbce632c7f3a23f10141edb7ccbb75906d56775d3b356b826a"
+  name = "github.com/abbot/go-http-auth"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "0ddd408d5d60ea76e320503cc7dd091992dee608"
+  version = "v0.4.0"
+
+[[projects]]
   branch = "master"
   digest = "1:cf86fc0d8b52a62ee62ee82277505e26140cd0c81675f534681a33fac988adba"
   name = "github.com/btcsuite/btcd"
@@ -208,11 +216,23 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1fa95129371749532e2ac8b93a0016c549ebe77f25c6fad296b6ee271fae2fd6"
+  digest = "1:18d47088fc7be72c956fd81ce2385e35f6019c7747038aef1bb995101cb1faa0"
   name = "golang.org/x/crypto"
-  packages = ["ripemd160"]
+  packages = [
+    "bcrypt",
+    "blowfish",
+    "ripemd160",
+  ]
   pruneopts = "UT"
   revision = "22d7a77e9e5f409e934ed268692e56707cd169e5"
+
+[[projects]]
+  branch = "master"
+  digest = "1:76ee51c3f468493aff39dbacc401e8831fbb765104cbf613b89bef01cf4bad70"
+  name = "golang.org/x/net"
+  packages = ["context"]
+  pruneopts = "UT"
+  revision = "f3200d17e092c607f615320ecaad13d87ad9a2b3"
 
 [[projects]]
   branch = "master"
@@ -252,6 +272,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/abbot/go-http-auth",
     "github.com/btcsuite/btcutil",
     "github.com/fsnotify/fsnotify",
     "github.com/pkg/errors",
