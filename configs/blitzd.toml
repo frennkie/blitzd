@@ -6,7 +6,65 @@
 # the next update or removed on uninstall. Instead create a file in
 # ~/.blitzd.toml and override the values there.
 
-resthostport = "localhost:7080"
+# alias:
+alias = "some-alias"
 
-[network]
-interface = "eth0"
+# admin settings
+[admin]
+  # password: used for HTTP Basic Auth on Web Interface
+  #password = "$2y$05$nNUGiiHDDric6W/Zml05Ku0Ij04mf62NTd/JRWQya8uxLpoGR3yJS"
+
+  # username: used for HTTP Basic Auth on Web Interface
+  #username = "admin"
+
+# client settings
+[client]
+  # cacert:
+  #cacert = "~/.blitzd/blitzd_ca.crt"
+
+  # tlscert:
+  #tlscert = ""
+
+  # tlskey:
+  #tlskey = ""
+
+# server settings
+[server]
+  # cacert:
+  #cacert = ""
+
+  # tlscert:
+  #tlscert = ""
+
+  # tlskey:
+  #tlskey = ""
+
+  [server.http]
+    # enabled: run this server - or don't
+    #enabled = true
+
+    # host: either "localhost" or "0.0.0.0"
+    #host = "localhost"
+
+    # port:
+    #port = 39080
+
+  [server.https]
+    # enabled: run this server - or don't
+    #enabled = true
+
+    # host: either "localhost" or "0.0.0.0"
+    #host = "localhost"
+
+    # port:
+    #port = 39443
+
+  [server.rpc]
+    # enabled: run this server - or don't
+    #enabled = true
+
+    # host: either "localhost" or "0.0.0.0"
+    #host = "localhost"
+
+    # port:
+    #port = 39735
