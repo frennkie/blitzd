@@ -18,6 +18,8 @@ const (
 	defaultCfgFile      = "/etc/blitzd.toml"
 	defaultCfgFileWin32 = "C:\\blitzd.toml" // Win32 mostly used for development
 
+	defaultBlitzdAlias = "MyBlitz42"
+
 	defaultEnvPrefix = "BLITZD"
 
 	defaultTLSServerCaCertFilename = "blitzd_ca.crt"
@@ -56,6 +58,8 @@ func setDefaults() {
 
 	viper.SetDefault("customCfgPath", "")
 	viper.SetDefault("defaultCfgPath", "")
+
+	viper.SetDefault("alias", defaultBlitzdAlias)
 
 	viper.SetDefault("server.cacert", filepath.Join(BlitzdDir, defaultTLSServerCaCertFilename))
 	viper.SetDefault("server.tlscert", filepath.Join(BlitzdDir, defaultTLSServerCertFilename))

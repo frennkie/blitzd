@@ -35,19 +35,19 @@ var (
 	serialNumberLimit = new(big.Int).Lsh(big.NewInt(1), 128)
 )
 
-func GenRootCaSignedClientServerCert(rootCaCertPath, serverCertPath, serverKeyPath, clientCertPath, clientKeyPath string) error {
+func GenRootCaSignedClientServerCert(alias, rootCaCertPath, serverCertPath, serverKeyPath, clientCertPath, clientKeyPath string) error {
 	// generate Root CA and save as Public Key as PEM. Private Key is never saved!
-	rootCaCert, rootCaPriv := GenRootCa()
+	rootCaCert, rootCaPriv := GenRootCa(alias)
 	rootCaCertPem := pem.EncodeToMemory(pemBlockForCert(rootCaCert))
 	_ = exportCert(rootCaCert, rootCaCertPath)
 	rootCaPrivPem := pem.EncodeToMemory(pemBlockForKey(rootCaPriv))
 
 	// create signed certificate for "server" and "client" with RootCA public/private key from memory
-	signedServerCert, signedServerCertPriv := GenCaSignedServerCert(rootCaCertPem, rootCaPrivPem)
+	signedServerCert, signedServerCertPriv := GenCaSignedServerCert(alias, rootCaCertPem, rootCaPrivPem)
 	_ = exportCert(signedServerCert, serverCertPath)
 	_ = exportKey(signedServerCertPriv, serverKeyPath)
 
-	signedClientCert, signedClientCertPriv := GenCaSignedClientCert(rootCaCertPem, rootCaPrivPem)
+	signedClientCert, signedClientCertPriv := GenCaSignedClientCert(alias, rootCaCertPem, rootCaPrivPem)
 	_ = exportCert(signedClientCert, clientCertPath)
 	_ = exportKey(signedClientCertPriv, clientKeyPath)
 
@@ -136,7 +136,7 @@ func genPrivKey(ecdsaCurve string) *ecdsa.PrivateKey {
 	return priv
 }
 
-func GenRootCa() ([]byte, *ecdsa.PrivateKey) {
+func GenRootCa(alias string) ([]byte, *ecdsa.PrivateKey) {
 
 	now := time.Now()
 	validUntil := now.Add(autogenCertValidity)
@@ -155,9 +155,9 @@ func GenRootCa() ([]byte, *ecdsa.PrivateKey) {
 	ca := &x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
-			Organization: []string{"Blitzd Ephemeral CA"},
+			Organization: []string{"Blitzd Ephemeral CA (" + alias + ")"},
 			Country:      []string{"DE"},
-			CommonName:   "Blitzd Ephemeral CA",
+			CommonName:   "Blitzd Ephemeral CA (" + alias + ")",
 		},
 		NotBefore:             now.AddDate(0, 0, -1),
 		NotAfter:              validUntil,
@@ -181,7 +181,7 @@ func GenRootCa() ([]byte, *ecdsa.PrivateKey) {
 
 }
 
-func GenCaSignedServerCert(certPEMBlock, keyPEMBlock []byte) ([]byte, *ecdsa.PrivateKey) {
+func GenCaSignedServerCert(alias string, certPEMBlock, keyPEMBlock []byte) ([]byte, *ecdsa.PrivateKey) {
 
 	// Load CA
 	catls, err := tls.X509KeyPair(certPEMBlock, keyPEMBlock)
@@ -261,9 +261,9 @@ func GenCaSignedServerCert(certPEMBlock, keyPEMBlock []byte) ([]byte, *ecdsa.Pri
 	cert := &x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
-			Organization: []string{"Blitzd Leaf Certificates"},
+			Organization: []string{"Blitzd Certificates (" + alias + ")"},
 			Country:      []string{"DE"},
-			CommonName:   "Blitzd",
+			CommonName:   "Blitzd (" + alias + ")",
 		},
 		NotBefore:    now.AddDate(0, 0, -1),
 		NotAfter:     validUntil,
@@ -284,7 +284,7 @@ func GenCaSignedServerCert(certPEMBlock, keyPEMBlock []byte) ([]byte, *ecdsa.Pri
 	return signedCert, priv
 }
 
-func GenCaSignedClientCert(certPEMBlock, keyPEMBlock []byte) ([]byte, *ecdsa.PrivateKey) {
+func GenCaSignedClientCert(alias string, certPEMBlock, keyPEMBlock []byte) ([]byte, *ecdsa.PrivateKey) {
 
 	// Load CA
 	catls, err := tls.X509KeyPair(certPEMBlock, keyPEMBlock)
@@ -314,7 +314,7 @@ func GenCaSignedClientCert(certPEMBlock, keyPEMBlock []byte) ([]byte, *ecdsa.Pri
 	cert := &x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
-			Organization: []string{"Blitzd Leaf Certificates"},
+			Organization: []string{"Blitzd Certificates (" + alias + ")"},
 			Country:      []string{"DE"},
 			CommonName:   "Blitzd Client",
 		},

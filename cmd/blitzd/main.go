@@ -55,6 +55,7 @@ var genCertCmd = &cobra.Command{
 		log.Printf("gencert called")
 		//util.GenRootCa("ca.crt", "ca.key", "fobar", false)
 		err := util.GenRootCaSignedClientServerCert(
+			viper.GetString("alias"),
 			viper.GetString("server.cacert"),
 			viper.GetString("server.tlscert"),
 			viper.GetString("server.tlskey"),

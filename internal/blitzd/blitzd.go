@@ -34,6 +34,7 @@ func Init() {
 		// ToDo add some checking (e.g. for existing files) here?!
 		log.Printf("Need to generate Key-Pair")
 		err := util.GenRootCaSignedClientServerCert(
+			viper.GetString("alias"),
 			viper.GetString("server.cacert"),
 			viper.GetString("server.tlscert"),
 			viper.GetString("server.tlskey"),
@@ -54,14 +55,14 @@ func Init() {
 	log.Printf("Client TLS Key: %s", viper.GetString("client.tlskey"))
 
 	if viper.GetBool("server.http.enabled") {
-		log.Printf("HTTP Server: enabled (Port: %d)", viper.GetInt("server.http.port"))
+		log.Printf("HTTP Server: enabled (http://localhost:%d)", viper.GetInt("server.http.port"))
 		go serve.Welcome()
 	} else {
 		log.Printf("HTTP Server: disabled")
 	}
 
 	if viper.GetBool("server.https.enabled") {
-		log.Printf("HTTPS Server: enabled (Port: %d)", viper.GetInt("server.https.port"))
+		log.Printf("HTTPS Server: enabled (https://localhost:%d)", viper.GetInt("server.https.port"))
 		go serve.Secure(&metric.Metrics)
 	} else {
 		log.Printf("HTTPS Server: disabled")
