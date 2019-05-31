@@ -52,4 +52,17 @@ var demoCmd = &cobra.Command{
 	},
 }
 
+var genCertCmd = &cobra.Command{
+	Use:   "gencert",
+	Short: "Generate Certificates",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.Printf("gencert called")
+		//util.GenRootCa("ca.crt", "ca.key", "fobar", false)
+		err := util.GenRootCaSignedClientServerCert(false)
+		if err != nil {
+			log.Printf("an error occured")
+		}
+		log.Printf("success!")
+
+	},
 }

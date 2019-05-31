@@ -9,11 +9,14 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/rsa"
+	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/big"
 	"net"
 	"os"
@@ -168,4 +171,195 @@ func GenCertPair(certFile, keyFile string) error {
 
 	fmt.Printf("Done generating TLS certificates")
 	return nil
+}
+
+func GenRootCaSignedClientServerCert(storeRootCaKey bool) error {
+
+	rootCaCertPath := "ca.crt"
+	rootCaKeyPath := "ca.key"
+
+	clientCertPath := "client.crt"
+	clientKeyPath := "client.key"
+
+	serverCertPath := "server.crt"
+	serverKeyPath := "server.key"
+
+	// get Root CA and store and save as PEM.
+	rootCaCert, rootCaPriv := GenRootCa()
+	rootCaCertPem := pem.EncodeToMemory(pemBlockForCert(rootCaCert))
+	_ = exportCert(rootCaCert, rootCaCertPath)
+	rootCaPrivPem := pem.EncodeToMemory(pemBlockForKey(rootCaPriv))
+	// Only store key if requested.
+	if storeRootCaKey {
+		_ = exportKey(rootCaPriv, rootCaKeyPath)
+	}
+
+	// create signed certificate for "client" and "server" with RootCA from memory
+	signedClientCert, signedClientCertPriv := GenCaSignedCert(rootCaCertPem, rootCaPrivPem, "Blitzd Client")
+	_ = exportCert(signedClientCert, clientCertPath)
+	_ = exportKey(signedClientCertPriv, clientKeyPath)
+
+	signedServerCert, signedServerCertPriv := GenCaSignedCert(rootCaCertPem, rootCaPrivPem, "Blitzd")
+	_ = exportCert(signedServerCert, serverCertPath)
+	_ = exportKey(signedServerCertPriv, serverKeyPath)
+
+	return nil
+}
+
+func publicKey(priv interface{}) interface{} {
+	switch k := priv.(type) {
+	case *rsa.PrivateKey:
+		return &k.PublicKey
+	case *ecdsa.PrivateKey:
+		return &k.PublicKey
+	default:
+		return nil
+	}
+}
+
+func pemBlockForCert(cert []byte) *pem.Block {
+	return &pem.Block{Type: "CERTIFICATE", Bytes: cert}
+}
+
+func pemBlockForKey(priv *ecdsa.PrivateKey) *pem.Block {
+	b, err := x509.MarshalECPrivateKey(priv)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Unable to marshal ECDSA private key: %v", err)
+		os.Exit(2)
+	}
+	return &pem.Block{Type: "EC PRIVATE KEY", Bytes: b}
+}
+
+func exportCert(cert []byte, path string) error {
+
+	// Public key
+	certOut, err := os.Create(path)
+	if err != nil {
+		log.Printf("failed to open "+path+" for writing: %s", err)
+		return err
+	}
+
+	_ = pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: cert})
+	_ = certOut.Close()
+	log.Print("written " + path + "\n")
+
+	return nil
+}
+
+func exportKey(key *ecdsa.PrivateKey, path string) error {
+
+	// Private key
+	keyOut, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		log.Printf("failed to open "+path+" for writing: %s", err)
+		return err
+	}
+
+	_ = pem.Encode(keyOut, pemBlockForKey(key))
+	_ = keyOut.Close()
+	log.Print("written " + path + "\n")
+
+	return nil
+
+}
+
+func genPrivKey(ecdsaCurve string) *ecdsa.PrivateKey {
+
+	var priv *ecdsa.PrivateKey
+	var err error
+	switch ecdsaCurve {
+	case "":
+		priv, err = ecdsa.GenerateKey(elliptic.P224(), rand.Reader)
+	case "P256":
+		priv, err = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	case "P384":
+		priv, err = ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
+	case "P521":
+		priv, err = ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+	default:
+		_, _ = fmt.Fprintf(os.Stderr, "Unrecognized elliptic curve: %q", ecdsaCurve)
+		os.Exit(1)
+	}
+	if err != nil {
+		log.Printf("failed to generate private key: %s", err)
+		panic(err)
+	}
+
+	return priv
+}
+
+// ToDo delete?!
+func Check(certPath string, keyPath string) error {
+	if _, err := os.Stat(certPath); os.IsNotExist(err) {
+		return err
+	} else if _, err := os.Stat(keyPath); os.IsNotExist(err) {
+		return err
+	}
+	return nil
+}
+
+func GenRootCa() ([]byte, *ecdsa.PrivateKey) {
+	ca := &x509.Certificate{
+		SerialNumber: big.NewInt(1653),
+		Subject: pkix.Name{
+			Organization: []string{"Blitzd Ephemeral CA"},
+			Country:      []string{"DE"},
+		},
+		NotBefore:             time.Now(),
+		NotAfter:              time.Now().AddDate(0, 6, 0),
+		IsCA:                  true,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+		BasicConstraintsValid: true,
+		MaxPathLen:            0,
+		MaxPathLenZero:        true,
+	}
+
+	priv := genPrivKey("P256")
+
+	signedRootCaCert, err := x509.CreateCertificate(rand.Reader, ca, ca, publicKey(priv), priv)
+	if err != nil {
+		log.Printf("Failed to create Root CA certificate: %s", err)
+		panic(err)
+	}
+
+	return signedRootCaCert, priv
+
+}
+
+func GenCaSignedCert(certPEMBlock, keyPEMBlock []byte, commonName string) ([]byte, *ecdsa.PrivateKey) {
+
+	// Load CA
+	catls, err := tls.X509KeyPair(certPEMBlock, keyPEMBlock)
+	if err != nil {
+		panic(err)
+	}
+	ca, err := x509.ParseCertificate(catls.Certificate[0])
+	if err != nil {
+		panic(err)
+	}
+
+	// Prepare certificate
+	cert := &x509.Certificate{
+		SerialNumber: big.NewInt(1658),
+		Subject: pkix.Name{
+			Organization: []string{"Blitzd Leaf Certificates"},
+			Country:      []string{"DE"},
+			CommonName:   commonName,
+		},
+		NotBefore:    time.Now(),
+		NotAfter:     time.Now().AddDate(10, 0, 0),
+		SubjectKeyId: []byte{1, 2, 3, 4, 6},
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		KeyUsage:     x509.KeyUsageDigitalSignature,
+	}
+
+	priv := genPrivKey("P256")
+
+	signedCert, err := x509.CreateCertificate(rand.Reader, cert, ca, publicKey(priv), catls.PrivateKey)
+	if err != nil {
+		panic(err)
+	}
+
+	return signedCert, priv
 }
