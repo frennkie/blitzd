@@ -1,3 +1,15 @@
+blitzd (0.9) unstable; urgency=medium
+
+  * a lot
+  * replace rice with vfsgen
+  * clearly separate three servers
+    * http - basic instructions only
+    * https - info page
+    * rpc - gRPC interface
+  * add basic auth for https
+
+ -- Robert Habermann <frennkie@gmail.com>  Fri, 31 May 2019 15:52:00 +0000
+
 blitzd (0.8) unstable; urgency=medium
 
   * rename to blitzd (and blitz-cli)
