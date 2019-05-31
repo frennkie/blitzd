@@ -32,7 +32,7 @@ func Init() {
 	log.Printf("Git Commit Hash: %s", BuildGitCommit)
 
 	if util.FileExists(viper.GetString("servercrt")) && util.FileExists(viper.GetString("serverkey")) {
-		log.Printf("Using Key-Pair: %s/%s", viper.GetString("servercrt"), viper.GetString("serverkey"))
+		log.Printf("Using Key-Pair: %s;%s", viper.GetString("servercrt"), viper.GetString("serverkey"))
 	} else {
 		log.Printf("Need to generate Key-Pair for: Server")
 		err := util.GenCertPair(viper.GetString("servercrt"), viper.GetString("serverkey"))
@@ -42,7 +42,7 @@ func Init() {
 	}
 
 	if util.FileExists(viper.GetString("clientcrt")) && util.FileExists(viper.GetString("clientkey")) {
-		log.Printf("Using Key-Pair: %s/%s", viper.GetString("clientcrt"), viper.GetString("clientkey"))
+		log.Printf("Using Key-Pair: %s;%s", viper.GetString("clientcrt"), viper.GetString("clientkey"))
 	} else {
 		log.Printf("Need to generate Key-Pair for: Client")
 		err := util.GenCertPair(viper.GetString("clientcrt"), viper.GetString("clientkey"))
@@ -79,9 +79,10 @@ func Init() {
 		go serve.Welcome()
 	}
 
-	//if viper.GetBool("server.https.enabled") {
-	//	go serve.Info(&metric.Metrics)
-	//}
+	if viper.GetBool("server.https.enabled") {
+		go serve.Info(&metric.Metrics)
+		//go serve.Info()
+	}
 
 	lnd.Init()
 	network.Init()
@@ -97,22 +98,20 @@ func Init() {
 
 	http.HandleFunc("/", serve.Root)
 	// ToDo fix metrics
-	http.HandleFunc("/info/", serve.Info(&metric.Metrics))
+	//http.HandleFunc("/info/", serve.Info(&metric.Metrics))
 
 	// ToDo fix.. every sub url matches
 	http.HandleFunc(data.APIv1, api.All())
 	http.HandleFunc(data.APIv1+"config/", api.Config())
 
-	RESTHostPort := viper.GetString("RESTHostPort")
-	log.Printf("REST: Listening on host: http://%s", RESTHostPort)
+	//if viper.GetBool("server.http.enabled") {
+	//	log.Printf("HTTP Server: enabled - http://localhost:%d/", viper.GetInt("server.http.port"))
+	//
+	//	// now ListenAndServer
+	//	log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:%d", viper.GetInt("server.http.port")), nil))
+	//}
 
-	//rpcHostPort := viper.GetString("rpcHostPort")
-	//log.Printf("RPC: Listening on host: gRPC://%s", rpcHostPort)
-
-	// now ListenAndServer
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s", RESTHostPort), nil))
-
-	//select{}
+	select {}
 
 }
 

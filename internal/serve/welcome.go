@@ -8,8 +8,8 @@ import (
 )
 
 func Welcome() {
-
 	welcomeMux := http.NewServeMux()
+	// "/" matches everything
 	welcomeMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
 		htmlRaw := `<!DOCTYPE html>
