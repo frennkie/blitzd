@@ -36,14 +36,9 @@ const (
 	defaultTLSClientCertFilename   = "blitzd_client.crt"
 	defaultTLSClientKeyFilename    = "blitzd_client.key"
 
-	defaultHttpHost = "localhost"
-	defaultHttpPort = 39080
-
-	defaultHttpsHost = "localhost"
+	defaultHttpPort  = 39080
 	defaultHttpsPort = 39443
-
-	defaultRPCHost = "localhost"
-	defaultRPCPort = 39735
+	defaultRPCPort   = 39735
 )
 
 var (
@@ -77,15 +72,15 @@ func setDefaults() {
 	viper.SetDefault("client.tlskey", filepath.Join(BlitzdDir, defaultTLSClientKeyFilename))
 
 	viper.SetDefault("server.http.enabled", true)
-	viper.SetDefault("server.http.host", defaultHttpHost)
+	viper.SetDefault("server.http.localhost_only", true)
 	viper.SetDefault("server.http.port", defaultHttpPort)
 
 	viper.SetDefault("server.https.enabled", true)
-	viper.SetDefault("server.https.host", defaultHttpsHost)
+	viper.SetDefault("server.https.localhost_only", true)
 	viper.SetDefault("server.https.port", defaultHttpsPort)
 
 	viper.SetDefault("server.rpc.enabled", true)
-	viper.SetDefault("server.rpc.host", defaultRPCHost)
+	viper.SetDefault("server.rpc.localhost_only", true)
 	viper.SetDefault("server.rpc.port", defaultRPCPort)
 
 }
@@ -143,31 +138,31 @@ func InitConfig() {
 }
 
 func GetServerHttpHostPort() string {
-	host := viper.GetString("server.http.host")
+	localhostOnly := viper.GetBool("server.http.localhost_only")
 	port := fmt.Sprintf("%d", viper.GetInt("server.http.port"))
-	if host == "0.0.0.0" {
-		return host + ":" + port
-	} else {
+	if localhostOnly {
 		return "localhost:" + port
+	} else {
+		return ":" + port
 	}
 }
 
 func GetServerHttpsHostPort() string {
-	host := viper.GetString("server.https.host")
+	localhostOnly := viper.GetBool("server.https.localhost_only")
 	port := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
-	if host == "0.0.0.0" {
-		return host + ":" + port
-	} else {
+	if localhostOnly {
 		return "localhost:" + port
+	} else {
+		return ":" + port
 	}
 }
 
 func GetServerRpcHostPort() string {
-	host := viper.GetString("server.rpc.host")
+	localhostOnly := viper.GetBool("server.rpc.localhost_only")
 	port := fmt.Sprintf("%d", viper.GetInt("server.rpc.port"))
-	if host == "0.0.0.0" {
-		return host + ":" + port
-	} else {
+	if localhostOnly {
 		return "localhost:" + port
+	} else {
+		return ":" + port
 	}
 }

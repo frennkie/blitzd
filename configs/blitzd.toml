@@ -43,8 +43,8 @@ alias = "some-alias"
     # enabled: run this server - or don't
     #enabled = true
 
-    # host: either "localhost" or "0.0.0.0"
-    #host = "localhost"
+    # localhost_only: whether to listen on localhost only or on all interfaces
+    #localhost_only = true
 
     # port:
     #port = 39080
@@ -53,8 +53,8 @@ alias = "some-alias"
     # enabled: run this server - or don't
     #enabled = true
 
-    # host: either "localhost" or "0.0.0.0"
-    #host = "localhost"
+    # localhost_only: whether to listen on localhost only or on all interfaces
+    #localhost_only = true
 
     # port:
     #port = 39443
@@ -63,8 +63,8 @@ alias = "some-alias"
     # enabled: run this server - or don't
     #enabled = true
 
-    # host: either "localhost" or "0.0.0.0"
-    #host = "localhost"
+    # localhost_only: whether to listen on localhost only or on all interfaces
+    #localhost_only = true
 
     # port:
     #port = 39735
