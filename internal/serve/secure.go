@@ -3,7 +3,6 @@ package serve
 import (
 	"fmt"
 	auth "github.com/abbot/go-http-auth"
-	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/web"
 	"github.com/shurcooL/httpfs/html/vfstemplate"
@@ -54,8 +53,8 @@ func Secure(metrics *data.Cache) {
 	<h1>About</h1>
 	<ul>
 		<li>Me: %s</li>
-		<li><a href="%s/api/">REST API</a></li>
-		<li><a href="%s/info/">Info</a></li>
+		<li><a href="/foobar/">Foobar</a></li>
+		<li><a href="/info/">Info</a></li>
 	</ul>
 	<br>
 
@@ -74,7 +73,7 @@ func Secure(metrics *data.Cache) {
 		securePort := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
 		secureBase := fmt.Sprintf("%s://%s:%s", secureSchema, secureHost, securePort)
 
-		values := []interface{}{secureBase, secureBase, secureBase, r.RemoteAddr, r.URL.Path}
+		values := []interface{}{secureBase, r.RemoteAddr, r.URL.Path}
 
 		html := fmt.Sprintf(htmlRaw, values...)
 
@@ -82,7 +81,7 @@ func Secure(metrics *data.Cache) {
 
 	})
 
-	infoMux.HandleFunc("/api/", authenticator.Wrap(func(w http.ResponseWriter, r *auth.AuthenticatedRequest) {
+	infoMux.HandleFunc("/foobar/", authenticator.Wrap(func(w http.ResponseWriter, r *auth.AuthenticatedRequest) {
 
 		htmlRaw := `<!DOCTYPE html>
 <html lang="en">
@@ -91,7 +90,6 @@ func Secure(metrics *data.Cache) {
 <title>BlitzInfo Daemon - REST API</title>
 </head>
 <body>
-	<h1>REST API</h1>
 	<h2>Hello: %s</h2>
 </body>
 </html>`
@@ -118,8 +116,29 @@ func Secure(metrics *data.Cache) {
 		}
 	}))
 
-	infoHostPort := config.GetServerHttpsHostPort()
-	log.Printf("Starting Secure Info/REST Server (https://%s)", infoHostPort)
-	log.Fatal(http.ListenAndServeTLS(infoHostPort,
-		viper.GetString("server.tlscert"), viper.GetString("server.tlskey"), infoMux))
+	port := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
+
+	if viper.GetBool("server.https.localhost_only") {
+		log.Printf("Starting Secure Info Server: https://localhost:%s) / https://127.0.0.1:%s / https://[::1]:%s", port, port, port)
+		go func() {
+
+			log.Fatal(http.ListenAndServeTLS("127.0.0.1:"+port,
+				viper.GetString("server.tlscert"), viper.GetString("server.tlskey"), infoMux))
+		}()
+
+		go func() {
+
+			log.Fatal(http.ListenAndServeTLS("[::1]:"+port,
+				viper.GetString("server.tlscert"), viper.GetString("server.tlskey"), infoMux))
+		}()
+
+	} else {
+		go func() {
+			// ToDo: Get proper any here
+			log.Printf("Starting Secure Info Server (https://ANY:%s)", port)
+			log.Fatal(http.ListenAndServeTLS(":"+port,
+				viper.GetString("server.tlscert"), viper.GetString("server.tlskey"), infoMux))
+		}()
+	}
+
 }

@@ -42,3 +42,14 @@ Configuration values can be set in the following ways in the given order (the la
 * command line flags (where available)
 
 **Please note:** blitzd must be restarted after every configuration change!
+
+
+Interface
+
+Für Cache -> Set (der macht auch den Lock)
+
+-> Atomic .. Singleton
+
+memstore
+
+
