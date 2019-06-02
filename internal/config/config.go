@@ -113,6 +113,18 @@ func InitConfig() {
 	}
 
 	// check custom config
+	if _, err := os.Stat(filepath.FromSlash(BlitzdDir)); os.IsNotExist(err) {
+		// BlitzdDir does not exist
+		err = os.MkdirAll(filepath.FromSlash(BlitzdDir), 0700)
+		if err != nil {
+			fmt.Println("Dir does not exist and can't be created: ", BlitzdDir)
+			fmt.Println("err: ", err)
+			os.Exit(1)
+		}
+	} else {
+
+	}
+
 	customCfgPath := filepath.FromSlash(filepath.Join(BlitzdDir, defaultBlitzdConfigName))
 	if _, err := os.Stat(customCfgPath); os.IsNotExist(err) {
 		log.Printf("custom config file does not exist - skipping: %s", customCfgPath)

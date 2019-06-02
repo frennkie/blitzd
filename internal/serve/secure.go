@@ -16,6 +16,7 @@ import (
 // this currently uses basic auth.
 // Mutual TLS could also be an idea:
 // https://venilnoronha.io/a-step-by-step-guide-to-mtls-in-go
+// http://www.levigross.com/2015/11/21/mutual-tls-authentication-in-go/
 
 func secret(user, realm string) string {
 	if user == viper.GetString("admin.username") {

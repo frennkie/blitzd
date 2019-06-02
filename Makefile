@@ -172,6 +172,7 @@ help:
 	@echo 'Makefile for infoblitz Debian Packaging                       '
 	@echo '                                                              '
 	@echo 'Usage:                                                        '
+	@echo '   make all                       complete packaging process  '
 	@echo '   make install                   installs infoblitz          '
 	@echo '   make uninstall                 removes infoblitz           '
 	@echo '   make build                     build                       '
@@ -192,5 +193,5 @@ help:
 
 
 # phonies
-.PHONY: install uninstall build clean list package-armhf package-amd64
-.PHONY: package-info package-purge package-clean package-version
+.PHONY: all install uninstall build clean list package-armhf package-amd64
+.PHONY: package-move package-info package-purge package-clean package-version
