@@ -26,25 +26,27 @@ func Welcome() {
 		securePort := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
 
 		remoteAddrPort := r.RemoteAddr
-		remoteAddr := strings.Split(remoteAddrPort, ":")
-		clientIsRemote := remoteAddr[0] != "127.0.0.1"
+		remoteAddrPortSplit := strings.Split(remoteAddrPort, ":")
+		remoteAddrSplit := remoteAddrPortSplit[:len(remoteAddrPortSplit)-1]
+		remoteAddr := strings.Join(remoteAddrSplit, ":")
+		log.Printf("remoteAddr: %s", remoteAddr)
+
+		clientIsRemote := remoteAddr != "127.0.0.1" && remoteAddr != "[::1]"
 
 		var localAddr string
 
 		if clientIsRemote {
+			log.Printf("Client is Remote!")
 			switch colonCount := strings.Count(r.Host, ":"); colonCount {
 			case 0:
 				log.Printf("ColonCount: %d", colonCount)
 				panic("Somthing went wrong")
 			case 1:
-				log.Printf("ColonCount: %d", colonCount)
-				log.Printf("IPv4")
+				//log.Printf("IPv4")
 				rHostSplit := strings.Split(r.Host, ":")
 				localAddr = rHostSplit[0]
-
 			default:
-				log.Printf("ColonCount: %d", colonCount)
-				log.Printf("IPv6")
+				//log.Printf("IPv6")
 				rHostSplit := strings.Split(r.Host, ":")
 				rHostSplit = rHostSplit[:len(rHostSplit)-1]
 				localAddr = strings.Join(rHostSplit, ":")
@@ -52,7 +54,7 @@ func Welcome() {
 
 			baseUrls = append(baseUrls, "https://"+localAddr+":"+securePort+"/")
 		} else {
-
+			log.Printf("Client is Local!")
 			log.Printf(r.Host)
 			if viper.GetBool("server.https.localhost_only") {
 				baseUrls = util.GetBaseUrls("https", securePort, true, false)
