@@ -28,7 +28,7 @@ func secret(user, realm string) string {
 
 func Secure(metrics *data.Cache) {
 
-	authenticator := auth.NewBasicAuthenticator("example.com", secret)
+	authenticator := auth.NewBasicAuthenticator("RaspiBlitz Secure Server", secret)
 
 	infoMux := http.NewServeMux()
 

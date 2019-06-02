@@ -29,9 +29,28 @@ func Welcome() {
 		remoteAddr := strings.Split(remoteAddrPort, ":")
 		clientIsRemote := remoteAddr[0] != "127.0.0.1"
 
+		var localAddr string
+
 		if clientIsRemote {
-			localAddr := strings.Split(r.Host, ":")
-			baseUrls = append(baseUrls, "https://"+localAddr[0]+":"+securePort+"/")
+			switch colonCount := strings.Count(r.Host, ":"); colonCount {
+			case 0:
+				log.Printf("ColonCount: %d", colonCount)
+				panic("Somthing went wrong")
+			case 1:
+				log.Printf("ColonCount: %d", colonCount)
+				log.Printf("IPv4")
+				rHostSplit := strings.Split(r.Host, ":")
+				localAddr = rHostSplit[0]
+
+			default:
+				log.Printf("ColonCount: %d", colonCount)
+				log.Printf("IPv6")
+				rHostSplit := strings.Split(r.Host, ":")
+				rHostSplit = rHostSplit[:len(rHostSplit)-1]
+				localAddr = strings.Join(rHostSplit, ":")
+			}
+
+			baseUrls = append(baseUrls, "https://"+localAddr+":"+securePort+"/")
 		} else {
 
 			log.Printf(r.Host)
