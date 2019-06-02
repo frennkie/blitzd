@@ -23,27 +23,22 @@ func Welcome() {
 
 		var baseUrls []string
 
-		infoPort := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
+		securePort := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
 
 		remoteAddrPort := r.RemoteAddr
 		remoteAddr := strings.Split(remoteAddrPort, ":")
 		clientIsRemote := remoteAddr[0] != "127.0.0.1"
 
 		if clientIsRemote {
-			log.Printf(remoteAddr[0])
-
-			if viper.GetBool("server.https.localhost_only") {
-				baseUrls = util.GetBaseUrls("https", infoPort, false, false)
-			} else {
-				baseUrls = util.GetBaseUrls("https", infoPort, false, true)
-			}
-
+			localAddr := strings.Split(r.Host, ":")
+			baseUrls = append(baseUrls, "https://"+localAddr[0]+":"+securePort+"/")
 		} else {
 
+			log.Printf(r.Host)
 			if viper.GetBool("server.https.localhost_only") {
-				baseUrls = util.GetBaseUrls("https", infoPort, true, false)
+				baseUrls = util.GetBaseUrls("https", securePort, true, false)
 			} else {
-				baseUrls = util.GetBaseUrls("https", infoPort, true, true)
+				baseUrls = util.GetBaseUrls("https", securePort, true, true)
 			}
 
 		}

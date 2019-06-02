@@ -52,8 +52,8 @@ func Secure(metrics *data.Cache) {
 	<h1>About</h1>
 	<ul>
 		<li>Me: %s</li>
-		<li><a href="%s/foobar/">Foobar</a></li>
-		<li><a href="%s/info/">Info</a></li>
+		<li><a href="/foobar/">Foobar</a></li>
+		<li><a href="/info/">Info</a></li>
 	</ul>
 	<br>
 
@@ -72,7 +72,7 @@ func Secure(metrics *data.Cache) {
 		securePort := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
 		secureBase := fmt.Sprintf("%s://%s:%s", secureSchema, secureHost, securePort)
 
-		values := []interface{}{secureBase, secureBase, secureBase, r.RemoteAddr, r.URL.Path}
+		values := []interface{}{secureBase, r.RemoteAddr, r.URL.Path}
 
 		html := fmt.Sprintf(htmlRaw, values...)
 
