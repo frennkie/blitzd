@@ -136,33 +136,3 @@ func InitConfig() {
 	_ = viper.WriteConfigAs(filepath.Join(BlitzdDir, "saved.toml"))
 
 }
-
-func GetServerHttpHostPort() string {
-	localhostOnly := viper.GetBool("server.http.localhost_only")
-	port := fmt.Sprintf("%d", viper.GetInt("server.http.port"))
-	if localhostOnly {
-		return "localhost:" + port
-	} else {
-		return ":" + port
-	}
-}
-
-func GetServerHttpsHostPort() string {
-	localhostOnly := viper.GetBool("server.https.localhost_only")
-	port := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
-	if localhostOnly {
-		return "localhost:" + port
-	} else {
-		return ":" + port
-	}
-}
-
-func GetServerRpcHostPort() string {
-	localhostOnly := viper.GetBool("server.rpc.localhost_only")
-	port := fmt.Sprintf("%d", viper.GetInt("server.rpc.port"))
-	if localhostOnly {
-		return "localhost:" + port
-	} else {
-		return ":" + port
-	}
-}

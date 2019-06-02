@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BlitzInfo Daemon</title>
+</head>
+<body>
+    <h2>Welcome to RaspiBlitz</h2>
+
+    <h4>Use one the following link to access your RaspiBlitz</h4>
+	<p>
+		Please be aware about HTTPS Certificate Warning! Here is some useful information on that...
+	</p>
+
+	<ul>
+		{{ range $key, $value := . }}
+		   <li><a href="{{ $value }}">{{ $value }}</a></li>
+		{{ else }}
+			Sorry.. no server enabled.
+		{{ end }}
+	</ul>
+	<br>
+
+</body>
+</html>`
