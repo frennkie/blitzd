@@ -1,3 +1,9 @@
+blitzd (0.10) unstable; urgency=medium
+
+  * internal refactoring
+
+ -- Robert Habermann <frennkie@gmail.com>  Tue, 04 Jun 2019 15:06:31 +0000
+
 blitzd (0.9) unstable; urgency=medium
 
   * a lot
