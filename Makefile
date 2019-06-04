@@ -12,7 +12,6 @@ PD=package/$(VERSION)
 PKG=github.com/frennkie/blitzd
 BUILDFLAGS="-X $(PKG)/internal/blitzd.BuildTime=$(DATE) -X $(PKG)/internal/blitzd.BuildVersion=$(VERSION)"
 
-
 PREFIX=/usr/local
 
 # Target/Destination Host
