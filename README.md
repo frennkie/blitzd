@@ -57,3 +57,6 @@ memstore
 
 sudo apt-get update
 sudo apt-get install go-dep devscripts libdistro-info-perl dh-systemd protobuf-compiler
+
+
+git tag vX.Y[-rcZ] -m "Message.."

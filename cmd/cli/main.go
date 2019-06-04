@@ -11,12 +11,11 @@ import (
 func main() {
 	cobra.OnInitialize(config.InitConfig)
 
-	cli.RootCmd.PersistentFlags().StringVar(&config.BlitzdDir, "dir",
+	cli.RootCmd.PersistentFlags().StringVarP(&config.BlitzdDir, "dir", "D",
 		config.DefaultBlitzdDir, "blitzd home directory (default is $HOME/.blitzd")
 
 	cli.RootCmd.PersistentFlags().StringVarP(&config.RpcHostPort,
-		"rpcHostPort", "H",
-		fmt.Sprintf("localhost:%d", config.DefaultRPCPort),
+		"rpcHostPort", "H", fmt.Sprintf("localhost:%d", config.DefaultRPCPort),
 		"Host and Port to connect to")
 	_ = viper.BindPFlag("rpcHostPort", cli.RootCmd.PersistentFlags().Lookup("rpcHostPort"))
 

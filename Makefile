@@ -5,12 +5,18 @@
 # vars #######################################################################
 VERSION := $(shell grep -e "^blitzd " debian/changelog | head -1 | cut -d "(" -f2 | cut -d ")" -f1)
 DATE := $(shell date --iso-8601=seconds)
+GIT_VERSION := $(git describe --abbrev=40 --dirty)
+GIT_COMMIT := $(git rev-parse HEAD)
 P=blitzd
 D=blitzd
 PD=package/$(VERSION)
 
 PKG=github.com/frennkie/blitzd
-BUILDFLAGS="-X $(PKG)/internal/blitzd.BuildTime=$(DATE) -X $(PKG)/internal/blitzd.BuildVersion=$(VERSION)"
+BUILDFLAGS="-X $(PKG)/pkg/cmd/blitzd.BuildTime=$(DATE) \
+  -X $(PKG)/pkg/cmd/blitzd.BuildVersion=$(VERSION)" \
+  -X $(PKG)/pkg/cmd/blitzd.BuildGitVersion=$(GIT_VERSION)" \
+  -X $(PKG)/pkg/cmd/blitzd.BuildGitCommit=$(GIT_COMMIT)"
+
 
 PREFIX=/usr/local
 

@@ -19,13 +19,15 @@ import (
 
 var (
 	// e.g. -ldflags '-X github.com/frennkie/blitzd/internal/blitzd.BuildTime=`date`'
-	BuildVersion   = "unset"
-	BuildTime      = "unset"
-	BuildGitCommit = "unset"
+	BuildVersion    = "unset"
+	BuildTime       = "unset"
+	BuildGitVersion = "unset"
+	BuildGitCommit  = "unset"
 )
 
 func Init() {
 	log.Printf("Starting version: %s, built at %s", BuildVersion, BuildTime)
+	log.Printf("Git Version: %s", BuildGitVersion)
 	log.Printf("Git Commit Hash: %s", BuildGitCommit)
 
 	if util.FileExists(viper.GetString("server.tlscert")) && util.FileExists(viper.GetString("server.tlskey")) {
