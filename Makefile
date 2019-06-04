@@ -2,8 +2,7 @@
 
 
 all:
-	@echo "### VFS: Embedding static assets"
-	go generate web/web.go
+	@echo "### All: Hello"
 
 
 help:

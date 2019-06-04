@@ -1,0 +1,39 @@
+blitzd (0.9) unstable; urgency=medium
+
+  * a lot
+  * replace rice with vfsgen
+  * clearly separate three servers
+    * http - basic instructions only
+    * https - info page
+    * rpc - gRPC interface
+  * add basic auth for https
+
+ -- Robert Habermann <frennkie@gmail.com>  Fri, 31 May 2019 15:52:00 +0000
+
+blitzd (0.8) unstable; urgency=medium
+
+  * rename to blitzd (and blitz-cli)
+
+ -- Robert Habermann <frennkie@gmail.com>  Wed, 29 May 2019 20:23:27 +0000
+
+blitzd (0.7) unstable; urgency=medium
+
+  * add lsb-release Metric
+  * rename API to /api/v1/
+
+ -- Robert Habermann <frennkie@gmail.com>  Tue, 28 May 2019 19:51:42 +0000
+
+blitzd (0.6) unstable; urgency=medium
+
+  * Another Proof-of-Concept Release
+  * Now using debian packages
+  * Server binary is now called blitzinfod
+  * New CLI created for easy access: blitzinfo-cli
+
+ -- Robert Habermann <frennkie@gmail.com>  Sun, 26 May 2019 17:15:35 +0000
+
+blitzd (0.1) unstable; urgency=medium
+
+  * Initial Release.
+
+ -- Robert Habermann <frennkie@gmail.com>  Sat, 25 May 2019 10:05:38 +0000
