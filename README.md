@@ -53,3 +53,7 @@ Für Cache -> Set (der macht auch den Lock)
 memstore
 
 
+### Dev/Build Requirements
+
+sudo apt-get update
+sudo apt-get install go-dep devscripts libdistro-info-perl dh-systemd protobuf-compiler

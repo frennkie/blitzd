@@ -38,7 +38,7 @@ const (
 
 	defaultHttpPort  = 39080
 	defaultHttpsPort = 39443
-	defaultRPCPort   = 39735
+	DefaultRPCPort   = 39735
 )
 
 var (
@@ -81,7 +81,7 @@ func setDefaults() {
 
 	viper.SetDefault("server.rpc.enabled", true)
 	viper.SetDefault("server.rpc.localhost_only", true)
-	viper.SetDefault("server.rpc.port", defaultRPCPort)
+	viper.SetDefault("server.rpc.port", DefaultRPCPort)
 
 }
 
