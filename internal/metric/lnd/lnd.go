@@ -12,6 +12,7 @@ func Init() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c)
 
-	foo(c)
+	//foo(c)
+	go foo(c)
 
 }

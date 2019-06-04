@@ -44,6 +44,7 @@ const (
 var (
 	DefaultBlitzdDir = btcutil.AppDataDir(defaultBlitzdDirName, false)
 	BlitzdDir        string
+	RpcHostPort      string
 
 	// ToDo check
 	// maxMsgRecvSize is the largest message our client will receive. We

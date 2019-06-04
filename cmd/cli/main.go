@@ -8,19 +8,17 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	defaultRPCHostPort = fmt.Sprintf("localhost:%d", config.DefaultRPCPort)
-)
-
 func main() {
 	cobra.OnInitialize(config.InitConfig)
 
 	cli.RootCmd.PersistentFlags().StringVar(&config.BlitzdDir, "dir",
 		config.DefaultBlitzdDir, "blitzd home directory (default is $HOME/.blitzd")
 
-	cli.RootCmd.PersistentFlags().StringP("rpcHostPort", "H", defaultRPCHostPort, "Host and Port to connect to")
+	cli.RootCmd.PersistentFlags().StringVarP(&config.RpcHostPort,
+		"rpcHostPort", "H",
+		fmt.Sprintf("localhost:%d", config.DefaultRPCPort),
+		"Host and Port to connect to")
 	_ = viper.BindPFlag("rpcHostPort", cli.RootCmd.PersistentFlags().Lookup("rpcHostPort"))
-	viper.SetDefault("rpcHostPort", defaultRPCHostPort)
 
 	cli.RootCmd.AddCommand(cli.CmdAll)
 	cli.RootCmd.AddCommand(cli.CmdArch)

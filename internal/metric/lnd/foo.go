@@ -23,7 +23,7 @@ func foo(c chan os.Signal) {
 			log.Printf("Got %s signal. Aborting...\n", sig)
 			return
 		default:
-			log.Printf("test1")
+			//log.Printf("test1")
 
 			//Do something useful with message here
 			foo := data.NewMetricTimeBased(title)
