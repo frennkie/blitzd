@@ -22,13 +22,11 @@ var (
 	BuildVersion    = "unset"
 	BuildTime       = "unset"
 	BuildGitVersion = "unset"
-	BuildGitCommit  = "unset"
 )
 
 func Init() {
 	log.Printf("Starting version: %s, built at %s", BuildVersion, BuildTime)
 	log.Printf("Git Version: %s", BuildGitVersion)
-	log.Printf("Git Commit Hash: %s", BuildGitCommit)
 
 	if util.FileExists(viper.GetString("server.tlscert")) && util.FileExists(viper.GetString("server.tlskey")) {
 		log.Printf("Using Key-Pair: %s;%s", viper.GetString("server.tlscert"), viper.GetString("server.tlskey"))

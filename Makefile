@@ -5,8 +5,7 @@
 # vars #######################################################################
 VERSION := $(shell grep -e "^blitzd " debian/changelog | head -1 | cut -d "(" -f2 | cut -d ")" -f1)
 DATE := $(shell date --iso-8601=seconds)
-GIT_VERSION := $(git describe --abbrev=40 --dirty)
-GIT_COMMIT := $(git rev-parse HEAD)
+GIT_VERSION := $(shell git describe --abbrev=40 --dirty)
 P=blitzd
 D=blitzd
 PD=package/$(VERSION)
@@ -14,9 +13,7 @@ PD=package/$(VERSION)
 PKG=github.com/frennkie/blitzd
 BUILDFLAGS="-X $(PKG)/pkg/cmd/blitzd.BuildTime=$(DATE) \
   -X $(PKG)/pkg/cmd/blitzd.BuildVersion=$(VERSION) \
-  -X $(PKG)/pkg/cmd/blitzd.BuildGitVersion=$(GIT_VERSION) \
-  -X $(PKG)/pkg/cmd/blitzd.BuildGitCommit=$(GIT_COMMIT)"
-
+  -X $(PKG)/pkg/cmd/blitzd.BuildGitVersion=$(GIT_VERSION)"
 
 PREFIX=/usr/local
 
@@ -74,6 +71,7 @@ build: build-amd64 build-armhf
 # ARCH "amd64"
 build-amd64: vfsgen
 	@echo "### Build: amd64"
+	@echo "GitVersion: $(GIT_VERSION)"
 	GOARCH=amd64 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/amd64/blitzd cmd/blitzd/main.go
 	GOARCH=amd64 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/amd64/blitz-cli cmd/cli/main.go
 
