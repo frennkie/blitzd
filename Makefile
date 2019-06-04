@@ -13,8 +13,8 @@ PD=package/$(VERSION)
 
 PKG=github.com/frennkie/blitzd
 BUILDFLAGS="-X $(PKG)/pkg/cmd/blitzd.BuildTime=$(DATE) \
-  -X $(PKG)/pkg/cmd/blitzd.BuildVersion=$(VERSION)" \
-  -X $(PKG)/pkg/cmd/blitzd.BuildGitVersion=$(GIT_VERSION)" \
+  -X $(PKG)/pkg/cmd/blitzd.BuildVersion=$(VERSION) \
+  -X $(PKG)/pkg/cmd/blitzd.BuildGitVersion=$(GIT_VERSION) \
   -X $(PKG)/pkg/cmd/blitzd.BuildGitCommit=$(GIT_COMMIT)"
 
 
