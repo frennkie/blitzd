@@ -18,6 +18,14 @@
   version = "v0.4.0"
 
 [[projects]]
+  digest = "1:1343a2963481a305ca4d051e84bc2abd16b601ee22ed324f8d605de1adb291b0"
+  name = "github.com/bgentry/speakeasy"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "4aabc24848ce5fd31929f7d1e4ea74d3709c14cd"
+  version = "v0.1.0"
+
+[[projects]]
   branch = "master"
   digest = "1:cf86fc0d8b52a62ee62ee82277505e26140cd0c81675f534681a33fac988adba"
   name = "github.com/btcsuite/btcd"
@@ -60,6 +68,14 @@
   pruneopts = "UT"
   revision = "97b6244175ae18ea6eef668034fd6565847501c9"
   version = "v1.2.4"
+
+[[projects]]
+  branch = "master"
+  digest = "1:205b3c069003f9d1458e4304427ab3652d8d7bac3bde1568a2d5486451e453bd"
+  name = "github.com/goji/httpauth"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "2da839ab0f4df05a6db5eb277995589dadbd4fb9"
 
 [[projects]]
   digest = "1:239c4c7fd2159585454003d9be7207167970194216193a8a210b8d29576f19c9"
@@ -117,6 +133,14 @@
   pruneopts = "UT"
   revision = "3536a929edddb9a5b34bd6861dc4a9647cb459fe"
   version = "v1.1.2"
+
+[[projects]]
+  branch = "master"
+  digest = "1:a45c3b83d39a5b86d8962fcf4c6d0dc1505e87256756e5744669711193bbf84e"
+  name = "github.com/msteinert/pam"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "f29b9f28d6f9a1f6c4e6fd5db731999eb946574b"
 
 [[projects]]
   digest = "1:93131d8002d7025da13582877c32d1fc302486775a1b06f62241741006428c5e"
@@ -227,17 +251,6 @@
   pruneopts = "UT"
   revision = "b5bf975e5823809fb22c7644d008757f78a4259e"
   version = "v1.4.0"
-
-[[projects]]
-  digest = "1:e2801f9ea1288e844cff8eac2e7590318f85988fa321f075987dd3923b1e5df5"
-  name = "github.com/zenazn/goji"
-  packages = [
-    "graceful",
-    "graceful/listener",
-  ]
-  pruneopts = "UT"
-  revision = "64eb34159fe53473206c2b3e70fe396a639452f2"
-  version = "v1.0"
 
 [[projects]]
   branch = "master"
@@ -365,16 +378,19 @@
   analyzer-version = 1
   input-imports = [
     "github.com/abbot/go-http-auth",
+    "github.com/bgentry/speakeasy",
     "github.com/btcsuite/btcutil",
     "github.com/fsnotify/fsnotify",
+    "github.com/goji/httpauth",
     "github.com/golang/protobuf/proto",
+    "github.com/msteinert/pam",
     "github.com/pkg/errors",
     "github.com/shirou/gopsutil/host",
     "github.com/shurcooL/httpfs/html/vfstemplate",
     "github.com/shurcooL/vfsgen",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
-    "github.com/zenazn/goji/graceful",
+    "golang.org/x/crypto/bcrypt",
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",
     "google.golang.org/grpc/credentials",

@@ -59,4 +59,12 @@ sudo apt-get update
 sudo apt-get install go-dep devscripts libdistro-info-perl dh-systemd protobuf-compiler
 
 
+#### PAM
+
+`sudo apt-get install libpam0g-dev`
+
+
+https://unix.stackexchange.com/questions/66392/how-to-authenticate-a-user-with-pam-that-is-not-the-user-that-started-the-appli
+
+
 git tag vX.Y[-rcZ] -m "Message.."

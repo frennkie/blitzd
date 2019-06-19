@@ -6,7 +6,6 @@ import (
 	"github.com/frennkie/blitzd/web"
 	"github.com/shurcooL/httpfs/html/vfstemplate"
 	"github.com/spf13/viper"
-	"github.com/zenazn/goji/graceful"
 	"html/template"
 	"log"
 	"net/http"
@@ -83,19 +82,22 @@ func Welcome() {
 		log.Printf("Starting Welcome Server: http://localhost:%s) / http://127.0.0.1:%s / http://[::1]:%s", port, port, port)
 		go func() {
 
-			log.Fatal(graceful.ListenAndServe("127.0.0.1:"+port, welcomeMux))
+			//log.Fatal(graceful.ListenAndServe("127.0.0.1:"+port, welcomeMux))
+			log.Fatal(http.ListenAndServe("127.0.0.1:"+port, welcomeMux))
 		}()
 
 		go func() {
 
-			log.Fatal(graceful.ListenAndServe("[::1]:"+port, welcomeMux))
+			//log.Fatal(graceful.ListenAndServe("[::1]:"+port, welcomeMux))
+			log.Fatal(http.ListenAndServe("[::1]:"+port, welcomeMux))
 		}()
 
 	} else {
 		go func() {
 			// ToDo: Get proper any here
 			log.Printf("Starting Welcome Server (http://localhost:%s - and all other IPs)", port)
-			log.Fatal(graceful.ListenAndServe(":"+port, welcomeMux))
+			//log.Fatal(graceful.ListenAndServe(":"+port, welcomeMux))
+			log.Fatal(http.ListenAndServe(":"+port, welcomeMux))
 		}()
 	}
 

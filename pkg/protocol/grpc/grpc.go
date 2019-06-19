@@ -43,6 +43,12 @@ func runGracefulGRPCServer(ctx context.Context, server *grpc.Server, lis net.Lis
 
 }
 
+func runGRPCServer(server *grpc.Server, lis net.Listener) {
+	if err := server.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+}
+
 // RunServer runs gRPC service to publish
 func RunServer(ctx context.Context, v1API pb.GreeterServer) error {
 
@@ -78,14 +84,16 @@ func RunServer(ctx context.Context, v1API pb.GreeterServer) error {
 			log.Printf("server listen on port %s error:%v", port, err)
 			return err
 		}
-		go runGracefulGRPCServer(ctx, server, lisLocalhostV4)
+		//go runGracefulGRPCServer(ctx, server, lisLocalhostV4)
+		go runGRPCServer(server, lisLocalhostV4)
 
 		lisLocalhostV6, err := net.Listen("tcp", fmt.Sprintf("[::1]:%s", port))
 		if err != nil {
 			log.Printf("server listen on port %s error:%v", port, err)
 			return err
 		}
-		go runGracefulGRPCServer(ctx, server, lisLocalhostV6)
+		//go runGracefulGRPCServer(ctx, server, lisLocalhostV6)
+		go runGRPCServer(server, lisLocalhostV6)
 
 		return nil
 
@@ -97,7 +105,8 @@ func RunServer(ctx context.Context, v1API pb.GreeterServer) error {
 			log.Printf("server listen on port %s error:%v", port, err)
 			return err
 		}
-		go runGracefulGRPCServer(ctx, server, lis)
+		//go runGracefulGRPCServer(ctx, server, lis)
+		go runGRPCServer(server, lis)
 
 		return nil
 	}

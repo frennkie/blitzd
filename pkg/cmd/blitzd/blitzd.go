@@ -1,9 +1,6 @@
 package blitzd
 
 import (
-	"bufio"
-	"fmt"
-	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/internal/metric"
 	"github.com/frennkie/blitzd/internal/metric/lnd"
 	"github.com/frennkie/blitzd/internal/metric/network"
@@ -12,9 +9,6 @@ import (
 	"github.com/frennkie/blitzd/pkg/cmd/servers"
 	"github.com/spf13/viper"
 	"log"
-	"os"
-	"runtime"
-	"strings"
 )
 
 var (
@@ -88,88 +82,6 @@ func Init() {
 	network.Init()
 	system.Init()
 
-	if runtime.GOOS != "windows" {
-		go UpdateLsbRelease()
-		go UpdateFileBar()
-	}
-
-	// ToDo fix metrics
-	//http.HandleFunc("/info/", serve.Secure(&metric.MetricsOld))
-
 	select {}
-
-}
-
-func UpdateFileBar() {
-	title := "file-bar"
-	absFilePath := "/tmp/foo"
-
-	if _, err := os.Stat(absFilePath); os.IsNotExist(err) {
-		log.Printf("file does not exist - skipping: %s", absFilePath)
-		return
-	}
-
-	log.Printf("starting goroutine: %s (%s)", title, absFilePath)
-
-	UpdateFileBarFunc(title, absFilePath)
-	go util.FileWatcher(title, absFilePath, UpdateFileBarFunc)
-}
-
-func UpdateFileBarFunc(title string, absFilePath string) {
-	log.Printf("event-based update: %s (%s)", title, absFilePath)
-	m := data.NewMetricEventBased(title)
-
-	m.Value = fmt.Sprintf("%s", "foobar")
-
-	metric.MetricsOldMux.Lock()
-	metric.MetricsOld.FileBar = m
-	metric.MetricsOldMux.Unlock()
-
-}
-
-// TODO replace with /etc/issue
-func UpdateLsbRelease() {
-	title := "lsb-release"
-	absFilePath := "/etc/lsb-release"
-
-	if _, err := os.Stat(absFilePath); os.IsNotExist(err) {
-		log.Printf("file does not exist - skipping: %s", absFilePath)
-		return
-	}
-
-	log.Printf("starting goroutine: %s (%s)", title, absFilePath)
-
-	UpdateLsbReleaseFunc(title, absFilePath)
-	go util.FileWatcher(title, absFilePath, UpdateLsbReleaseFunc)
-}
-
-func UpdateLsbReleaseFunc(title string, absFilePath string) {
-	log.Printf("event-based update: %s (%s)", title, absFilePath)
-	m := data.NewMetricEventBased(title)
-
-	file, err := os.Open(absFilePath)
-
-	if err != nil {
-		log.Fatalf("failed opening file: %s", err)
-	}
-
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanLines)
-	var txtlines []string
-
-	for scanner.Scan() {
-		txtlines = append(txtlines, scanner.Text())
-	}
-
-	_ = file.Close()
-
-	tmp := txtlines[len(txtlines)-1]
-	tmp2 := strings.Split(tmp, "=")[1]
-	tmp3 := strings.Replace(tmp2, "\"", "", -1)
-	m.Value = tmp3
-
-	metric.MetricsOldMux.Lock()
-	metric.MetricsOld.LsbRelease = m
-	metric.MetricsOldMux.Unlock()
 
 }

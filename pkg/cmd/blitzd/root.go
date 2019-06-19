@@ -7,7 +7,6 @@ import (
 	"github.com/frennkie/blitzd/web"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/zenazn/goji/graceful"
 	"log"
 	"net/http"
 )
@@ -31,7 +30,7 @@ var DemoCmd = &cobra.Command{
 		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(web.Assets)))
 
 		log.Printf("HTTP Server: http://localhost:18080/")
-		log.Fatal(graceful.ListenAndServe(fmt.Sprintf("localhost:18080"), nil))
+		log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:18080"), nil))
 	},
 }
 
@@ -40,7 +39,7 @@ var GenCertCmd = &cobra.Command{
 	Short: "Generate Certificates",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Printf("gencert called")
-		//util.GenRootCa("ca.crt", "ca.key", "fobar", false)
+		//util.GenRootCa("ca.crt", "ca.key", "foobar", false)
 		err := util.GenRootCaSignedClientServerCert(
 			viper.GetString("alias"),
 			viper.GetString("server.cacert"),

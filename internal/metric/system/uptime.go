@@ -23,7 +23,7 @@ func Uptime() {
 			m.Value = fmt.Sprintf("%d", uptime)
 
 			// update data in MetricCache
-			log.Printf("Updating: %s", m.Title)
+			//log.Printf("Updating: %s", m.Title)
 
 			metric.MetricsMux.Lock()
 			metric.Metrics.System.Uptime = m

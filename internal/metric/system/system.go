@@ -3,6 +3,7 @@ package system
 import (
 	"fmt"
 	"github.com/frennkie/blitzd/internal/metric"
+	"runtime"
 )
 
 func Init() {
@@ -18,4 +19,9 @@ func Init() {
 
 	// start goroutine for time-based
 	go Uptime()
+
+	if runtime.GOOS != "windows" {
+		go UpdateLsbRelease()
+		go UpdateFileBar()
+	}
 }
