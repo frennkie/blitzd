@@ -1,9 +1,11 @@
 package util
 
 import (
+	"errors"
 	"fmt"
 	"github.com/msteinert/pam"
 	"log"
+	"os/user"
 	"strings"
 )
 
