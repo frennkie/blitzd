@@ -1,7 +1,6 @@
 package blitzd
 
 import (
-	"github.com/frennkie/blitzd/internal/metric"
 	"github.com/frennkie/blitzd/internal/metric/lnd"
 	"github.com/frennkie/blitzd/internal/metric/network"
 	"github.com/frennkie/blitzd/internal/metric/system"
@@ -57,7 +56,7 @@ func Init() {
 
 	if viper.GetBool("server.https.enabled") {
 		log.Printf("HTTPS Server: enabled (https://localhost:%d)", viper.GetInt("server.https.port"))
-		go servers.Secure(&metric.Metrics)
+		go servers.Secure()
 	} else {
 		log.Printf("HTTPS Server: disabled")
 	}

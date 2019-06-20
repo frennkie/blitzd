@@ -5,6 +5,7 @@ import (
 	auth "github.com/abbot/go-http-auth"
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/internal/util"
+	v1 "github.com/frennkie/blitzd/pkg/api/v1"
 	"github.com/frennkie/blitzd/web"
 	"github.com/goji/httpauth"
 	"github.com/shurcooL/httpfs/html/vfstemplate"
@@ -49,7 +50,7 @@ func authSecretFromConfig(user, _ string) string {
 	return ""
 }
 
-func Secure(metrics *data.Cache) {
+func Secure() {
 
 	switch runtime.GOOS {
 	case "windows":
@@ -59,6 +60,15 @@ func Secure(metrics *data.Cache) {
 	default:
 		authOpts = authOptsConfig
 	}
+
+	// ToDo(frennkie) hm.....
+	//var mSlice []*v1.Metric
+	//var m = data.Cache.Items()
+	//
+	//for _, v := range m {
+	//	metricObject := interface{}(v.Object).(v1.Metric)
+	//	mSlice = append(mSlice, &metricObject)
+	//}
 
 	authenticator := auth.NewBasicAuthenticator("RaspiBlitz Secure Server", authSecretFromConfig)
 
@@ -206,7 +216,23 @@ func Secure(metrics *data.Cache) {
 				log.Fatal(err)
 			}
 
-			if err := infoTemplate.Execute(w, metrics); err != nil {
+			//// get copy of current Cache
+			//var mMap = make(map[string]*v1.Metric)
+			var mMap = make(map[string]string)
+			var m = data.Cache.Items()
+
+			for _, v := range m {
+				metricObject := interface{}(v.Object).(v1.Metric)
+				//mMap[fmt.Sprintf("%s.%s", metricObject.Module, metricObject.Title)] = &metricObject
+				mMap[fmt.Sprintf("%s.%s", metricObject.Module, metricObject.Title)] = metricObject.Text
+			}
+
+			//var m v1.Metric
+			//if x, found := data.Cache.Get("system.uptime"); found {
+			//	m = x.(v1.Metric)
+			//}
+
+			if err := infoTemplate.Execute(w, mMap); err != nil {
 				log.Println(err.Error())
 				http.Error(w, http.StatusText(500), 500)
 			}
