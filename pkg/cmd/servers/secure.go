@@ -217,14 +217,14 @@ func Secure() {
 			}
 
 			//// get copy of current Cache
-			//var mMap = make(map[string]*v1.Metric)
-			var mMap = make(map[string]string)
+			var mMap = make(map[string]*v1.Metric)
+			//var mMap = make(map[string]string)
 			var m = data.Cache.Items()
 
 			for _, v := range m {
 				metricObject := interface{}(v.Object).(v1.Metric)
-				//mMap[fmt.Sprintf("%s.%s", metricObject.Module, metricObject.Title)] = &metricObject
-				mMap[fmt.Sprintf("%s.%s", metricObject.Module, metricObject.Title)] = metricObject.Text
+				mMap[fmt.Sprintf("%s.%s", metricObject.Module, metricObject.Title)] = &metricObject
+				//mMap[fmt.Sprintf("%s.%s", metricObject.Module, metricObject.Title)] = metricObject.Text
 			}
 
 			//var m v1.Metric
