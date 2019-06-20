@@ -7,20 +7,27 @@ import (
 	pb "github.com/frennkie/blitzd/pkg/api/v1"
 	"github.com/spf13/cobra"
 	"log"
+	"os"
 	"strings"
 	"time"
 )
 
-var JsonFlag bool
+var jsonFlag bool
+var formattedFlag bool
 
-var CmdGet = &cobra.Command{
+var cmdGet = &cobra.Command{
 	Use:   "get",
 	Short: "gRPC: Get a Metric by it's path (e.g. \"system.uptime\")",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		if jsonFlag && formattedFlag {
+			fmt.Println("do use both --json or --formatted simultaneously")
+			os.Exit(1)
+		}
 		if config.Verbose {
 			fmt.Println("Args: " + strings.Join(args, " "))
-			fmt.Println("JsonFlag: ", JsonFlag)
+			fmt.Println("jsonFlag: ", jsonFlag)
+			fmt.Println("formattedFlag: ", formattedFlag)
 		}
 		get(args)
 	},
@@ -50,14 +57,16 @@ func get(args []string) {
 	}
 
 	if r != nil {
-		//fmt.Println(proto.MarshalTextString(r.Metric))
-
-		if JsonFlag {
+		if jsonFlag {
 			result, _ := jsonMarshaler.MarshalToString(r)
 			fmt.Println(result)
 		} else {
-			fmt.Println(r.Metric.Text)
+			if formattedFlag {
+				fmt.Println(r.Metric.Text)
+			} else {
+				fmt.Println(r.Metric.Value)
+			}
 		}
-
+		os.Exit(0)
 	}
 }

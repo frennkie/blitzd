@@ -6,7 +6,7 @@ package v1
 import (
 	"context"
 	"errors"
-	"github.com/frennkie/blitzd/internal/metric"
+	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/pkg/api/v1"
 	"github.com/golang/protobuf/ptypes"
 	"log"
@@ -39,7 +39,7 @@ func (s *metricServer) GetMetricByPath(ctx context.Context, req *v1.GetMetricByP
 	log.Printf("Received: GetMetricByPath (Path: %s)", req.Path)
 
 	var m v1.Metric
-	if x, found := metric.Cache.Get(req.Path); found {
+	if x, found := data.Cache.Get(req.Path); found {
 		m = x.(v1.Metric)
 
 		expiredAfter, _ := ptypes.Timestamp(m.ExpiredAfter)
@@ -56,11 +56,27 @@ func (s *metricServer) GetMetricByPath(ctx context.Context, req *v1.GetMetricByP
 
 }
 
-func (s *metricServer) GetMetricFoo5(context.Context, *v1.GetMetricRequest) (*v1.GetMetricResponse, error) {
+func (s *metricServer) GetMetricAll(context.Context, *v1.EmptyRequest) (*v1.GetMetricAllResponse, error) {
+	log.Printf("Received: GetMetricAll")
+
+	var mSlice []*v1.Metric
+	var m = data.Cache.Items()
+
+	// ToDo(frennkie) try-catch anything here..?!
+	for _, v := range m {
+		metricObject := interface{}(v.Object).(v1.Metric)
+		mSlice = append(mSlice, &metricObject)
+	}
+
+	return &v1.GetMetricAllResponse{Api: "1", Metrics: mSlice}, nil
+
+}
+
+func (s *metricServer) GetMetricFoo5(context.Context, *v1.EmptyRequest) (*v1.GetMetricResponse, error) {
 	log.Printf("Received: GetMetricFoo5")
 
 	var m v1.Metric
-	if x, found := metric.Cache.Get("lnd.foo5"); found {
+	if x, found := data.Cache.Get("lnd.foo5"); found {
 		m = x.(v1.Metric)
 
 		expiredAfter, _ := ptypes.Timestamp(m.ExpiredAfter)

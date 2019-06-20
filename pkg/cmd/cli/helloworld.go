@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var CmdHelloWorld = &cobra.Command{
+var cmdHelloWorld = &cobra.Command{
 	Use:   "helloworld",
 	Short: "gRPC: Print Hello World",
 	Long:  `Print Hello World`,

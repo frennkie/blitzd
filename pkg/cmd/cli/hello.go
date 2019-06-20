@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-var CmdHello = &cobra.Command{
+var cmdHello = &cobra.Command{
 	Use:   "hello [string to echo]",
 	Short: "gRPC: Greet",
 	Args:  cobra.MinimumNArgs(1),

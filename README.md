@@ -63,8 +63,10 @@ sudo apt-get install go-dep devscripts libdistro-info-perl dh-systemd protobuf-c
 
 `sudo apt-get install libpam0g-dev`
 
+ToDo Does not cross compile for armhf
 
 https://unix.stackexchange.com/questions/66392/how-to-authenticate-a-user-with-pam-that-is-not-the-user-that-started-the-appli
+
 
 
 git tag vX.Y[-rcZ] -m "Message.."

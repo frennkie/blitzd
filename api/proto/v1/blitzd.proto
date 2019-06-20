@@ -4,6 +4,10 @@ package v1;
 
 import "google/protobuf/timestamp.proto";
 
+// An empty request message
+message EmptyRequest {
+}
+
 // The Shutdown service is used to request a clean shutdown to be performed
 // **in the background**. One attempt will be made to gracefully shutdown
 // services like LND and bitcoind. Then a system shutdown will be performed.
@@ -59,9 +63,6 @@ message GetMetricByPathRequest {
     string path = 1;
 }
 
-// The request message
-message GetMetricRequest {
-}
 
 // The response message
 message GetMetricResponse {
@@ -72,18 +73,20 @@ message GetMetricResponse {
     Metric metric = 2;
 }
 
+// The response message
+message GetMetricAllResponse {
+    // API versioning: it is my best practice to specify version explicitly
+    string api = 1;
+
+    // Task entity to add
+    repeated Metric metrics = 2;
+}
+
 
 service MetricService {
     rpc GetMetricByPath (GetMetricByPathRequest) returns (GetMetricResponse);
-    rpc GetMetricFoo5 (GetMetricRequest) returns (GetMetricResponse);
-    //    rpc GetAll
-}
 
-//// The request message
-//message GetAllRequest {
-//}
-//
-//// The response message
-//message GetAllResponse {
-//    string message = 1;
-//}
+    rpc GetMetricAll (EmptyRequest) returns (GetMetricAllResponse);
+
+    rpc GetMetricFoo5 (EmptyRequest) returns (GetMetricResponse);
+}

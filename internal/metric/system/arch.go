@@ -1,17 +1,20 @@
 package system
 
 import (
+	"fmt"
 	"github.com/frennkie/blitzd/internal/data"
+	"github.com/patrickmn/go-cache"
 	"log"
 	"runtime"
 )
 
-func Arch() data.Metric {
+func Arch() {
+	module := "system"
 	title := "arch"
-	log.Printf("setting: %s", title)
+	log.Printf("setting: %s.%s", module, title)
 
-	metric := data.NewMetricStatic(title)
-	metric.Value = runtime.GOARCH
-
-	return metric
+	m := data.NewMetricStatic(module, title)
+	m.Value = runtime.GOARCH
+	m.Text = runtime.GOARCH
+	data.Cache.Set(fmt.Sprintf("%s.%s", module, title), m, cache.NoExpiration)
 }

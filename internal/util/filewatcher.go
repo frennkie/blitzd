@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func FileWatcher(title string, absFilePathIn string, updateFunc func(title string, absFilePath string)) {
+func FileWatcher(module, title string, absFilePathIn string, updateFunc func(module, title string, absFilePath string)) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
@@ -28,7 +28,7 @@ func FileWatcher(title string, absFilePathIn string, updateFunc func(title strin
 				log.Println("event:", event)
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					log.Println("modified file:", event.Name)
-					updateFunc(title, event.Name)
+					updateFunc(module, title, event.Name)
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {

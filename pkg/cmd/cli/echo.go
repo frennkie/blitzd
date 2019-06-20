@@ -7,13 +7,13 @@ import (
 )
 
 func init() {
-	CmdTimes.Flags().IntVarP(&echoTimes, "times", "t", 1, "times to echo the input")
+	cmdTimes.Flags().IntVarP(&echoTimes, "times", "t", 1, "times to echo the input")
 
 }
 
 var echoTimes int
 
-var CmdEcho = &cobra.Command{
+var cmdEcho = &cobra.Command{
 	Use:   "echo [string to echo]",
 	Short: "Echo anything to the screen",
 	Long: `echo is for echoing anything back.
@@ -24,7 +24,7 @@ Echo works a lot like print, except it has a child command.`,
 	},
 }
 
-var CmdTimes = &cobra.Command{
+var cmdTimes = &cobra.Command{
 	Use:   "times [string to echo]",
 	Short: "Echo anything to the screen more times",
 	Long: `echo things multiple times back to the user by providing

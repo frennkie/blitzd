@@ -3,13 +3,14 @@ package system
 import (
 	"fmt"
 	"github.com/frennkie/blitzd/internal/data"
-	"github.com/frennkie/blitzd/internal/metric"
 	"github.com/frennkie/blitzd/internal/util"
+	"github.com/patrickmn/go-cache"
 	"log"
 	"os"
 )
 
 func UpdateFileBar() {
+	module := "system"
 	title := "file-bar"
 	absFilePath := "/tmp/foo"
 
@@ -20,18 +21,17 @@ func UpdateFileBar() {
 
 	log.Printf("starting goroutine: %s (%s)", title, absFilePath)
 
-	UpdateFileBarFunc(title, absFilePath)
-	go util.FileWatcher(title, absFilePath, UpdateFileBarFunc)
+	UpdateFileBarFunc(module, title, absFilePath)
+	go util.FileWatcher(module, title, absFilePath, UpdateFileBarFunc)
 }
 
-func UpdateFileBarFunc(title string, absFilePath string) {
-	log.Printf("event-based update: %s (%s)", title, absFilePath)
-	m := data.NewMetricEventBased(title)
+func UpdateFileBarFunc(module, title string, absFilePath string) {
+	log.Printf("event-based update: %s.%s (%s)", module, title, absFilePath)
+	m := data.NewMetricEventBased(module, title)
 
 	m.Value = fmt.Sprintf("%s", "foobar")
+	m.Text = fmt.Sprintf("%s", "foobar")
 
-	metric.MetricsOldMux.Lock()
-	metric.MetricsOld.FileBar = m
-	metric.MetricsOldMux.Unlock()
+	data.Cache.Set(fmt.Sprintf("%s.%s", module, title), m, cache.DefaultExpiration)
 
 }

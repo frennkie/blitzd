@@ -10,15 +10,15 @@ import (
 	"time"
 )
 
-var cmdFoo5 = &cobra.Command{
+var cmdGetFoo5 = &cobra.Command{
 	Use:   "foo5",
-	Short: "gRPC: Get Metric Foo5",
+	Short: "gRPC: Get Metric Foo5 (Subcommand)",
 	Run: func(cmd *cobra.Command, args []string) {
-		foo5()
+		getfoo5()
 	},
 }
 
-func foo5() {
+func getfoo5() {
 
 	conn, err := setupConnection()
 	if err != nil {

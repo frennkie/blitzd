@@ -2,9 +2,10 @@ package system
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/frennkie/blitzd/internal/data"
-	"github.com/frennkie/blitzd/internal/metric"
 	"github.com/frennkie/blitzd/internal/util"
+	"github.com/patrickmn/go-cache"
 	"log"
 	"os"
 	"strings"
@@ -12,6 +13,7 @@ import (
 
 // TODO replace with /etc/issue
 func UpdateLsbRelease() {
+	module := "system"
 	title := "lsb-release"
 	absFilePath := "/etc/lsb-release"
 
@@ -22,13 +24,13 @@ func UpdateLsbRelease() {
 
 	log.Printf("starting goroutine: %s (%s)", title, absFilePath)
 
-	UpdateLsbReleaseFunc(title, absFilePath)
-	go util.FileWatcher(title, absFilePath, UpdateLsbReleaseFunc)
+	UpdateLsbReleaseFunc(module, title, absFilePath)
+	go util.FileWatcher(module, title, absFilePath, UpdateLsbReleaseFunc)
 }
 
-func UpdateLsbReleaseFunc(title string, absFilePath string) {
-	log.Printf("event-based update: %s (%s)", title, absFilePath)
-	m := data.NewMetricEventBased(title)
+func UpdateLsbReleaseFunc(module, title string, absFilePath string) {
+	log.Printf("event-based update: %s.%s (%s)", module, title, absFilePath)
+	m := data.NewMetricEventBased(module, title)
 
 	file, err := os.Open(absFilePath)
 
@@ -50,9 +52,7 @@ func UpdateLsbReleaseFunc(title string, absFilePath string) {
 	tmp2 := strings.Split(tmp, "=")[1]
 	tmp3 := strings.Replace(tmp2, "\"", "", -1)
 	m.Value = tmp3
+	m.Text = tmp3
 
-	metric.MetricsOldMux.Lock()
-	metric.MetricsOld.LsbRelease = m
-	metric.MetricsOldMux.Unlock()
-
+	data.Cache.Set(fmt.Sprintf("%s.%s", module, title), m, cache.DefaultExpiration)
 }

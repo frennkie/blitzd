@@ -10,10 +10,10 @@ func main() {
 	cobra.OnInitialize(config.InitConfig)
 
 	blitzd.RootCmd.PersistentFlags().StringVar(&config.BlitzdDir, "dir",
-		config.DefaultBlitzdDir, "blitzd home directory (default is $HOME/.blitzd")
+		config.DefaultBlitzdDir, "blitzd home directory")
 
 	blitzd.RootCmd.PersistentFlags().BoolVarP(&config.Verbose, "verbose", "v",
-		true, "print more log messages (default: true)")
+		false, "print more log messages")
 
 	blitzd.RootCmd.AddCommand(blitzd.DemoCmd)
 	blitzd.RootCmd.AddCommand(blitzd.GenCertCmd)

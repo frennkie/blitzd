@@ -10,15 +10,15 @@ import (
 	"time"
 )
 
-var cmdFoo5 = &cobra.Command{
-	Use:   "foo5",
-	Short: "gRPC: Get Metric Foo5",
+var cmdGetAll = &cobra.Command{
+	Use:   "all",
+	Short: "gRPC: Get All Metrics",
 	Run: func(cmd *cobra.Command, args []string) {
-		foo5()
+		getAll()
 	},
 }
 
-func foo5() {
+func getAll() {
 
 	conn, err := setupConnection()
 	if err != nil {
@@ -36,23 +36,16 @@ func foo5() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	r, err := c.GetMetricFoo5(ctx, &pb.EmptyRequest{})
+	r, err := c.GetMetricAll(ctx, &pb.EmptyRequest{})
 	if err != nil {
 		log.Fatalf("an error occured: %v", err)
 	}
 
 	if r != nil {
-		if jsonFlag {
-			result, _ := jsonMarshaler.MarshalToString(r)
-			fmt.Println(result)
-		} else {
-			if formattedFlag {
-				fmt.Println(r.Metric.Text)
-			} else {
-				fmt.Println(r.Metric.Value)
-			}
-		}
+		result, _ := jsonMarshaler.MarshalToString(r)
+		fmt.Println(result)
 		os.Exit(0)
 	}
 
+	os.Exit(1)
 }

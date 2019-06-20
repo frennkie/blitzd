@@ -1,20 +1,13 @@
 package cli
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
 	"github.com/frennkie/blitzd/internal/config"
-	"github.com/golang/protobuf/jsonpb"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	"io/ioutil"
-	"log"
 )
 
-var RootCmd = &cobra.Command{
+var rootCmd = &cobra.Command{
 	Version: "1.2.3",
 	Use:     "blitz-cli",
 	Short:   "blitz-cli is the CLI for blitzd",
@@ -26,46 +19,33 @@ var RootCmd = &cobra.Command{
 	},
 }
 
-var jsonMarshaler = jsonpb.Marshaler{
-	EnumsAsInts:  false,
-	EmitDefaults: true,
-	Indent:       "  ",
-	OrigName:     false,
-	AnyResolver:  nil,
-}
+func Init() {
 
-func setupConnection() (*grpc.ClientConn, error) {
+	rootCmd.PersistentFlags().StringVarP(&config.BlitzdDir, "dir", "D",
+		config.DefaultBlitzdDir, "blitzd home directory")
 
-	// load peer cert/key, cacert
-	clientCert, err := tls.LoadX509KeyPair(viper.GetString("client.tlscert"), viper.GetString("client.tlskey"))
-	if err != nil {
-		log.Printf("load client cert/key error:%v", err)
-		return nil, err
-	}
+	rootCmd.PersistentFlags().StringVarP(&config.RpcHostPort,
+		"rpcHostPort", "H", fmt.Sprintf("localhost:%d", config.DefaultRPCPort),
+		"Host and Port to connect to")
+	_ = viper.BindPFlag("rpcHostPort", rootCmd.PersistentFlags().Lookup("rpcHostPort"))
 
-	serverRootCaCert, err := ioutil.ReadFile(viper.GetString("server.cacert"))
-	if err != nil {
-		log.Printf("read ca cert file error:%v", err)
-		return nil, err
-	}
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(serverRootCaCert)
+	rootCmd.PersistentFlags().BoolVarP(&config.Verbose, "verbose", "v",
+		false, "print more log messages")
 
-	ta := credentials.NewTLS(&tls.Config{
-		Certificates: []tls.Certificate{clientCert},
-		RootCAs:      caCertPool,
-	})
+	rootCmd.AddCommand(cmdTimes)
+	rootCmd.AddCommand(cmdEcho)
+	rootCmd.AddCommand(cmdHello)
+	rootCmd.AddCommand(cmdHelloWorld)
 
-	rpcAddress := viper.GetString("rpcHostPort")
+	rootCmd.AddCommand(cmdGet)
+	cmdGet.Flags().BoolVarP(&jsonFlag, "json", "j", false, "Output as JSON")
+	cmdGet.Flags().BoolVarP(&formattedFlag, "formatted", "f", false, "Output as formatted value")
 
-	if config.Verbose {
-		log.Printf("rpcAddress: %s", rpcAddress)
-	}
+	cmdGet.AddCommand(cmdGetAll)
+	cmdGet.AddCommand(cmdGetFoo5)
 
-	conn, err := grpc.Dial(rpcAddress, grpc.WithTransportCredentials(ta))
-	if err != nil {
-		return nil, err
-	}
+	rootCmd.AddCommand(cmdFoo5)
 
-	return conn, nil
+	_ = rootCmd.Execute()
+
 }
