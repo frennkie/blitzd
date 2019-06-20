@@ -10,8 +10,11 @@ import (
 func RunServer() error {
 	ctx := context.Background()
 
-	v1API := v1.NewServiceServer()
+	hello := v1.NewHelloServiceServer()
+	helloWorld := v1.NewHelloWorldServiceServer()
+	metric := v1.NewMetricServer()
+	shutdown := v1.NewShutdownServer()
 
-	return grpc.RunServer(ctx, v1API)
+	return grpc.RunServer(ctx, hello, helloWorld, metric, shutdown)
 
 }

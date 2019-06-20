@@ -1,6 +1,10 @@
 package data
 
-import "time"
+import (
+	v1 "github.com/frennkie/blitzd/pkg/api/v1"
+	"github.com/golang/protobuf/ptypes"
+	"time"
+)
 
 type Cache struct {
 	Lnd     Lnd     `json:"lnd"`
@@ -104,5 +108,56 @@ func NewMetricEventBased(title string) Metric {
 	metric.Kind = EventBased
 	metric.Interval = 0
 	metric.ExpiredAfter = MaxTime
+	return metric
+}
+
+type MetricTimeBasedNg interface {
+	run()
+}
+
+func NewMetricNg(module, title string) v1.Metric {
+	now := time.Now()
+	updatedAt, _ := ptypes.TimestampProto(now)
+	expiredAfter, _ := ptypes.TimestampProto(now.Add(DefaultExpireTime))
+
+	metric := v1.Metric{
+		Kind:         0,
+		Module:       module,
+		Title:        title,
+		Interval:     time.Duration(5 * time.Second).Seconds(),
+		Timeout:      time.Duration(10 * time.Second).Seconds(),
+		UpdatedAt:    updatedAt,
+		ExpiredAfter: expiredAfter,
+		Expired:      false,
+		Value:        "",
+		Prefix:       "",
+		Suffix:       "",
+		Style:        0,
+		Text:         "",
+	}
+
+	return metric
+}
+
+func NewMetricNgStatic(module, title string) v1.Metric {
+	metric := NewMetricNg(module, title)
+	metric.Kind = v1.Kind_STATIC
+	metric.Interval = -1
+	metric.Timeout = 0
+	metric.ExpiredAfter = MaxTimeNg
+	return metric
+}
+
+func NewMetricNgTimeBased(module, title string) v1.Metric {
+	metric := NewMetricNg(module, title)
+	metric.Kind = v1.Kind_TIME_BASED
+	return metric
+}
+
+func NewMetricNgEventBased(module, title string) v1.Metric {
+	metric := NewMetricNg(module, title)
+	metric.Kind = v1.Kind_EVENT_BASED
+	metric.Interval = -1
+	metric.ExpiredAfter = MaxTimeNg
 	return metric
 }

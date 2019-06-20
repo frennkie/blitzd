@@ -50,7 +50,8 @@ func runGRPCServer(server *grpc.Server, lis net.Listener) {
 }
 
 // RunServer runs gRPC service to publish
-func RunServer(ctx context.Context, v1API pb.GreeterServer) error {
+func RunServer(ctx context.Context, APIv1Hello pb.GreeterServer, APIv1HelloWorld pb.HelloWorldGreeterServer,
+	APIv1Metric pb.MetricServiceServer, APIv1Shutdown pb.ShutdownServer) error {
 
 	// load peer cert/key, ca cert
 	serverCert, err := tls.LoadX509KeyPair(viper.GetString("server.tlscert"), viper.GetString("server.tlskey"))
@@ -73,7 +74,11 @@ func RunServer(ctx context.Context, v1API pb.GreeterServer) error {
 
 	// register service(s)
 	server := grpc.NewServer(grpc.Creds(ta))
-	pb.RegisterGreeterServer(server, v1API)
+
+	pb.RegisterGreeterServer(server, APIv1Hello)
+	pb.RegisterHelloWorldGreeterServer(server, APIv1HelloWorld)
+	pb.RegisterMetricServiceServer(server, APIv1Metric)
+	pb.RegisterShutdownServer(server, APIv1Shutdown)
 
 	port := fmt.Sprintf("%d", viper.GetInt("server.rpc.port"))
 	if viper.GetBool("server.rpc.localhost_only") {

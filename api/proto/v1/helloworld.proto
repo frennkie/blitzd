@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package v1;
+
+// The greeting service definition.
+service HelloWorldGreeter {
+    // Sends a greeting
+    rpc SayHelloWorld (HelloWorldRequest) returns (HelloWorldResponse) {
+    }
+}
+
+// The request message
+message HelloWorldRequest {
+}
+
+// The response message
+message HelloWorldResponse {
+    string message = 1;
+}

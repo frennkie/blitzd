@@ -18,14 +18,6 @@
   version = "v0.4.0"
 
 [[projects]]
-  digest = "1:1343a2963481a305ca4d051e84bc2abd16b601ee22ed324f8d605de1adb291b0"
-  name = "github.com/bgentry/speakeasy"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "4aabc24848ce5fd31929f7d1e4ea74d3709c14cd"
-  version = "v0.1.0"
-
-[[projects]]
   branch = "master"
   digest = "1:cf86fc0d8b52a62ee62ee82277505e26140cd0c81675f534681a33fac988adba"
   name = "github.com/btcsuite/btcd"
@@ -141,6 +133,14 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "f29b9f28d6f9a1f6c4e6fd5db731999eb946574b"
+
+[[projects]]
+  digest = "1:808cdddf087fb64baeae67b8dfaee2069034d9704923a3cb8bd96a995421a625"
+  name = "github.com/patrickmn/go-cache"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0"
+  version = "v2.1.0"
 
 [[projects]]
   digest = "1:93131d8002d7025da13582877c32d1fc302486775a1b06f62241741006428c5e"
@@ -378,12 +378,14 @@
   analyzer-version = 1
   input-imports = [
     "github.com/abbot/go-http-auth",
-    "github.com/bgentry/speakeasy",
     "github.com/btcsuite/btcutil",
     "github.com/fsnotify/fsnotify",
     "github.com/goji/httpauth",
     "github.com/golang/protobuf/proto",
+    "github.com/golang/protobuf/ptypes",
+    "github.com/golang/protobuf/ptypes/timestamp",
     "github.com/msteinert/pam",
+    "github.com/patrickmn/go-cache",
     "github.com/pkg/errors",
     "github.com/shirou/gopsutil/host",
     "github.com/shurcooL/httpfs/html/vfstemplate",

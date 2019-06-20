@@ -1,1 +1,4 @@
-protoc --proto_path=api\\proto\\v1 --go_out=plugins=grpc:pkg\\api\\v1 api\\proto\\v1\\helloword.proto
+REM ### run this from main dir ###
+protoc --proto_path=api\\proto\\v1 --go_out=plugins=grpc:pkg\\api\\v1 api\\proto\\v1\\helloworld.proto
+protoc --proto_path=api\\proto\\v1 --go_out=plugins=grpc:pkg\\api\\v1 api\\proto\\v1\\hello.proto
+protoc --proto_path=api\\proto\\v1 --go_out=plugins=grpc:pkg\\api\\v1 api\\proto\\v1\\blitzd.proto

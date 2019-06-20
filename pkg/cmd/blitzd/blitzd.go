@@ -45,8 +45,8 @@ func Init() {
 	log.Printf("Server TLS Key: %s", viper.GetString("server.tlskey"))
 
 	log.Printf("Client Root CA: %s", viper.GetString("client.cacert"))
-	log.Printf("Client TLS Cert: %s", viper.GetString("client.tlscert"))
-	log.Printf("Client TLS Key: %s", viper.GetString("client.tlskey"))
+	//log.Printf("Client TLS Cert: %s", viper.GetString("client.tlscert"))
+	//log.Printf("Client TLS Key: %s", viper.GetString("client.tlskey"))
 
 	if viper.GetBool("server.http.enabled") {
 		log.Printf("HTTP Server: enabled (http://localhost:%d)", viper.GetInt("server.http.port"))

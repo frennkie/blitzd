@@ -45,6 +45,7 @@ var (
 	DefaultBlitzdDir = btcutil.AppDataDir(defaultBlitzdDirName, false)
 	BlitzdDir        string
 	RpcHostPort      string
+	Verbose          bool
 
 	// ToDo check
 	// maxMsgRecvSize is the largest message our client will receive. We
@@ -54,7 +55,9 @@ var (
 )
 
 func setDefaults() {
-	log.Printf("Settings Defaults...")
+	if Verbose {
+		log.Printf("Settings Defaults...")
+	}
 
 	viper.SetDefault("blitzdDir", BlitzdDir)
 
@@ -123,7 +126,9 @@ func InitConfig() {
 
 	customCfgPath := filepath.FromSlash(filepath.Join(BlitzdDir, defaultBlitzdConfigName))
 	if _, err := os.Stat(customCfgPath); os.IsNotExist(err) {
-		log.Printf("custom config file does not exist - skipping: %s", customCfgPath)
+		if Verbose {
+			log.Printf("custom config file does not exist - skipping: %s", customCfgPath)
+		}
 	} else {
 		viper.Set("customCfgPath", customCfgPath)
 		viper.SetConfigFile(customCfgPath)
@@ -132,7 +137,9 @@ func InitConfig() {
 			os.Exit(1)
 		}
 
-		log.Printf("Merged config file: %s", customCfgPath)
+		if Verbose {
+			log.Printf("Merged config file: %s", customCfgPath)
+		}
 	}
 
 	// load env

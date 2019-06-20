@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package v1;
+
+import "google/protobuf/timestamp.proto";
+
+// The Shutdown service is used to request a clean shutdown to be performed
+// **in the background**. One attempt will be made to gracefully shutdown
+// services like LND and bitcoind. Then a system shutdown will be performed.
+service Shutdown {
+    // Sends a greeting
+    rpc DoShutdown (ShutdownRequest) returns (ShutdownResponse) {
+    }
+}
+
+// The request message
+message ShutdownRequest {
+}
+
+// The response message
+message ShutdownResponse {
+    string message = 1;
+}
+
+enum Style {
+    UNKNOWN_STYLE = 0;
+    NORMAL = 1;
+    HIGHLIGHT = 2;
+    WARNING = 3;
+    ERROR = 4;
+    CRITICAL = 5;
+}
+
+enum Kind {
+    UNKNOWN_KIND = 0;
+    STATIC = 1;
+    TIME_BASED = 2;
+    EVENT_BASED = 3;
+}
+
+message Metric {
+    Kind kind = 1;
+    string module = 2;
+    string title = 3;
+    double interval = 4;
+    double timeout = 5;
+    google.protobuf.Timestamp updated_at = 6;
+    google.protobuf.Timestamp expired_after = 7;
+    bool expired = 8;
+    string value = 9;
+    string prefix = 10;
+    string suffix = 11;
+    Style style = 12;
+    string text = 13;
+}
+
+// The request message
+message GetMetricByPathRequest {
+    string path = 1;
+}
+
+// The request message
+message GetMetricRequest {
+}
+
+// The response message
+message GetMetricResponse {
+    // API versioning: it is my best practice to specify version explicitly
+    string api = 1;
+
+    // Task entity to add
+    Metric metric = 2;
+}
+
+
+service MetricService {
+    rpc GetMetricByPath (GetMetricByPathRequest) returns (GetMetricResponse);
+    rpc GetMetricFoo5 (GetMetricRequest) returns (GetMetricResponse);
+    //    rpc GetAll
+}
+
+//// The request message
+//message GetAllRequest {
+//}
+//
+//// The response message
+//message GetAllResponse {
+//    string message = 1;
+//}

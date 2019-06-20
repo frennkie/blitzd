@@ -68,3 +68,17 @@ alias = "some-alias"
 
     # port:
     #port = 39735
+
+[module]
+
+  [module.lnd]
+  # enabled: run this module or don't
+  #enabled = true
+
+  [module.network]
+  # enabled: run this module or don't
+  #enabled = true
+
+  [module.system]
+  # enabled: run this module or don't
+  #enabled = true

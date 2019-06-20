@@ -1,6 +1,6 @@
-//go:generate protoc -I ../helloworld --go_out=plugins=grpc:../helloworld ../helloworld/helloworld.proto
+//go:generate ...
 
-// Package main implements a server for Greeter service.
+// Package v1 implements a server for Greeter service.
 package v1
 
 import (
@@ -10,15 +10,15 @@ import (
 )
 
 // server is used to implement v1.GreeterServer.
-type server struct{}
+type serverHelloWorldServer struct{}
 
-// NewServiceServer creates
-func NewServiceServer() v1.GreeterServer {
-	return &server{}
+// NewHelloServiceServer creates
+func NewHelloWorldServiceServer() v1.HelloWorldGreeterServer {
+	return &serverHelloWorldServer{}
 }
 
 // SayHello implements v1.GreeterServer
-func (s *server) SayHello(ctx context.Context, req *v1.HelloRequest) (*v1.HelloReply, error) {
-	log.Printf("Received: %v", req.Name)
-	return &v1.HelloReply{Message: "Hello " + req.Name}, nil
+func (s *serverHelloWorldServer) SayHelloWorld(ctx context.Context, req *v1.HelloWorldRequest) (*v1.HelloWorldResponse, error) {
+	log.Printf("Received: HelloWorld Request")
+	return &v1.HelloWorldResponse{Message: "Hello World"}, nil
 }

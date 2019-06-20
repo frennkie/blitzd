@@ -12,6 +12,9 @@ func main() {
 	blitzd.RootCmd.PersistentFlags().StringVar(&config.BlitzdDir, "dir",
 		config.DefaultBlitzdDir, "blitzd home directory (default is $HOME/.blitzd")
 
+	blitzd.RootCmd.PersistentFlags().BoolVarP(&config.Verbose, "verbose", "v",
+		true, "print more log messages (default: true)")
+
 	blitzd.RootCmd.AddCommand(blitzd.DemoCmd)
 	blitzd.RootCmd.AddCommand(blitzd.GenCertCmd)
 	blitzd.RootCmd.AddCommand(blitzd.GraceCmd)

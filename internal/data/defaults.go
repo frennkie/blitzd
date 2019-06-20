@@ -1,6 +1,7 @@
 package data
 
 import (
+	"github.com/golang/protobuf/ptypes"
 	"time"
 )
 
@@ -12,5 +13,6 @@ const (
 
 var (
 	// maxTime (Metric does not expire): "3000-01-01T00:00:00Z"
-	MaxTime = time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC)
+	MaxTime      = time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC)
+	MaxTimeNg, _ = ptypes.TimestampProto(MaxTime)
 )
