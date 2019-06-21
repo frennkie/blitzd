@@ -3,6 +3,7 @@ package blitzd
 import (
 	"github.com/frennkie/blitzd/internal/metric/lnd"
 	"github.com/frennkie/blitzd/internal/metric/network"
+	"github.com/frennkie/blitzd/internal/metric/raspiblitz"
 	"github.com/frennkie/blitzd/internal/metric/system"
 	"github.com/frennkie/blitzd/internal/util"
 	"github.com/frennkie/blitzd/pkg/cmd/servers"
@@ -79,6 +80,7 @@ func Init() {
 
 	lnd.Init()
 	network.Init()
+	raspiblitz.Init()
 	system.Init()
 
 	select {}
