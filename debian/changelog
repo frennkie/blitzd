@@ -1,3 +1,10 @@
+blitzd (0.11) unstable; urgency=medium
+
+  * more refactoring
+  * remove PAM (didn't not cross compile for ARM)
+
+ -- Robert Habermann <frennkie@gmail.com>  Fri, 21 Jun 2019 17:29:29 +0000
+
 blitzd (0.10) unstable; urgency=medium
 
   * internal refactoring
