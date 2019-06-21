@@ -42,8 +42,15 @@ Für Cache -> Set (der macht auch den Lock)
 
 -> Atomic .. Singleton
 
+### Additional
 
+for `htpasswd`:
 
+``` 
+sudo apt-get install apache2-utils
+```
+
+## Dev/Building
 
 ### Dev/Build Requirements
 
@@ -51,7 +58,25 @@ sudo apt-get update
 sudo apt-get install go-dep devscripts libdistro-info-perl dh-systemd protobuf-compiler
 
 
-
-
+### Git Tag
 
 git tag vX.Y[-rcZ] -m "Message.."
+
+
+### Building Blocks
+
+* Logging and Errors 
+  * errors - https://github.com/juju/errors 
+  * logrus - https://github.com/sirupsen/logrus
+* CLI and Config Management
+  * cobra (CLI) - https://github.com/spf13/cobra
+  * viper (Config) - https://github.com/spf13/viper
+* Cache/In-Memory Data Storage
+  * go-cache - https://github.com/patrickmn/go-cache
+* API -> Protocol Buffers (protobuf)
+  * gRPC - https://google.golang.org/grpc
+* Web
+  * net/http
+  * html/template **OR** plush  
+  * vfsgen (embedding static asset) https://github.com/shurcooL/vfsgen
+  * httpauth (HTTP Basic Authentication) https://github.com/goji/httpauth

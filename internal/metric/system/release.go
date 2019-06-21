@@ -25,7 +25,7 @@ func UpdateLsbRelease() {
 	log.Printf("starting goroutine: %s (%s)", title, absFilePath)
 
 	UpdateLsbReleaseFunc(module, title, absFilePath)
-	go util.FileWatcher(module, title, absFilePath, UpdateLsbReleaseFunc)
+	go util.FileWatcherOld(module, title, absFilePath, UpdateLsbReleaseFunc)
 }
 
 func UpdateLsbReleaseFunc(module, title string, absFilePath string) {

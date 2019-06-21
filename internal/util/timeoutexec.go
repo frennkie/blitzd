@@ -3,7 +3,7 @@ package util
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
+	"github.com/juju/errors"
 	"os/exec"
 	"time"
 )

@@ -15,6 +15,10 @@ func main() {
 	blitzd.RootCmd.PersistentFlags().BoolVarP(&config.Verbose, "verbose", "v",
 		false, "print more log messages")
 
+	blitzd.RootCmd.PersistentFlags().BoolVarP(&config.Trace, "trace", "t",
+		false, "print all (also debug and trace) log messages")
+	_ = blitzd.RootCmd.PersistentFlags().MarkHidden("trace")
+
 	blitzd.RootCmd.AddCommand(blitzd.DemoCmd)
 	blitzd.RootCmd.AddCommand(blitzd.GenCertCmd)
 	blitzd.RootCmd.AddCommand(blitzd.GraceCmd)

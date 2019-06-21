@@ -1,11 +1,10 @@
 package config
 
 import (
-	"fmt"
 	"github.com/btcsuite/btcutil"
 	"github.com/fsnotify/fsnotify"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -20,7 +19,8 @@ const (
 
 	// default admin user is: admin
 	// default password for admin is: changeme
-	// run this to create a new password: htpasswd -n -B admin
+	// use htpasswd (part of apache2-utils) to create a new password:
+	//   htpasswd -n -B admin
 	defaultAdminUsername = "admin"
 	defaultAdminPassword = "$2y$05$nNUGiiHDDric6W/Zml05Ku0Ij04mf62NTd/JRWQya8uxLpoGR3yJS"
 
@@ -46,6 +46,7 @@ var (
 	BlitzdDir        string
 	RpcHostPort      string
 	Verbose          bool
+	Trace            bool
 
 	// ToDo check
 	// maxMsgRecvSize is the largest message our client will receive. We
@@ -55,9 +56,7 @@ var (
 )
 
 func setDefaults() {
-	if Verbose {
-		log.Printf("Settings Defaults...")
-	}
+	log.Debug("Settings Defaults")
 
 	viper.SetDefault("blitzdDir", BlitzdDir)
 
@@ -87,9 +86,43 @@ func setDefaults() {
 	viper.SetDefault("server.rpc.localhost_only", true)
 	viper.SetDefault("server.rpc.port", DefaultRPCPort)
 
+	viper.SetDefault("module.system.enabled", true)
+	viper.SetDefault("module.system.mount1", "/")
+	viper.SetDefault("module.system.mount2", "/mnt/hdd/")
+
+	viper.SetDefault("module.lnd.enabled", false)
+	viper.SetDefault("module.lnd.rpcaddress", "localhost:10009")
+	viper.SetDefault("module.lnd.tlscert", "/home/bitcoin/.lnd/tls.cert")
+
+	viper.SetDefault("module.network.enabled", false)
+	viper.SetDefault("module.network.nic", "eth0")
+
+	viper.SetDefault("module.raspiblitz.enabled", false)
+	viper.SetDefault("module.raspiblitz.path", "/mnt/hdd/raspiblitz.conf")
+
+}
+
+func SetupLogger() {
+	// setup logrus
+	// Output to stdout instead of the default stderr
+	// Can be any io.Writer, see below for File example
+	log.SetOutput(os.Stdout)
+
+	// Default is to show "Info" and above.
+	// Verbose enables "Debug".
+	// Trace enables "Debug" and "Trace".
+	if Trace {
+		log.SetLevel(log.TraceLevel)
+	} else {
+		if Verbose {
+			log.SetLevel(log.DebugLevel)
+		}
+	}
 }
 
 func InitConfig() {
+	SetupLogger()
+
 	// First set default values.
 	// Then read default (/etc/blitzd.toml|C:\blitzd.toml)
 	// Then - if it exists - merge any settings from file "blitzd.toml" in home directory
@@ -107,8 +140,7 @@ func InitConfig() {
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println("Can't read config:", err)
-		os.Exit(1)
+		log.Fatal("Can't read config:", err)
 	}
 
 	// check custom config
@@ -116,9 +148,8 @@ func InitConfig() {
 		// BlitzdDir does not exist
 		err = os.MkdirAll(filepath.FromSlash(BlitzdDir), 0700)
 		if err != nil {
-			fmt.Println("Dir does not exist and can't be created: ", BlitzdDir)
-			fmt.Println("err: ", err)
-			os.Exit(1)
+			log.Warn("Dir does not exist and can't be created: ", BlitzdDir)
+			log.Fatal("err: ", err)
 		}
 	} else {
 
@@ -127,19 +158,16 @@ func InitConfig() {
 	customCfgPath := filepath.FromSlash(filepath.Join(BlitzdDir, defaultBlitzdConfigName))
 	if _, err := os.Stat(customCfgPath); os.IsNotExist(err) {
 		if Verbose {
-			log.Printf("custom config file does not exist - skipping: %s", customCfgPath)
+			log.Debug("custom config file does not exist - skipping: %s", customCfgPath)
 		}
 	} else {
 		viper.Set("customCfgPath", customCfgPath)
 		viper.SetConfigFile(customCfgPath)
 		if err := viper.MergeInConfig(); err != nil {
-			fmt.Println("Can't read config for merge:", err)
-			os.Exit(1)
+			log.Fatal("Can't read config for merge:", err)
 		}
 
-		if Verbose {
-			log.Printf("Merged config file: %s", customCfgPath)
-		}
+		log.Debug("Merged config file: %s", customCfgPath)
 	}
 
 	// load env
@@ -149,9 +177,10 @@ func InitConfig() {
 	// config watcher
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
-		fmt.Println("Config file changed: ", e.Name)
+		log.WithFields(log.Fields{"file": e.Name}).Debug("Config file changed")
 	})
 
+	// ToDo(frennkie) remove this
 	// store copy of parsed/merged config
 	_ = viper.WriteConfigAs(filepath.Join(BlitzdDir, "saved.toml"))
 

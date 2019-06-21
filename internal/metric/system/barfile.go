@@ -22,7 +22,7 @@ func UpdateFileBar() {
 	log.Printf("starting goroutine: %s (%s)", title, absFilePath)
 
 	UpdateFileBarFunc(module, title, absFilePath)
-	go util.FileWatcher(module, title, absFilePath, UpdateFileBarFunc)
+	go util.FileWatcherOld(module, title, absFilePath, UpdateFileBarFunc)
 }
 
 func UpdateFileBarFunc(module, title string, absFilePath string) {

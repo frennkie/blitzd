@@ -71,14 +71,38 @@ alias = "some-alias"
 
 [module]
 
+  [module.system]
+	  # enabled: run this module or don't
+	  #enabled = true
+	  
+	  # mount1: mount number 1
+	  #mount1 = "/"
+	  
+	  # mount2: mount number 2
+	  #mount2 = "/mnt/hdd/"
+	  
+
   [module.lnd]
-  # enabled: run this module or don't
-  #enabled = true
+	  # enabled: run this module or don't
+	  #enabled = false
+	  
+	  # rpcaddress: Host and Port of LND RPC (check lnd.conf: "restlisten")
+	  #rpcaddress = "localhost:10009"
+
+	  # tlscert:
+	  #tlscert = "/home/bitcoin/.lnd/tls.cert"
 
   [module.network]
-  # enabled: run this module or don't
-  #enabled = true
+	  # enabled: run this module or don't
+	  #enabled = false
+	  
+	  # nic: Name of Network Interface Card to use (usually "eth0" or "wifi0")
+	  #nic = "eth0"
+	  
 
-  [module.system]
-  # enabled: run this module or don't
-  #enabled = true
+  [module.raspiblitz]
+	  # enabled: run this module or don't
+	  #enabled = false
+	  
+	  # path: path to raspiblitz config file
+	  #path" = "/mnt/hdd/raspiblitz.conf"

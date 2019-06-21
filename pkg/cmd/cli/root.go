@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"github.com/frennkie/blitzd/internal/config"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -15,7 +16,7 @@ var rootCmd = &cobra.Command{
                 More info at: https://github.com/frennkie/blitzd`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Do Stuff Here
-		fmt.Println("given RPCHostPort: " + viper.GetString("rpcHostPort"))
+		log.WithFields(log.Fields{"rpcHostPort": viper.GetString("rpcHostPort")}).Debug("cli config")
 	},
 }
 
@@ -30,7 +31,11 @@ func Init() {
 	_ = viper.BindPFlag("rpcHostPort", rootCmd.PersistentFlags().Lookup("rpcHostPort"))
 
 	rootCmd.PersistentFlags().BoolVarP(&config.Verbose, "verbose", "v",
-		false, "print more log messages")
+		false, "print debug log messages")
+
+	rootCmd.PersistentFlags().BoolVarP(&config.Trace, "trace", "t",
+		false, "print all (also debug and trace) log messages")
+	_ = rootCmd.PersistentFlags().MarkHidden("trace")
 
 	rootCmd.AddCommand(cmdTimes)
 	rootCmd.AddCommand(cmdEcho)
