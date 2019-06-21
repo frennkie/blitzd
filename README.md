@@ -12,14 +12,6 @@ export PATH="$PATH:$GOPATH"   # add GOPATH to PATH
 ```
 
 
-#### install rice (for embedding templates in binary)
-
-```bash
-go get github.com/GeertJohan/go.rice
-go get github.com/GeertJohan/go.rice/rice
-```
-
-
 #### make build
 
 ```bash
@@ -50,7 +42,7 @@ Für Cache -> Set (der macht auch den Lock)
 
 -> Atomic .. Singleton
 
-memstore
+
 
 
 ### Dev/Build Requirements
@@ -59,18 +51,6 @@ sudo apt-get update
 sudo apt-get install go-dep devscripts libdistro-info-perl dh-systemd protobuf-compiler
 
 
-
-#### PAM - grande problem
-
-`sudo apt-get install libpam0g-dev`
-
-ToDo Does not cross compile for armhf
-
-https://unix.stackexchange.com/questions/66392/how-to-authenticate-a-user-with-pam-that-is-not-the-user-that-started-the-appli
-
-sudo apt-get install gcc-7-arm-linux-gnueabihf gcc-7-arm-linux-gnueabihf-base
-
-CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 go build -v -o myprogram -ldflags="-extld=$CC"
 
 
 

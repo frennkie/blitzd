@@ -2,7 +2,6 @@ package servers
 
 import (
 	"fmt"
-	auth "github.com/abbot/go-http-auth"
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/internal/util"
 	v1 "github.com/frennkie/blitzd/pkg/api/v1"
@@ -13,64 +12,21 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"runtime"
 )
 
 var (
-	authOptsPam = httpauth.AuthOptions{
-		Realm:    "Restricted (PAM)",
-		AuthFunc: authFromPam,
-	}
-
-	authOptsConfig = httpauth.AuthOptions{
+	authOpts = httpauth.AuthOptions{
 		Realm:    "Restricted (Config)",
 		AuthFunc: authFromConfig,
 	}
-
-	authOpts httpauth.AuthOptions
 )
-
-func authFromPam(username, password string, r *http.Request) bool {
-	// ToDo(frennkie) do something
-	_ = util.CheckUser(username)
-	return util.CheckUserPassword(username, password)
-}
 
 func authFromConfig(username, password string, r *http.Request) bool {
 	return username == viper.GetString("admin.username") &&
 		util.CheckPasswordHash(password, viper.GetString("admin.password"))
 }
 
-// ToDo remove this and all usages!
-func authSecretFromConfig(user, _ string) string {
-	if user == viper.GetString("admin.username") {
-		// default password is "changeme"
-		return viper.GetString("admin.password")
-	}
-	return ""
-}
-
 func Secure() {
-
-	switch runtime.GOOS {
-	case "windows":
-		authOpts = authOptsConfig
-	case "linux":
-		authOpts = authOptsPam
-	default:
-		authOpts = authOptsConfig
-	}
-
-	// ToDo(frennkie) hm.....
-	//var mSlice []*v1.Metric
-	//var m = data.Cache.Items()
-	//
-	//for _, v := range m {
-	//	metricObject := interface{}(v.Object).(v1.Metric)
-	//	mSlice = append(mSlice, &metricObject)
-	//}
-
-	authenticator := auth.NewBasicAuthenticator("RaspiBlitz Secure Server", authSecretFromConfig)
 
 	infoMux := http.NewServeMux()
 
@@ -96,8 +52,8 @@ func Secure() {
 	<h1>About</h1>
 	<ul>
 		<li>Me: %s</li>
-		<li><a href="/foobar/">Foobar</a></li>
-		<li><a href="/info/">Info</a></li>
+		<li><a href="/foobar/">Foobar</a> (password protected)</li>
+		<li><a href="/info/">Info</a> (password protected)</li>
 	</ul>
 	<br>
 
@@ -124,38 +80,17 @@ func Secure() {
 
 		})
 
-	infoMux.HandleFunc("/foobar/", authenticator.Wrap(func(w http.ResponseWriter, r *auth.AuthenticatedRequest) {
-
-		htmlRaw := `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>BlitzInfo Daemon - REST API</title>
-</head>
-<body>
-	<h2>Hello: %s</h2>
-</body>
-</html>`
-
-		values := []interface{}{r.Username}
-
-		html := fmt.Sprintf(htmlRaw, values...)
-
-		_, _ = fmt.Fprintf(w, "%s", html)
-
-	}))
-
-	infoMux.Handle("/foobar2/",
+	infoMux.Handle("/foobar/",
 		httpauth.BasicAuth(authOpts)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 			htmlRaw := `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>BlitzInfo Daemon - REST API</title>
+<title>BlitzInfo Daemon - /foobar/</title>
 </head>
 <body>
-	<h2>Hello (Config|PAM): %s</h2>
+	<h2>Hello: %s</h2>
 </body>
 </html>`
 
@@ -166,50 +101,8 @@ func Secure() {
 			_, _ = fmt.Fprintf(w, "%s", html)
 		})))
 
-	infoMux.Handle("/foobar3/",
-		httpauth.BasicAuth(authOptsConfig)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-			htmlRaw := `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>BlitzInfo Daemon - REST API</title>
-</head>
-<body>
-	<h2>Hello (Config): %s</h2>
-</body>
-</html>`
-
-			values := []interface{}{"foo3"}
-
-			html := fmt.Sprintf(htmlRaw, values...)
-
-			_, _ = fmt.Fprintf(w, "%s", html)
-		})))
-
-	infoMux.Handle("/foobar4/",
-		httpauth.BasicAuth(authOptsPam)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-			htmlRaw := `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>BlitzInfo Daemon - REST API</title>
-</head>
-<body>
-	<h2>Hello (PAM): %s</h2>
-</body>
-</html>`
-
-			values := []interface{}{"foo4"}
-
-			html := fmt.Sprintf(htmlRaw, values...)
-
-			_, _ = fmt.Fprintf(w, "%s", html)
-		})))
-
-	infoMux.HandleFunc("/info/",
-		authenticator.Wrap(func(w http.ResponseWriter, r *auth.AuthenticatedRequest) {
+	infoMux.Handle("/info/",
+		httpauth.BasicAuth(authOpts)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 			infoTemplate, err := vfstemplate.ParseFiles(web.Assets, template.New("info.tmpl"), "info.tmpl")
 			if err != nil {
@@ -236,7 +129,8 @@ func Secure() {
 				log.Println(err.Error())
 				http.Error(w, http.StatusText(500), 500)
 			}
-		}))
+
+		})))
 
 	port := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
 
