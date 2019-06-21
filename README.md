@@ -59,13 +59,18 @@ sudo apt-get update
 sudo apt-get install go-dep devscripts libdistro-info-perl dh-systemd protobuf-compiler
 
 
-#### PAM
+
+#### PAM - grande problem
 
 `sudo apt-get install libpam0g-dev`
 
 ToDo Does not cross compile for armhf
 
 https://unix.stackexchange.com/questions/66392/how-to-authenticate-a-user-with-pam-that-is-not-the-user-that-started-the-appli
+
+sudo apt-get install gcc-7-arm-linux-gnueabihf gcc-7-arm-linux-gnueabihf-base
+
+CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 go build -v -o myprogram -ldflags="-extld=$CC"
 
 
 
