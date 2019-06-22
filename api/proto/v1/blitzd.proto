@@ -3,16 +3,6 @@ syntax = "proto3";
 package v1;
 
 import "google/protobuf/timestamp.proto";
-import "google/api/annotations.proto";
-
-//import "protoc-gen-swagger/options/annotations.proto";
-//
-//option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
-//    info: {
-//        title: "ToDo service";
-//        version: "0.12";
-//    };
-//};
 
 // An empty request message
 message EmptyRequest {
@@ -103,12 +93,7 @@ service MetricService {
 
     rpc GetMetricAll (EmptyRequest) returns (GetMetricAllResponse);
 
-    rpc GetMetricFoo (GetMetricFooRequest) returns (GetMetricResponse) {
-      option (google.api.http) = {
-        post: "/v1/get/foo"
-        body: "*"
-      };
-    }
+    rpc GetMetricFoo (GetMetricFooRequest) returns (GetMetricResponse);
 
 };
 

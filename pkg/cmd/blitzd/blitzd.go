@@ -1,8 +1,6 @@
 package blitzd
 
 import (
-	"context"
-	"fmt"
 	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/metric/bitcoind"
 	"github.com/frennkie/blitzd/internal/metric/lnd"
@@ -11,7 +9,6 @@ import (
 	"github.com/frennkie/blitzd/internal/metric/system"
 	"github.com/frennkie/blitzd/internal/util"
 	"github.com/frennkie/blitzd/pkg/cmd/servers"
-	"github.com/frennkie/blitzd/pkg/protocol/rest"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -88,17 +85,17 @@ func Init() {
 		"enabled":        config.C.Server.Rest.Enabled,
 		"localhost_only": config.C.Server.Rest.LocalhostOnly,
 		"port":           config.C.Server.Rest.Port}).Debug("starting if enabled")
-	if config.C.Server.Rest.Enabled {
-
-		ctx := context.Background()
-
-		// run HTTP gateway
-		go func() {
-			_ = rest.RunServer(ctx,
-				fmt.Sprintf("%d", config.C.Server.Rpc.Port),
-				fmt.Sprintf("%d", config.C.Server.Rest.Port))
-		}()
-	}
+	//if config.C.Server.Rest.Enabled {
+	//
+	//	ctx := context.Background()
+	//
+	//	// run HTTP gateway
+	//	go func() {
+	//		_ = rest.RunServer(ctx,
+	//			fmt.Sprintf("%d", config.C.Server.Rpc.Port),
+	//			fmt.Sprintf("%d", config.C.Server.Rest.Port))
+	//	}()
+	//}
 
 	bitcoind.Init()
 	lnd.Init()
