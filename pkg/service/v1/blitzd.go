@@ -69,9 +69,17 @@ func (s *metricServer) GetMetricAll(context.Context, *v1.EmptyRequest) (*v1.GetM
 	var mSlice []*v1.Metric
 	var m = data.Cache.Items()
 
-	// ToDo(frennkie) try-catch anything here..?!
+	// ToDo(frennkie) try-catch anything here..?! Also this would be nice as {"module.title": Metric, ...}
 	for _, v := range m {
 		metricObject := interface{}(v.Object).(v1.Metric)
+
+		expiredAfter, _ := ptypes.Timestamp(metricObject.ExpiredAfter)
+		if time.Now().After(expiredAfter) {
+			metricObject.Expired = true
+		} else {
+			metricObject.Expired = false
+		}
+
 		mSlice = append(mSlice, &metricObject)
 	}
 
