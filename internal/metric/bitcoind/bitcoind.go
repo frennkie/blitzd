@@ -24,7 +24,7 @@ func Init() {
 	if config.C.Module.Bitcoind.Enabled {
 		logM.Info("starting")
 	} else {
-		logM.Warn("skipping - disabled by config")
+		logM.Warn("disabled by config - skipping")
 		return
 	}
 

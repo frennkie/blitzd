@@ -28,7 +28,7 @@ func Init() {
 	if config.C.Module.System.Enabled {
 		logM.Info("starting")
 	} else {
-		logM.Warn("skipping - disabled by config")
+		logM.Warn("disabled by config - skipping")
 		return
 	}
 
@@ -37,14 +37,12 @@ func Init() {
 	operatingSystem()
 
 	// start goroutine for event-based
+	go etcIssue()
+	go lsbRelease()
 
 	// start goroutine for time-based
 	go uptime()
 
-	// ToDo(frennkie) sort out
-	if runtime.GOOS != "windows" {
-		go lsbRelease()
-	}
 }
 
 func arch() {
@@ -102,15 +100,15 @@ func lsbRelease() {
 	absFilePath := "/etc/lsb-release"
 
 	if _, err := os.Stat(absFilePath); os.IsNotExist(err) {
-		log.Printf("file does not exist - skipping: %s", absFilePath)
+		logM.WithFields(log.Fields{"file": absFilePath}).Warn("does not exist - skipping")
 		return
 	}
 
+	logM.WithFields(log.Fields{"file": absFilePath}).Info("initial update")
 	lsbReleaseFunc(absFilePath)
-	logM.WithFields(log.Fields{"file": absFilePath}).Info("done initial udpate")
 
+	logM.WithFields(log.Fields{"file": absFilePath}).Info("starting goroutine")
 	go util.FileWatcher(absFilePath, lsbReleaseFunc)
-	logM.WithFields(log.Fields{"file": absFilePath}).Info("started goroutine")
 }
 
 func lsbReleaseFunc(absFilePath string) {
@@ -140,6 +138,50 @@ func lsbReleaseFunc(absFilePath string) {
 	tmp3 := strings.Replace(tmp2, "\"", "", -1)
 	m.Value = tmp3
 	m.Text = tmp3
+
+	data.Cache.Set(fmt.Sprintf("%s.%s", module, title), m, cache.DefaultExpiration)
+}
+
+func etcIssue() {
+	absFilePath := "/etc/issue"
+
+	if _, err := os.Stat(absFilePath); os.IsNotExist(err) {
+		logM.WithFields(log.Fields{"file": absFilePath}).Warn("does not exist - skipping")
+		return
+	}
+
+	logM.WithFields(log.Fields{"file": absFilePath}).Info("initial update")
+	etcIssueFunc(absFilePath)
+
+	logM.WithFields(log.Fields{"file": absFilePath}).Info("starting goroutine")
+	go util.FileWatcher(absFilePath, etcIssueFunc)
+}
+
+func etcIssueFunc(absFilePath string) {
+	logM.WithFields(log.Fields{"file": absFilePath, "kind": v1.Kind_EVENT_BASED}).Debug("update")
+
+	title := "etc_issue"
+	m := data.NewMetricEventBased(module, title)
+
+	file, err := os.Open(absFilePath)
+
+	if err != nil {
+		log.Fatalf("failed opening file: %s", err)
+	}
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+	var txtlines []string
+
+	for scanner.Scan() {
+		txtlines = append(txtlines, scanner.Text())
+	}
+
+	_ = file.Close()
+
+	firstLine := txtlines[0]
+	m.Value = firstLine
+	m.Text = firstLine
 
 	data.Cache.Set(fmt.Sprintf("%s.%s", module, title), m, cache.DefaultExpiration)
 }

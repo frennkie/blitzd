@@ -27,7 +27,7 @@ func Init() {
 	if config.C.Module.RaspiBlitz.Enabled {
 		logM.Info("starting")
 	} else {
-		logM.Warn("skipping - disabled by config")
+		logM.Warn("disabled by config - skipping")
 		return
 	}
 
@@ -54,18 +54,18 @@ func Init() {
 }
 
 func raspiBlitzConfig() {
-	absFilePath := config.C.Module.RaspiBlitz.ConfigPath
+	absFilePath := config.C.Module.RaspiBlitz.Config
 
 	if _, err := os.Stat(absFilePath); os.IsNotExist(err) {
-		log.Printf("file does not exist - skipping: %s", absFilePath)
+		logM.WithFields(log.Fields{"file": absFilePath}).Warn("does not exist - skipping")
 		return
 	}
 
+	logM.WithFields(log.Fields{"file": absFilePath}).Info("initial update")
 	raspiBlitzConfigFunc(absFilePath)
-	logM.WithFields(log.Fields{"file": absFilePath}).Info("done initial udpate")
 
+	logM.WithFields(log.Fields{"file": absFilePath}).Info("starting goroutine")
 	go util.FileWatcher(absFilePath, raspiBlitzConfigFunc)
-	logM.WithFields(log.Fields{"file": absFilePath}).Info("started goroutine")
 }
 
 func raspiBlitzConfigFunc(absFilePath string) {

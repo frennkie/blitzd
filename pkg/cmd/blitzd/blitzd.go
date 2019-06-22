@@ -2,6 +2,7 @@ package blitzd
 
 import (
 	"github.com/frennkie/blitzd/internal/config"
+	"github.com/frennkie/blitzd/internal/metric/bitcoind"
 	"github.com/frennkie/blitzd/internal/metric/lnd"
 	"github.com/frennkie/blitzd/internal/metric/network"
 	"github.com/frennkie/blitzd/internal/metric/raspiblitz"
@@ -78,6 +79,7 @@ func Init() {
 		log.Printf("RPC Server: disabled")
 	}
 
+	bitcoind.Init()
 	lnd.Init()
 	network.Init()
 	raspiblitz.Init()

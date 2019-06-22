@@ -83,10 +83,12 @@ type Bitcoind struct {
 	Enabled     bool   `mapstructure:"enabled" toml:"enabled"`
 	RpcAddress  string `mapstructure:"rpc_address" toml:"rpc_address"`
 	RpcPassword string `mapstructure:"rpc_password" toml:"rpc_password"`
+	RpcUser     string `mapstructure:"rpc_user" toml:"rpc_user"`
 }
 
 type Lnd struct {
 	Enabled    bool   `mapstructure:"enabled" toml:"enabled"`
+	Macaroon   string `mapstructure:"macaroon" toml:"macaroon"`
 	RpcAddress string `mapstructure:"rpc_address" toml:"rpc_address"`
 	TlsCert    string `mapstructure:"tls_cert" toml:"tls_cert"`
 }
@@ -97,8 +99,8 @@ type Network struct {
 }
 
 type RaspiBlitz struct {
-	Enabled    bool   `mapstructure:"enabled" toml:"enabled"`
-	ConfigPath string `mapstructure:"config_path" toml:"config_path"`
+	Enabled bool   `mapstructure:"enabled" toml:"enabled"`
+	Config  string `mapstructure:"config" toml:"config"`
 }
 
 type System struct {
@@ -144,10 +146,12 @@ func NewConfig() *Config {
 			Bitcoind: Bitcoind{
 				Enabled:     false,
 				RpcAddress:  "localhost:8332",
-				RpcPassword: "",
+				RpcPassword: "bitcoin_rpc_password",
+				RpcUser:     "raspibolt",
 			},
 			Lnd: Lnd{
 				Enabled:    false,
+				Macaroon:   "/home/bitcoin/.lnd/data/chain/bitcoin/mainnet/readonly.macaroon",
 				RpcAddress: "localhost:10009",
 				TlsCert:    "/home/bitcoin/.lnd/tls.cert",
 			},
@@ -156,8 +160,8 @@ func NewConfig() *Config {
 				Nic:     "eth0",
 			},
 			RaspiBlitz: RaspiBlitz{
-				Enabled:    false,
-				ConfigPath: "/mnt/hdd/raspiblitz.conf",
+				Enabled: false,
+				Config:  "/mnt/hdd/raspiblitz.conf",
 			},
 			System: System{
 				Enabled: true,
