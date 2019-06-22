@@ -48,7 +48,7 @@ func Init() {
 	}()
 
 	go foo6()
-	go bitcoindRpc()
+	go blockCount()
 
 }
 
@@ -74,40 +74,43 @@ func foo6() {
 	}
 }
 
-func bitcoindRpc() {
-	title := "bitcoin"
-	logM.WithFields(log.Fields{"title": title}).Info("started goroutine")
+func blockCount() {
+	title := "block_count"
+	logM.Info("started goroutine")
+
+	// Connect to local bitcoind core RPC server using HTTP POST mode.
+	connCfg := &rpcclient.ConnConfig{
+		Host:         config.C.Module.Bitcoind.RpcAddress,
+		User:         config.C.Module.Bitcoind.RpcUser,
+		Pass:         config.C.Module.Bitcoind.RpcPassword,
+		HTTPPostMode: true,
+		DisableTLS:   true,
+	}
 
 	for {
 		m := data.NewMetricTimeBased(module, title)
 		m.Interval = 60
 
-		// gather and set data here
-		// create new client instance
-		client, err := rpcclient.New(&rpcclient.ConnConfig{
-			HTTPPostMode: true,
-			DisableTLS:   true,
-			Host:         config.C.Module.Bitcoind.RpcAddress,
-			User:         config.C.Module.Bitcoind.RpcUser,
-			Pass:         config.C.Module.Bitcoind.RpcPassword,
-		}, nil)
+		// connect
+		client, err := rpcclient.New(connCfg, nil)
 		if err != nil {
-			log.Fatalf("error creating new btc client: %v", err)
+			logM.WithFields(log.Fields{"title": m.Title, "err": err}).Error("failed to create client")
 		}
 
-		// list accounts
-		accounts, err := client.ListAccounts()
+		// Get the current block count.
+		blockCount, err := client.GetBlockCount()
 		if err != nil {
-			log.Fatalf("error listing accounts: %v", err)
+			logM.WithFields(log.Fields{"title": m.Title, "err": err}).Error("client failed")
 		}
-		// iterate over accounts (map[string]btcutil.Amount) and write to stdout
-		for label, amount := range accounts {
-			log.Printf("%s: %s", label, amount)
-		}
+		m.Value = fmt.Sprintf("%d", blockCount)
+		m.Text = fmt.Sprintf("%d", blockCount)
 
 		// update Metric in Cache
 		data.Cache.Set(fmt.Sprintf("%s.%s", m.Module, m.Title), m, cache.NoExpiration)
-		logM.WithFields(log.Fields{"title": m.Title, "value": m.Value}).Trace("updated metric")
+		logM.WithFields(log.Fields{"title": m.Title, "value": blockCount}).Trace("updated metric")
+
+		// close client connection
+		client.Shutdown()
 
 		// sleep for Interval duration
 		time.Sleep(time.Duration(m.Interval) * time.Second)
