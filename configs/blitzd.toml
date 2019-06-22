@@ -61,14 +61,14 @@ alias = "some-alias"
 
   [server.rest_tor]
     # enabled: run this server - or don't
-    #enabled = true
+    #enabled = false
 
     # port:
     #port = 39444
 
   [server.rest]
     # enabled: run this server - or don't
-    #enabled = true
+    #enabled = false
 
     # localhost_only: whether to listen on localhost only or on all interfaces
     #localhost_only = true
@@ -78,7 +78,7 @@ alias = "some-alias"
 
   [server.rest_tor]
     # enabled: run this server - or don't
-    #enabled = true
+    #enabled = false
 
     # port:
     #port = 39736
@@ -95,7 +95,7 @@ alias = "some-alias"
 
   [server.rpc_tor]
     # enabled: run this server - or don't
-    #enabled = true
+    #enabled = false
 
     # port:
     #port = 39738
