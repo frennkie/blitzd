@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"github.com/frennkie/blitzd/internal/config"
+	"github.com/frennkie/blitzd/pkg/cmd/blitzd"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -13,7 +14,7 @@ const (
 )
 
 var rootCmd = &cobra.Command{
-	Version: "1.2.3",
+	Version: blitzd.BuildVersion + " (built: " + blitzd.BuildTime + ")",
 	Use:     "blitz-cli",
 	Short:   "blitz-cli is the CLI for blitzd",
 	Long: `An easy way to access data from blitzd.
@@ -41,19 +42,14 @@ func Init() {
 		false, "print all (also debug and trace) log messages")
 	_ = rootCmd.PersistentFlags().MarkHidden("trace")
 
-	rootCmd.AddCommand(cmdTimes)
-	rootCmd.AddCommand(cmdEcho)
+	// ToDo(frennkie) remove these two
 	rootCmd.AddCommand(cmdHello)
 	rootCmd.AddCommand(cmdHelloWorld)
 
 	rootCmd.AddCommand(cmdGet)
 	cmdGet.Flags().BoolVarP(&jsonFlag, "json", "j", false, "Output as JSON")
 	cmdGet.Flags().BoolVarP(&formattedFlag, "formatted", "f", false, "Output as formatted value")
-
 	cmdGet.AddCommand(cmdGetAll)
-	cmdGet.AddCommand(cmdGetFoo5)
-
-	rootCmd.AddCommand(cmdFoo5)
 
 	rootCmd.AddCommand(cmdShutdown)
 
