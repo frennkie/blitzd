@@ -48,14 +48,15 @@ func NewMetricStatic(module, title string) v1.Metric {
 	metric := NewMetric(module, title)
 	metric.Kind = v1.Kind_STATIC
 	metric.Interval = -1
-	metric.Timeout = 0
 	metric.ExpiredAfter = MaxTime
+	metric.Style = v1.Style_NORMAL
 	return metric
 }
 
 func NewMetricTimeBased(module, title string) v1.Metric {
 	metric := NewMetric(module, title)
 	metric.Kind = v1.Kind_TIME_BASED
+	metric.Style = v1.Style_NORMAL
 	return metric
 }
 
@@ -64,5 +65,6 @@ func NewMetricEventBased(module, title string) v1.Metric {
 	metric.Kind = v1.Kind_EVENT_BASED
 	metric.Interval = -1
 	metric.ExpiredAfter = MaxTime
+	metric.Style = v1.Style_NORMAL
 	return metric
 }

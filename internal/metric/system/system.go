@@ -20,6 +20,5 @@ func Init() {
 	// ToDo(frennkie) sort out
 	if runtime.GOOS != "windows" {
 		go UpdateLsbRelease()
-		go UpdateFileBar()
 	}
 }

@@ -14,7 +14,7 @@ import (
 // TODO replace with /etc/issue
 func UpdateLsbRelease() {
 	module := "system"
-	title := "lsb-release"
+	title := "lsb_release"
 	absFilePath := "/etc/lsb-release"
 
 	if _, err := os.Stat(absFilePath); os.IsNotExist(err) {

@@ -5,28 +5,34 @@ import (
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/patrickmn/go-cache"
 	"github.com/shirou/gopsutil/host"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"time"
 )
 
+const (
+	module = "system"
+)
+
 func Uptime() {
-	module := "system"
 	title := "uptime"
-	log.Printf("starting goroutine: %s.%s", module, title)
+
+	logCtx := log.WithFields(log.Fields{"module": module, "title": title})
+	logCtx.Debug("started goroutine")
+
 	for {
 		m := data.NewMetricTimeBased(module, title)
 		m.Interval = time.Duration(1 * time.Second).Seconds()
 
 		uptime, err := host.Uptime()
 		if err != nil {
-			log.Printf("Error Updating: %s - %s", m.Title, err)
+			logCtx.WithFields(log.Fields{"err": err}).Warn("error updating metric")
 		} else {
 			m.Value = fmt.Sprintf("%d", uptime)
 			m.Text = fmt.Sprintf("%ds", uptime)
 
-			// update data in metric.Cache
-			//log.Printf("Updating: %s.%s", module, title)
-			data.Cache.Set(fmt.Sprintf("%s.%s", module, title), m, cache.DefaultExpiration)
+			// update Metric in Cache
+			data.Cache.Set(fmt.Sprintf("%s.%s", m.Module, m.Title), m, cache.DefaultExpiration)
+			logCtx.WithFields(log.Fields{"value": m.Value}).Trace("updated metric")
 
 			time.Sleep(time.Duration(m.Interval) * time.Second)
 		}

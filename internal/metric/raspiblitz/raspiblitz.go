@@ -78,7 +78,7 @@ func raspiBlitzConfigFunc(absFilePath string) {
 	for scanner.Scan() {
 		s := strings.Split(scanner.Text(), "=")
 		if len(s) == 2 {
-			mConfig[s[0]] = s[1]
+			mConfig[s[0]] = strings.Trim(s[1], "'")
 		}
 	}
 
