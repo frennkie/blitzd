@@ -59,7 +59,14 @@ alias = "some-alias"
     # port:
     #port = 39443
 
-  [server.rpc]
+  [server.rest_tor]
+    # enabled: run this server - or don't
+    #enabled = true
+
+    # port:
+    #port = 39444
+
+  [server.rest]
     # enabled: run this server - or don't
     #enabled = true
 
@@ -68,6 +75,30 @@ alias = "some-alias"
 
     # port:
     #port = 39735
+
+  [server.rest_tor]
+    # enabled: run this server - or don't
+    #enabled = true
+
+    # port:
+    #port = 39736
+
+  [server.rpc]
+    # enabled: run this server - or don't
+    #enabled = true
+
+    # localhost_only: whether to listen on localhost only or on all interfaces
+    #localhost_only = true
+
+    # port:
+    #port = 39737
+
+  [server.rpc_tor]
+    # enabled: run this server - or don't
+    #enabled = true
+
+    # port:
+    #port = 39738
 
 [module]
 
@@ -117,3 +148,12 @@ alias = "some-alias"
 
     # mount2: mount number 2
     #mount2 = "/mnt/hdd/"
+
+[service]
+
+  [service.shutdown]
+    # enabled: service is enabled or not
+    #enabled = false
+
+    # script: shutdown script to run when service is called
+    #script = "/home/admin/XXreboot.sh"

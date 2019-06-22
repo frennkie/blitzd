@@ -59,11 +59,12 @@ type Config struct {
 	CustomConfigPath  string `mapstructure:"custom_config_path" toml:"custom_config_path"`
 	DefaultConfigPath string `mapstructure:"default_config_path" toml:"default_config_path"`
 
-	Alias  string `mapstructure:"alias" toml:"alias"`
-	Admin  Admin  `mapstructure:"admin" toml:"admin"`
-	Module Module `mapstructure:"module" toml:"module"`
-	Client Client `mapstructure:"client" toml:"client"`
-	Server Server `mapstructure:"server" toml:"server"`
+	Alias   string  `mapstructure:"alias" toml:"alias"`
+	Admin   Admin   `mapstructure:"admin" toml:"admin"`
+	Module  Module  `mapstructure:"module" toml:"module"`
+	Client  Client  `mapstructure:"client" toml:"client"`
+	Server  Server  `mapstructure:"server" toml:"server"`
+	Service Service `mapstructure:"service" toml:"service"`
 }
 
 type Admin struct {
@@ -116,18 +117,36 @@ type Client struct {
 }
 
 type Server struct {
-	CaCert  string       `mapstructure:"ca_cert" toml:"ca_cert"`
-	TlsCert string       `mapstructure:"tls_cert" toml:"tls_cert"`
-	TlsKey  string       `mapstructure:"tls_key" toml:"tls_key"`
-	Http    ServerConfig `mapstructure:"http" toml:"http"`
-	Https   ServerConfig `mapstructure:"https" toml:"https"`
-	Rpc     ServerConfig `mapstructure:"rpc" toml:"rpc"`
+	CaCert   string          `mapstructure:"ca_cert" toml:"ca_cert"`
+	TlsCert  string          `mapstructure:"tls_cert" toml:"tls_cert"`
+	TlsKey   string          `mapstructure:"tls_key" toml:"tls_key"`
+	Http     ServerConfig    `mapstructure:"http" toml:"http"`
+	Https    ServerConfig    `mapstructure:"https" toml:"https"`
+	HttpsTor ServerConfigTor `mapstructure:"https_tor" toml:"https_tor"`
+	Rest     ServerConfig    `mapstructure:"rest" toml:"rest"`
+	RestTor  ServerConfigTor `mapstructure:"rest" toml:"rest_tor"`
+	Rpc      ServerConfig    `mapstructure:"rpc" toml:"rpc"`
+	RpcTor   ServerConfigTor `mapstructure:"rpc_tor" toml:"rpc_tor"`
 }
 
 type ServerConfig struct {
 	Enabled       bool `mapstructure:"enabled" toml:"enabled"`
 	LocalhostOnly bool `mapstructure:"localhost_only" toml:"localhost_only"`
 	Port          int  `mapstructure:"port" toml:"port"`
+}
+
+type ServerConfigTor struct {
+	Enabled bool `mapstructure:"enabled" toml:"enabled"`
+	Port    int  `mapstructure:"port" toml:"port"`
+}
+
+type Service struct {
+	Shutdown Shutdown `mapstructure:"shutdown" toml:"shutdown"`
+}
+
+type Shutdown struct {
+	Enabled bool   `mapstructure:"enabled" toml:"enabled"`
+	Script  string `mapstructure:"script" toml:"script"`
 }
 
 // set Default values
@@ -188,10 +207,33 @@ func NewConfig() *Config {
 				LocalhostOnly: true,
 				Port:          39443,
 			},
+			HttpsTor: ServerConfigTor{
+				Enabled: false,
+				Port:    39444,
+			},
+			Rest: ServerConfig{
+				Enabled:       false,
+				LocalhostOnly: true,
+				Port:          39735,
+			},
+			RestTor: ServerConfigTor{
+				Enabled: false,
+				Port:    39736,
+			},
 			Rpc: ServerConfig{
 				Enabled:       true,
 				LocalhostOnly: true,
-				Port:          39735,
+				Port:          39737,
+			},
+			RpcTor: ServerConfigTor{
+				Enabled: false,
+				Port:    39738,
+			},
+		},
+		Service: Service{
+			Shutdown: Shutdown{
+				Enabled: false,
+				Script:  "/home/admin/XXreboot.sh",
 			},
 		},
 	}

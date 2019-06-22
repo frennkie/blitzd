@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	DefaultRPCPort = 39735
+	DefaultRPCPort = 39737
 )
 
 var rootCmd = &cobra.Command{
