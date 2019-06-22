@@ -1,6 +1,8 @@
 package blitzd
 
 import (
+	"context"
+	"fmt"
 	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/metric/bitcoind"
 	"github.com/frennkie/blitzd/internal/metric/lnd"
@@ -9,7 +11,8 @@ import (
 	"github.com/frennkie/blitzd/internal/metric/system"
 	"github.com/frennkie/blitzd/internal/util"
 	"github.com/frennkie/blitzd/pkg/cmd/servers"
-	"log"
+	"github.com/frennkie/blitzd/pkg/protocol/rest"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -20,6 +23,7 @@ var (
 )
 
 func Init() {
+
 	log.Printf("Starting version: %s, built at %s", BuildVersion, BuildTime)
 	log.Printf("Git Version: %s", BuildGitVersion)
 
@@ -41,31 +45,35 @@ func Init() {
 		}
 	}
 
-	log.Printf("Server Root CA: %s", config.C.Server.CaCert)
-	log.Printf("Server TLS Cert: %s", config.C.Server.TlsCert)
-	log.Printf("Server TLS Key: %s", config.C.Server.TlsKey)
+	log.WithFields(log.Fields{"tls": "server", "path": config.C.Server.CaCert}).Debug("Root CA")
+	log.WithFields(log.Fields{"tls": "server", "path": config.C.Server.TlsCert}).Debug("TLS Cert")
+	log.WithFields(log.Fields{"tls": "server", "path": config.C.Server.TlsKey}).Debug("TLS Key")
 
-	log.Printf("Client Root CA: %s", config.C.Client.CaCert)
-	//log.Printf("Client TLS Cert: %s", config.C.Client.TlsCert)
-	//log.Printf("Client TLS Key: %s", config.C.Client.TlsKey)
+	log.WithFields(log.Fields{"tls": "client", "path": config.C.Client.CaCert}).Debug("Root CA")
+	log.WithFields(log.Fields{"tls": "client", "path": config.C.Client.TlsCert}).Debug("TLS Cert")
+	log.WithFields(log.Fields{"tls": "client", "path": config.C.Client.TlsKey}).Debug("TLS Key")
 
+	log.WithFields(log.Fields{"server": "HTTP",
+		"enabled":        config.C.Server.Http.Enabled,
+		"localhost_only": config.C.Server.Http.LocalhostOnly,
+		"port":           config.C.Server.Http.Port}).Debug("starting if enabled")
 	if config.C.Server.Http.Enabled {
-		log.Printf("HTTP Server: enabled (http://localhost:%d)", config.C.Server.Http.Port)
 		go servers.Welcome()
-	} else {
-		log.Printf("HTTP Server: disabled")
 	}
 
+	log.WithFields(log.Fields{"server": "HTTPs",
+		"enabled":        config.C.Server.Https.Enabled,
+		"localhost_only": config.C.Server.Https.LocalhostOnly,
+		"port":           config.C.Server.Https.Port}).Debug("starting if enabled")
 	if config.C.Server.Https.Enabled {
-		log.Printf("HTTPS Server: enabled (https://localhost:%d)", config.C.Server.Https.Port)
 		go servers.Secure()
-	} else {
-		log.Printf("HTTPS Server: disabled")
 	}
 
+	log.WithFields(log.Fields{"server": "RPC",
+		"enabled":        config.C.Server.Rpc.Enabled,
+		"localhost_only": config.C.Server.Rpc.LocalhostOnly,
+		"port":           config.C.Server.Rpc.Port}).Debug("starting if enabled")
 	if config.C.Server.Rpc.Enabled {
-		log.Printf("RPC Server: enabled (Port: %d)", config.C.Server.Rpc.Port)
-
 		_ = servers.RunServer()
 
 		//go func() {
@@ -74,9 +82,22 @@ func Init() {
 		//		os.Exit(1)
 		//	}
 		//}()
+	}
 
-	} else {
-		log.Printf("RPC Server: disabled")
+	log.WithFields(log.Fields{"server": "REST",
+		"enabled":        config.C.Server.Rest.Enabled,
+		"localhost_only": config.C.Server.Rest.LocalhostOnly,
+		"port":           config.C.Server.Rest.Port}).Debug("starting if enabled")
+	if config.C.Server.Rest.Enabled {
+
+		ctx := context.Background()
+
+		// run HTTP gateway
+		go func() {
+			_ = rest.RunServer(ctx,
+				fmt.Sprintf("%d", config.C.Server.Rpc.Port),
+				fmt.Sprintf("%d", config.C.Server.Rest.Port))
+		}()
 	}
 
 	bitcoind.Init()

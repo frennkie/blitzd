@@ -3,34 +3,26 @@ package cli
 import (
 	"context"
 	"fmt"
-	"github.com/frennkie/blitzd/internal/config"
 	pb "github.com/frennkie/blitzd/pkg/api/v1"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
-	"strings"
 	"time"
 )
 
-var cmdGet = &cobra.Command{
-	Use:   "get",
-	Short: "gRPC: Get a Metric by it's path (e.g. \"system.uptime\")",
-	Args:  cobra.ExactArgs(1),
+var cmdFoo5 = &cobra.Command{
+	Use:   "foo",
+	Short: "gRPC: Get Metric Foo",
 	Run: func(cmd *cobra.Command, args []string) {
 		if jsonFlag && formattedFlag {
 			fmt.Println("do not use both --json or --formatted simultaneously")
 			os.Exit(1)
 		}
-		if config.Verbose {
-			fmt.Println("Args: " + strings.Join(args, " "))
-			fmt.Println("jsonFlag: ", jsonFlag)
-			fmt.Println("formattedFlag: ", formattedFlag)
-		}
-		get(args)
+		foo()
 	},
 }
 
-func get(args []string) {
+func foo() {
 
 	conn, err := setupConnection()
 	if err != nil {
@@ -48,7 +40,7 @@ func get(args []string) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	r, err := c.GetMetricByPath(ctx, &pb.GetMetricByPathRequest{Path: args[0]})
+	r, err := c.GetMetricFoo(ctx, &pb.GetMetricFooRequest{Api: "v1"})
 	if err != nil {
 		log.Fatalf("an error occured: %v", err)
 	}

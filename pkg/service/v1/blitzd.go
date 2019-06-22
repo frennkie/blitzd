@@ -10,8 +10,15 @@ import (
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/pkg/api/v1"
 	"github.com/golang/protobuf/ptypes"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"log"
 	"time"
+)
+
+const (
+	// apiVersion is version of API is provided by server
+	apiVersion = "v1"
 )
 
 // server is used to implement v1....
@@ -41,6 +48,18 @@ func NewMetricServer() v1.MetricServiceServer {
 	return &metricServer{}
 }
 
+// checkAPI checks if the API version requested by client is supported by server
+func (s *metricServer) checkAPI(api string) error {
+	// API version is "" means use current version of the service
+	if len(api) > 0 {
+		if apiVersion != api {
+			return status.Errorf(codes.Unimplemented,
+				"unsupported API version: service implements API version '%s', but asked for '%s'", apiVersion, api)
+		}
+	}
+	return nil
+}
+
 func (s *metricServer) GetMetricByPath(ctx context.Context, req *v1.GetMetricByPathRequest) (*v1.GetMetricResponse, error) {
 	// ToDo(frennkie): Check whether req.Path is set?!
 	log.Printf("Received: GetMetricByPath (Path: %s)", req.Path)
@@ -56,7 +75,7 @@ func (s *metricServer) GetMetricByPath(ctx context.Context, req *v1.GetMetricByP
 			m.Expired = false
 		}
 
-		return &v1.GetMetricResponse{Api: "1", Metric: &m}, nil
+		return &v1.GetMetricResponse{Api: "v1", Metric: &m}, nil
 	}
 
 	return &v1.GetMetricResponse{}, errors.New("not found")
@@ -83,12 +102,17 @@ func (s *metricServer) GetMetricAll(context.Context, *v1.EmptyRequest) (*v1.GetM
 		mSlice = append(mSlice, &metricObject)
 	}
 
-	return &v1.GetMetricAllResponse{Api: "1", Metrics: mSlice}, nil
+	return &v1.GetMetricAllResponse{Api: "v1", Metrics: mSlice}, nil
 
 }
 
-func (s *metricServer) GetMetricFoo5(context.Context, *v1.EmptyRequest) (*v1.GetMetricResponse, error) {
-	log.Printf("Received: GetMetricFoo5")
+func (s *metricServer) GetMetricFoo(_ context.Context, req *v1.GetMetricFooRequest) (*v1.GetMetricResponse, error) {
+	log.Printf("Received: GetMetricFoo")
+
+	// check if the API version requested by client is supported by server
+	if err := s.checkAPI(req.Api); err != nil {
+		return nil, err
+	}
 
 	var m v1.Metric
 	if x, found := data.Cache.Get("lnd.foo5"); found {
@@ -101,7 +125,7 @@ func (s *metricServer) GetMetricFoo5(context.Context, *v1.EmptyRequest) (*v1.Get
 			m.Expired = false
 		}
 
-		return &v1.GetMetricResponse{Api: "1", Metric: &m}, nil
+		return &v1.GetMetricResponse{Api: "v1", Metric: &m}, nil
 	}
 
 	return &v1.GetMetricResponse{}, errors.New("not found")

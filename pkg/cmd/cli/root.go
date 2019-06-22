@@ -13,6 +13,9 @@ const (
 	DefaultRPCPort = 39737
 )
 
+var jsonFlag bool
+var formattedFlag bool
+
 var rootCmd = &cobra.Command{
 	Version: blitzd.BuildVersion + " (built: " + blitzd.BuildTime + ")",
 	Use:     "blitz-cli",
@@ -50,6 +53,8 @@ func Init() {
 	cmdGet.Flags().BoolVarP(&jsonFlag, "json", "j", false, "Output as JSON")
 	cmdGet.Flags().BoolVarP(&formattedFlag, "formatted", "f", false, "Output as formatted value")
 	cmdGet.AddCommand(cmdGetAll)
+
+	rootCmd.AddCommand(cmdFoo5)
 
 	rootCmd.AddCommand(cmdShutdown)
 
