@@ -12,11 +12,15 @@ const (
 	module = "network"
 )
 
+var (
+	logM = log.WithFields(log.Fields{"module": module})
+)
+
 func Init() {
-	if config.C.Module.Lnd.Enabled {
-		log.WithFields(log.Fields{"module": module}).Info("starting module")
+	if config.C.Module.Network.Enabled {
+		logM.Info("starting")
 	} else {
-		log.WithFields(log.Fields{"module": module}).Info("skipping module - disabled by config")
+		logM.Warn("skipping - disabled by config")
 		return
 	}
 
@@ -38,6 +42,5 @@ func Init() {
 		}
 	}()
 
-	go Nslookup()
-	go Ping()
+	go ping()
 }

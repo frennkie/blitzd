@@ -23,6 +23,10 @@ foo
 
 https://github.com/golang-standards/project-layout
 
+https://stackoverflow.com/questions/52899535/using-logger-configs-in-multi-packages-best-practice-for-golang-productive
+
+
+
 
 ### Configuration
 

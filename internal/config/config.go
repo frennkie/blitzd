@@ -199,6 +199,11 @@ func SetupLogger() {
 	// Can be any io.Writer, see below for File example
 	log.SetOutput(os.Stdout)
 
+	log.SetFormatter(&log.TextFormatter{
+		DisableColors: true,
+		FullTimestamp: true,
+	})
+
 	// Default is to show "Info" and above.
 	// Verbose enables "Debug".
 	// Trace enables "Debug" and "Trace".

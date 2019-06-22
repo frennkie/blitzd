@@ -16,11 +16,15 @@ const (
 	module = "lnd"
 )
 
+var (
+	logM = log.WithFields(log.Fields{"module": module})
+)
+
 func Init() {
 	if config.C.Module.Lnd.Enabled {
-		log.WithFields(log.Fields{"module": module}).Info("starting module")
+		logM.Info("starting")
 	} else {
-		log.WithFields(log.Fields{"module": module}).Info("skipping module - disabled by config")
+		logM.Warn("skipping - disabled by config")
 		return
 	}
 
@@ -49,9 +53,7 @@ func Init() {
 // ToDo(frennkie) remove "foo5"
 func foo5() {
 	title := "foo5"
-
-	logCtx := log.WithFields(log.Fields{"module": module, "title": title})
-	logCtx.Debug("started goroutine")
+	logM.WithFields(log.Fields{"title": title}).Info("started goroutine")
 
 	for {
 		m := data.NewMetricTimeBased(module, title)
@@ -63,7 +65,7 @@ func foo5() {
 
 		// update Metric in Cache
 		data.Cache.Set(fmt.Sprintf("%s.%s", m.Module, m.Title), m, cache.NoExpiration)
-		logCtx.WithFields(log.Fields{"value": m.Value}).Trace("updated metric")
+		logM.WithFields(log.Fields{"title": m.Title, "value": m.Value}).Trace("updated metric")
 
 		// sleep for Interval duration
 		time.Sleep(time.Duration(m.Interval) * time.Second)

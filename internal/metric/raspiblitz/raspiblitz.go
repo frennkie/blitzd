@@ -19,11 +19,15 @@ const (
 	module = "raspiblitz"
 )
 
+var (
+	logM = log.WithFields(log.Fields{"module": module})
+)
+
 func Init() {
 	if config.C.Module.RaspiBlitz.Enabled {
-		log.WithFields(log.Fields{"module": module}).Info("starting module")
+		logM.Info("starting")
 	} else {
-		log.WithFields(log.Fields{"module": module}).Info("skipping module - disabled by config")
+		logM.Warn("skipping - disabled by config")
 		return
 	}
 
@@ -57,14 +61,15 @@ func raspiBlitzConfig() {
 		return
 	}
 
-	log.Printf("starting goroutine: %s (%s)", module, absFilePath)
-
 	raspiBlitzConfigFunc(absFilePath)
+	logM.WithFields(log.Fields{"file": absFilePath}).Info("done initial udpate")
+
 	go util.FileWatcher(absFilePath, raspiBlitzConfigFunc)
+	logM.WithFields(log.Fields{"file": absFilePath}).Info("started goroutine")
 }
 
 func raspiBlitzConfigFunc(absFilePath string) {
-	log.WithFields(log.Fields{"absFilePath": absFilePath, "kind": v1.Kind_EVENT_BASED, "module": module}).Debug("update")
+	logM.WithFields(log.Fields{"file": absFilePath, "kind": v1.Kind_EVENT_BASED}).Debug("update")
 
 	file, err := os.Open(absFilePath)
 	if err != nil {
@@ -82,10 +87,10 @@ func raspiBlitzConfigFunc(absFilePath string) {
 		}
 	}
 
-	log.Info(mConfig)
+	logM.Info(mConfig)
 
 	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+		logM.Fatal(err)
 	}
 
 	versionTitle := "version"

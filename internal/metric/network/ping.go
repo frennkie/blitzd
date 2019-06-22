@@ -5,16 +5,16 @@ import (
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/internal/util"
 	"github.com/patrickmn/go-cache"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"runtime"
 	"strings"
 	"time"
 )
 
-func Ping() {
-	module := "network"
+func ping() {
 	title := "ping"
-	log.Printf("starting goroutine: %s.%s", module, title)
+	logM.WithFields(log.Fields{"title": title}).Info("started goroutine")
+
 	for {
 		m := data.NewMetricTimeBased(module, title)
 		m.Interval = time.Duration(60 * time.Second).Seconds()
@@ -30,7 +30,7 @@ func Ping() {
 
 		result, err := util.TimeoutExec(cmdName, cmdArgs)
 		if err != nil {
-			log.Printf("Error Updating: %s - %s", m.Title, err)
+			logM.WithFields(log.Fields{"title": m.Title, "err": err}).Warn("error updating metric")
 		} else {
 
 			split := strings.Split(result, util.GetNewLine())
@@ -40,8 +40,8 @@ func Ping() {
 			m.Text = last
 
 			// update data in MetricCache
-			log.Printf("Updating: %s.%s", module, title)
-			data.Cache.Set(fmt.Sprintf("%s.%s", module, title), m, cache.DefaultExpiration)
+			data.Cache.Set(fmt.Sprintf("%s.%s", m.Module, m.Title), m, cache.DefaultExpiration)
+			logM.WithFields(log.Fields{"title": m.Title, "value": m.Value}).Trace("updated metric")
 
 			time.Sleep(time.Duration(m.Interval) * time.Second)
 		}
