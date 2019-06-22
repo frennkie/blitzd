@@ -59,7 +59,7 @@ alias = "some-alias"
     # port:
     #port = 39443
 
-  [server.rest_tor]
+  [server.https_tor]
     # enabled: run this server - or don't
     #enabled = false
 
