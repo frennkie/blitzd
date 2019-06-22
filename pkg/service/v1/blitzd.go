@@ -6,6 +6,7 @@ package v1
 import (
 	"context"
 	"errors"
+	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/pkg/api/v1"
 	"github.com/golang/protobuf/ptypes"
@@ -24,7 +25,13 @@ func NewShutdownServer() v1.ShutdownServer {
 // DoShutdown implements v1.ShutdownServer
 func (s *shutdownServer) DoShutdown(ctx context.Context, req *v1.ShutdownRequest) (*v1.ShutdownResponse, error) {
 	log.Printf("Received: ShutdownRequest")
-	return &v1.ShutdownResponse{Message: "Received: ShutdownRequest"}, nil
+	if config.C.Service.Shutdown.Enabled {
+		// ToDo(frennkie) implement this
+		return &v1.ShutdownResponse{Message: "Received: ShutdownRequest"}, nil
+	} else {
+		return &v1.ShutdownResponse{}, errors.New("service disabled")
+	}
+
 }
 
 type metricServer struct{}

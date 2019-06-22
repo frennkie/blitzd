@@ -55,6 +55,8 @@ func Init() {
 
 	rootCmd.AddCommand(cmdFoo5)
 
+	rootCmd.AddCommand(cmdShutdown)
+
 	_ = rootCmd.Execute()
 
 }
