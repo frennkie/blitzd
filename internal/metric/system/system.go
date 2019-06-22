@@ -180,8 +180,24 @@ func etcIssueFunc(absFilePath string) {
 	_ = file.Close()
 
 	firstLine := txtlines[0]
-	m.Value = firstLine
-	m.Text = firstLine
+
+	issue := strings.Replace(firstLine, "\\b", "", -1)
+	issue = strings.Replace(issue, "\\d", "", -1)
+	issue = strings.Replace(issue, "\\s", "", -1)
+	issue = strings.Replace(issue, "\\l", "", -1)
+	issue = strings.Replace(issue, "\\m", "", -1)
+	issue = strings.Replace(issue, "\\n", "", -1)
+	issue = strings.Replace(issue, "\\o", "", -1)
+	issue = strings.Replace(issue, "\\r", "", -1)
+	issue = strings.Replace(issue, "\\t", "", -1)
+	issue = strings.Replace(issue, "\\u", "", -1)
+	issue = strings.Replace(issue, "\\U", "", -1)
+	issue = strings.Replace(issue, "\\v", "", -1)
+
+	issue = strings.Trim(issue, " ")
+
+	m.Value = issue
+	m.Text = issue
 
 	data.Cache.Set(fmt.Sprintf("%s.%s", module, title), m, cache.DefaultExpiration)
 }
