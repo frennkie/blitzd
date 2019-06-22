@@ -3,6 +3,7 @@ package bitcoind
 import (
 	"context"
 	"fmt"
+	"github.com/btcsuite/btcd/rpcclient"
 	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/patrickmn/go-cache"
@@ -47,6 +48,7 @@ func Init() {
 	}()
 
 	go foo6()
+	go bitcoindRpc()
 
 }
 
@@ -70,4 +72,45 @@ func foo6() {
 		// sleep for Interval duration
 		time.Sleep(time.Duration(m.Interval) * time.Second)
 	}
+}
+
+func bitcoindRpc() {
+	title := "bitcoin"
+	logM.WithFields(log.Fields{"title": title}).Info("started goroutine")
+
+	for {
+		m := data.NewMetricTimeBased(module, title)
+		m.Interval = 60
+
+		// gather and set data here
+		// create new client instance
+		client, err := rpcclient.New(&rpcclient.ConnConfig{
+			HTTPPostMode: true,
+			DisableTLS:   true,
+			Host:         config.C.Module.Bitcoind.RpcAddress,
+			User:         config.C.Module.Bitcoind.RpcUser,
+			Pass:         config.C.Module.Bitcoind.RpcPassword,
+		}, nil)
+		if err != nil {
+			log.Fatalf("error creating new btc client: %v", err)
+		}
+
+		// list accounts
+		accounts, err := client.ListAccounts()
+		if err != nil {
+			log.Fatalf("error listing accounts: %v", err)
+		}
+		// iterate over accounts (map[string]btcutil.Amount) and write to stdout
+		for label, amount := range accounts {
+			log.Printf("%s: %s", label, amount)
+		}
+
+		// update Metric in Cache
+		data.Cache.Set(fmt.Sprintf("%s.%s", m.Module, m.Title), m, cache.NoExpiration)
+		logM.WithFields(log.Fields{"title": m.Title, "value": m.Value}).Trace("updated metric")
+
+		// sleep for Interval duration
+		time.Sleep(time.Duration(m.Interval) * time.Second)
+	}
+
 }

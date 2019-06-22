@@ -21,7 +21,7 @@ var cmdGet = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if jsonFlag && formattedFlag {
-			fmt.Println("do use both --json or --formatted simultaneously")
+			fmt.Println("do not use both --json or --formatted simultaneously")
 			os.Exit(1)
 		}
 		if config.Verbose {
