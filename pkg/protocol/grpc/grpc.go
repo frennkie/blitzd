@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/spf13/viper"
+	"github.com/frennkie/blitzd/internal/config"
 	"google.golang.org/grpc/credentials"
 	"io/ioutil"
 	"log"
@@ -54,12 +54,12 @@ func RunServer(ctx context.Context, APIv1Hello pb.GreeterServer, APIv1HelloWorld
 	APIv1Metric pb.MetricServiceServer, APIv1Shutdown pb.ShutdownServer) error {
 
 	// load peer cert/key, ca cert
-	serverCert, err := tls.LoadX509KeyPair(viper.GetString("server.tlscert"), viper.GetString("server.tlskey"))
+	serverCert, err := tls.LoadX509KeyPair(config.C.Server.TlsCert, config.C.Server.TlsKey)
 	if err != nil {
 		log.Printf("load server cert/key error:%v", err)
 		return err
 	}
-	clientRootCaCert, err := ioutil.ReadFile(viper.GetString("client.cacert"))
+	clientRootCaCert, err := ioutil.ReadFile(config.C.Client.CaCert)
 	if err != nil {
 		log.Printf("read ca cert file error:%v", err)
 		return err
@@ -80,8 +80,8 @@ func RunServer(ctx context.Context, APIv1Hello pb.GreeterServer, APIv1HelloWorld
 	pb.RegisterMetricServiceServer(server, APIv1Metric)
 	pb.RegisterShutdownServer(server, APIv1Shutdown)
 
-	port := fmt.Sprintf("%d", viper.GetInt("server.rpc.port"))
-	if viper.GetBool("server.rpc.localhost_only") {
+	port := fmt.Sprintf("%d", config.C.Server.Rpc.Port)
+	if config.C.Server.Rpc.LocalhostOnly {
 		log.Printf("Starting gRPC Server (localhost) on port: %s", port)
 
 		lisLocalhostV4, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%s", port))

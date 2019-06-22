@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"github.com/frennkie/blitzd/internal/config"
 	"github.com/golang/protobuf/jsonpb"
-	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"io/ioutil"
@@ -23,13 +22,13 @@ var jsonMarshaler = jsonpb.Marshaler{
 func setupConnection() (*grpc.ClientConn, error) {
 
 	// load peer cert/key, cacert
-	clientCert, err := tls.LoadX509KeyPair(viper.GetString("client.tlscert"), viper.GetString("client.tlskey"))
+	clientCert, err := tls.LoadX509KeyPair(config.C.Client.TlsCert, config.C.Client.TlsKey)
 	if err != nil {
 		log.Printf("load client cert/key error:%v", err)
 		return nil, err
 	}
 
-	serverRootCaCert, err := ioutil.ReadFile(viper.GetString("server.cacert"))
+	serverRootCaCert, err := ioutil.ReadFile(config.C.Server.CaCert)
 	if err != nil {
 		log.Printf("read ca cert file error:%v", err)
 		return nil, err
@@ -42,13 +41,11 @@ func setupConnection() (*grpc.ClientConn, error) {
 		RootCAs:      caCertPool,
 	})
 
-	rpcAddress := viper.GetString("rpcHostPort")
-
 	if config.Verbose {
-		log.Printf("rpcAddress: %s", rpcAddress)
+		log.Printf("rpcAddress: %s", config.RpcHostPort)
 	}
 
-	conn, err := grpc.Dial(rpcAddress, grpc.WithTransportCredentials(ta))
+	conn, err := grpc.Dial(config.RpcHostPort, grpc.WithTransportCredentials(ta))
 	if err != nil {
 		return nil, err
 	}

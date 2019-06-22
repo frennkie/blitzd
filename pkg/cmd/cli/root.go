@@ -8,6 +8,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	DefaultRPCPort = 39735
+)
+
 var rootCmd = &cobra.Command{
 	Version: "1.2.3",
 	Use:     "blitz-cli",
@@ -16,7 +20,7 @@ var rootCmd = &cobra.Command{
                 More info at: https://github.com/frennkie/blitzd`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Do Stuff Here
-		log.WithFields(log.Fields{"rpcHostPort": viper.GetString("rpcHostPort")}).Debug("cli config")
+		log.WithFields(log.Fields{"rpcHostPort": config.RpcHostPort}).Debug("cli config")
 	},
 }
 
@@ -26,7 +30,7 @@ func Init() {
 		config.DefaultBlitzdDir, "blitzd home directory")
 
 	rootCmd.PersistentFlags().StringVarP(&config.RpcHostPort,
-		"rpcHostPort", "H", fmt.Sprintf("localhost:%d", config.DefaultRPCPort),
+		"rpcHostPort", "H", fmt.Sprintf("localhost:%d", DefaultRPCPort),
 		"Host and Port to connect to")
 	_ = viper.BindPFlag("rpcHostPort", rootCmd.PersistentFlags().Lookup("rpcHostPort"))
 

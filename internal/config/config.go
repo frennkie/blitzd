@@ -1,13 +1,18 @@
 package config
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/btcsuite/btcutil"
 	"github.com/fsnotify/fsnotify"
+	"github.com/pelletier/go-toml"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 const (
@@ -27,21 +32,11 @@ const (
 	defaultAlias = "MyBlitz42"
 
 	defaultEnvPrefix = "BLITZD"
-
-	defaultTLSServerCaCertFilename = "blitzd_ca.crt"
-	defaultTLSServerCertFilename   = "blitzd_server.crt"
-	defaultTLSServerKeyFilename    = "blitzd_server.key"
-
-	defaultTLSClientCaCertFilename = "blitzd_ca.crt"
-	defaultTLSClientCertFilename   = "blitzd_client.crt"
-	defaultTLSClientKeyFilename    = "blitzd_client.key"
-
-	defaultHttpPort  = 39080
-	defaultHttpsPort = 39443
-	DefaultRPCPort   = 39735
 )
 
 var (
+	C *Config
+
 	DefaultBlitzdDir = btcutil.AppDataDir(defaultBlitzdDirName, false)
 	BlitzdDir        string
 	RpcHostPort      string
@@ -55,51 +50,147 @@ var (
 
 )
 
-func setDefaults() {
+//
+type Config struct {
+	// ToDo(frennkie) check BlitzDir
+	BlitzdDir string `mapstructure:"blitzd_dir" toml:"blitzd_dir"`
+
+	// ToDo(frennkie) check these 2 (are set in config.InitConfig)
+	CustomConfigPath  string `mapstructure:"custom_config_path" toml:"custom_config_path"`
+	DefaultConfigPath string `mapstructure:"default_config_path" toml:"default_config_path"`
+
+	Alias  string `mapstructure:"alias" toml:"alias"`
+	Admin  Admin  `mapstructure:"admin" toml:"admin"`
+	Module Module `mapstructure:"module" toml:"module"`
+	Client Client `mapstructure:"client" toml:"client"`
+	Server Server `mapstructure:"server" toml:"server"`
+}
+
+type Admin struct {
+	Password string `mapstructure:"password" toml:"password"`
+	Username string `mapstructure:"username" toml:"username"`
+}
+
+type Module struct {
+	Bitcoind   Bitcoind   `mapstructure:"bitcoind" toml:"bitcoind"`
+	Lnd        Lnd        `mapstructure:"lnd" toml:"lnd"`
+	Network    Network    `mapstructure:"network" toml:"network"`
+	RaspiBlitz RaspiBlitz `mapstructure:"raspiblitz" toml:"raspiblitz"`
+	System     System     `mapstructure:"system" toml:"system"`
+}
+
+type Bitcoind struct {
+	Enabled     bool   `mapstructure:"enabled" toml:"enabled"`
+	RpcAddress  string `mapstructure:"rpc_address" toml:"rpc_address"`
+	RpcPassword string `mapstructure:"rpc_password" toml:"rpc_password"`
+}
+
+type Lnd struct {
+	Enabled    bool   `mapstructure:"enabled" toml:"enabled"`
+	RpcAddress string `mapstructure:"rpc_address" toml:"rpc_address"`
+	TlsCert    string `mapstructure:"tls_cert" toml:"tls_cert"`
+}
+
+type Network struct {
+	Enabled bool   `mapstructure:"enabled" toml:"enabled"`
+	Nic     string `mapstructure:"nic" toml:"nic"`
+}
+
+type RaspiBlitz struct {
+	Enabled    bool   `mapstructure:"enabled" toml:"enabled"`
+	ConfigPath string `mapstructure:"config_path" toml:"config_path"`
+}
+
+type System struct {
+	Enabled bool   `mapstructure:"enabled" toml:"enabled"`
+	Mount1  string `mapstructure:"mount1" toml:"mount1"`
+	Mount2  string `mapstructure:"mount2" toml:"mount2"`
+}
+
+type Client struct {
+	CaCert  string `mapstructure:"ca_cert" toml:"ca_cert"`
+	TlsCert string `mapstructure:"tls_cert" toml:"tls_cert"`
+	TlsKey  string `mapstructure:"tls_key" toml:"tls_key"`
+}
+
+type Server struct {
+	CaCert  string       `mapstructure:"ca_cert" toml:"ca_cert"`
+	TlsCert string       `mapstructure:"tls_cert" toml:"tls_cert"`
+	TlsKey  string       `mapstructure:"tls_key" toml:"tls_key"`
+	Http    ServerConfig `mapstructure:"http" toml:"http"`
+	Https   ServerConfig `mapstructure:"https" toml:"https"`
+	Rpc     ServerConfig `mapstructure:"rpc" toml:"rpc"`
+}
+
+type ServerConfig struct {
+	Enabled       bool `mapstructure:"enabled" toml:"enabled"`
+	LocalhostOnly bool `mapstructure:"localhost_only" toml:"localhost_only"`
+	Port          int  `mapstructure:"port" toml:"port"`
+}
+
+// set Default values
+func NewConfig() *Config {
 	log.Debug("Settings Defaults")
-
-	viper.SetDefault("blitzdDir", BlitzdDir)
-
-	viper.SetDefault("customCfgPath", "")
-	viper.SetDefault("defaultCfgPath", "")
-
-	viper.SetDefault("alias", defaultAlias)
-	viper.SetDefault("admin.password", defaultAdminPassword)
-	viper.SetDefault("admin.username", defaultAdminUsername)
-
-	viper.SetDefault("server.cacert", filepath.Join(BlitzdDir, defaultTLSServerCaCertFilename))
-	viper.SetDefault("server.tlscert", filepath.Join(BlitzdDir, defaultTLSServerCertFilename))
-	viper.SetDefault("server.tlskey", filepath.Join(BlitzdDir, defaultTLSServerKeyFilename))
-	viper.SetDefault("client.cacert", filepath.Join(BlitzdDir, defaultTLSClientCaCertFilename))
-	viper.SetDefault("client.tlscert", filepath.Join(BlitzdDir, defaultTLSClientCertFilename))
-	viper.SetDefault("client.tlskey", filepath.Join(BlitzdDir, defaultTLSClientKeyFilename))
-
-	viper.SetDefault("server.http.enabled", true)
-	viper.SetDefault("server.http.localhost_only", true)
-	viper.SetDefault("server.http.port", defaultHttpPort)
-
-	viper.SetDefault("server.https.enabled", true)
-	viper.SetDefault("server.https.localhost_only", true)
-	viper.SetDefault("server.https.port", defaultHttpsPort)
-
-	viper.SetDefault("server.rpc.enabled", true)
-	viper.SetDefault("server.rpc.localhost_only", true)
-	viper.SetDefault("server.rpc.port", DefaultRPCPort)
-
-	viper.SetDefault("module.system.enabled", true)
-	viper.SetDefault("module.system.mount1", "/")
-	viper.SetDefault("module.system.mount2", "/mnt/hdd/")
-
-	viper.SetDefault("module.lnd.enabled", false)
-	viper.SetDefault("module.lnd.rpcaddress", "localhost:10009")
-	viper.SetDefault("module.lnd.tlscert", "/home/bitcoin/.lnd/tls.cert")
-
-	viper.SetDefault("module.network.enabled", false)
-	viper.SetDefault("module.network.nic", "eth0")
-
-	viper.SetDefault("module.raspiblitz.enabled", false)
-	viper.SetDefault("module.raspiblitz.path", "/mnt/hdd/raspiblitz.conf")
-
+	return &Config{
+		BlitzdDir:         BlitzdDir,
+		CustomConfigPath:  "",
+		DefaultConfigPath: "",
+		Alias:             defaultAlias,
+		Admin: Admin{
+			Password: defaultAdminPassword,
+			Username: defaultAdminUsername,
+		},
+		Module: Module{
+			Bitcoind: Bitcoind{
+				Enabled:     false,
+				RpcAddress:  "localhost:8332",
+				RpcPassword: "",
+			},
+			Lnd: Lnd{
+				Enabled:    false,
+				RpcAddress: "localhost:10009",
+				TlsCert:    "/home/bitcoin/.lnd/tls.cert",
+			},
+			Network: Network{
+				Enabled: false,
+				Nic:     "eth0",
+			},
+			RaspiBlitz: RaspiBlitz{
+				Enabled:    false,
+				ConfigPath: "/mnt/hdd/raspiblitz.conf",
+			},
+			System: System{
+				Enabled: true,
+				Mount1:  "/",
+				Mount2:  "/mnt/hdd/",
+			},
+		},
+		Client: Client{
+			CaCert:  filepath.Join(BlitzdDir, "blitzd_ca.crt"),
+			TlsCert: filepath.Join(BlitzdDir, "blitzd_client.crt"),
+			TlsKey:  filepath.Join(BlitzdDir, "blitzd_client.key"),
+		},
+		Server: Server{
+			CaCert:  filepath.Join(BlitzdDir, "blitzd_ca.crt"),
+			TlsCert: filepath.Join(BlitzdDir, "blitzd_server.crt"),
+			TlsKey:  filepath.Join(BlitzdDir, "blitzd_server.key"),
+			Http: ServerConfig{
+				Enabled:       true,
+				LocalhostOnly: true,
+				Port:          39080,
+			},
+			Https: ServerConfig{
+				Enabled:       true,
+				LocalhostOnly: true,
+				Port:          39443,
+			},
+			Rpc: ServerConfig{
+				Enabled:       true,
+				LocalhostOnly: true,
+				Port:          39735,
+			},
+		},
+	}
 }
 
 func SetupLogger() {
@@ -121,6 +212,8 @@ func SetupLogger() {
 }
 
 func InitConfig() {
+	//viper := viper.New()
+
 	SetupLogger()
 
 	// First set default values.
@@ -128,14 +221,24 @@ func InitConfig() {
 	// Then - if it exists - merge any settings from file "blitzd.toml" in home directory
 	// Then load env
 	// Finally activate the Config Watcher
-	setDefaults()
+
+	// set default values in viper.
+	// Viper needs to know if a key exists in order to override it.
+	// https://github.com/spf13/viper/issues/188
+	b, _ := toml.Marshal(NewConfig())
+	defaultConfig := bytes.NewReader(b)
+	viper.SetConfigType("toml")
+
+	_ = viper.MergeConfig(defaultConfig)
+	// refresh configuration with all merged values
+	_ = viper.Unmarshal(&C)
 
 	// read default
 	if runtime.GOOS == "windows" {
-		viper.Set("defaultCfgPath", defaultCfgFileWin32)
+		viper.Set("default_config_path", defaultCfgFileWin32)
 		viper.SetConfigFile(filepath.FromSlash(defaultCfgFileWin32))
 	} else {
-		viper.Set("defaultCfgPath", defaultCfgFile)
+		viper.Set("default_config_path", defaultCfgFile)
 		viper.SetConfigFile(filepath.FromSlash(defaultCfgFile))
 	}
 
@@ -161,7 +264,7 @@ func InitConfig() {
 			log.Debug("custom config file does not exist - skipping: %s", customCfgPath)
 		}
 	} else {
-		viper.Set("customCfgPath", customCfgPath)
+		viper.Set("custom_config_path", customCfgPath)
 		viper.SetConfigFile(customCfgPath)
 		if err := viper.MergeInConfig(); err != nil {
 			log.Fatal("Can't read config for merge:", err)
@@ -173,15 +276,32 @@ func InitConfig() {
 	// load env
 	viper.SetEnvPrefix(defaultEnvPrefix)
 	viper.AutomaticEnv() // read in environment variables that match
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	// refresh configuration with all merged values
+	_ = viper.Unmarshal(&C)
+
+	// full parsed/merged config as bytes
+	bs, err := toml.Marshal(C)
+	if err != nil {
+		log.Fatalf("unable to marshal config to TOML: %v", err)
+	}
+	if Verbose {
+		fmt.Println(string(bs))
+	}
+
+	// ToDo(frennkie) remove this
+	// store copy of parsed/merged config
+	absPath := filepath.Join(BlitzdDir, "saved.toml")
+	if err := ioutil.WriteFile(absPath, bs, 0600); err != nil {
+		log.WithFields(log.Fields{"absPath": absPath}).
+			Warn("unable to write copy of parsed/merged config")
+	}
 
 	// config watcher
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
 		log.WithFields(log.Fields{"file": e.Name}).Debug("Config file changed")
 	})
-
-	// ToDo(frennkie) remove this
-	// store copy of parsed/merged config
-	_ = viper.WriteConfigAs(filepath.Join(BlitzdDir, "saved.toml"))
 
 }

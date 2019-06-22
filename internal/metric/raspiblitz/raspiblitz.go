@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/internal/util"
 	v1 "github.com/frennkie/blitzd/pkg/api/v1"
 	"github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"os"
 	"os/signal"
 	"strings"
@@ -20,7 +20,7 @@ const (
 )
 
 func Init() {
-	if viper.GetBool("module.raspiblitz.enabled") {
+	if config.C.Module.RaspiBlitz.Enabled {
 		log.WithFields(log.Fields{"module": module}).Info("starting module")
 	} else {
 		log.WithFields(log.Fields{"module": module}).Info("skipping module - disabled by config")
@@ -50,7 +50,7 @@ func Init() {
 }
 
 func raspiBlitzConfig() {
-	absFilePath := viper.GetString("module.raspiblitz.path")
+	absFilePath := config.C.Module.RaspiBlitz.ConfigPath
 
 	if _, err := os.Stat(absFilePath); os.IsNotExist(err) {
 		log.Printf("file does not exist - skipping: %s", absFilePath)
@@ -72,17 +72,17 @@ func raspiBlitzConfigFunc(absFilePath string) {
 	}
 	defer file.Close()
 
-	config := make(map[string]string)
+	mConfig := make(map[string]string)
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		s := strings.Split(scanner.Text(), "=")
 		if len(s) == 2 {
-			config[s[0]] = s[1]
+			mConfig[s[0]] = s[1]
 		}
 	}
 
-	log.Info(config)
+	log.Info(mConfig)
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
@@ -90,20 +90,20 @@ func raspiBlitzConfigFunc(absFilePath string) {
 
 	versionTitle := "version"
 	version := data.NewMetricEventBased(module, versionTitle)
-	version.Value = config["raspiBlitzVersion"]
-	version.Text = config["raspiBlitzVersion"]
+	version.Value = mConfig["raspiBlitzVersion"]
+	version.Text = mConfig["raspiBlitzVersion"]
 	data.Cache.Set(fmt.Sprintf("%s.%s", module, versionTitle), version, cache.NoExpiration)
 
 	networkTitle := "network"
 	network := data.NewMetricEventBased(module, networkTitle)
-	network.Value = config["network"]
-	network.Text = config["network"]
+	network.Value = mConfig["network"]
+	network.Text = mConfig["network"]
 	data.Cache.Set(fmt.Sprintf("%s.%s", module, networkTitle), network, cache.NoExpiration)
 
 	chainTitle := "chain"
 	chain := data.NewMetricEventBased(module, chainTitle)
-	chain.Value = config["chain"]
-	chain.Text = config["chain"]
+	chain.Value = mConfig["chain"]
+	chain.Text = mConfig["chain"]
 	data.Cache.Set(fmt.Sprintf("%s.%s", module, chainTitle), chain, cache.NoExpiration)
 
 }

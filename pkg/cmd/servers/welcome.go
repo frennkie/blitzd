@@ -2,10 +2,10 @@ package servers
 
 import (
 	"fmt"
+	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/util"
 	"github.com/frennkie/blitzd/web"
 	"github.com/shurcooL/httpfs/html/vfstemplate"
-	"github.com/spf13/viper"
 	"html/template"
 	"log"
 	"net/http"
@@ -23,7 +23,7 @@ func Welcome() {
 
 		var baseUrls []string
 
-		securePort := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
+		securePort := fmt.Sprintf("%d", config.C.Server.Https.Port)
 
 		remoteAddrPort := r.RemoteAddr
 		remoteAddrPortSplit := strings.Split(remoteAddrPort, ":")
@@ -56,7 +56,7 @@ func Welcome() {
 		} else {
 			log.Printf("Client is Local!")
 			log.Printf(r.Host)
-			if viper.GetBool("server.https.localhost_only") {
+			if config.C.Server.Https.LocalhostOnly {
 				baseUrls = util.GetBaseUrls("https", securePort, true, false)
 			} else {
 				baseUrls = util.GetBaseUrls("https", securePort, true, true)
@@ -76,9 +76,9 @@ func Welcome() {
 
 	})
 
-	port := fmt.Sprintf("%d", viper.GetInt("server.http.port"))
+	port := fmt.Sprintf("%d", config.C.Server.Http.Port)
 
-	if viper.GetBool("server.http.localhost_only") {
+	if config.C.Server.Http.LocalhostOnly {
 		log.Printf("Starting Welcome Server: http://localhost:%s) / http://127.0.0.1:%s / http://[::1]:%s", port, port, port)
 		go func() {
 

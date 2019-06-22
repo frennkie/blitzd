@@ -3,10 +3,10 @@ package lnd
 import (
 	"context"
 	"fmt"
+	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"os"
 	"os/signal"
 	"time"
@@ -17,7 +17,7 @@ const (
 )
 
 func Init() {
-	if viper.GetBool("module.lnd.enabled") {
+	if config.C.Module.Lnd.Enabled {
 		log.WithFields(log.Fields{"module": module}).Info("starting module")
 	} else {
 		log.WithFields(log.Fields{"module": module}).Info("skipping module - disabled by config")

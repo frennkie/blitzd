@@ -2,13 +2,13 @@ package servers
 
 import (
 	"fmt"
+	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/internal/util"
 	v1 "github.com/frennkie/blitzd/pkg/api/v1"
 	"github.com/frennkie/blitzd/web"
 	"github.com/goji/httpauth"
 	"github.com/shurcooL/httpfs/html/vfstemplate"
-	"github.com/spf13/viper"
 	"html/template"
 	"log"
 	"net/http"
@@ -22,8 +22,8 @@ var (
 )
 
 func authFromConfig(username, password string, r *http.Request) bool {
-	return username == viper.GetString("admin.username") &&
-		util.CheckPasswordHash(password, viper.GetString("admin.password"))
+	return username == config.C.Admin.Username &&
+		util.CheckPasswordHash(password, config.C.Admin.Password)
 }
 
 func Secure() {
@@ -69,7 +69,7 @@ func Secure() {
 
 			secureSchema := "https"
 			secureHost := "localhost"
-			securePort := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
+			securePort := fmt.Sprintf("%d", config.C.Server.Https.Port)
 			secureBase := fmt.Sprintf("%s://%s:%s", secureSchema, secureHost, securePort)
 
 			values := []interface{}{secureBase, r.RemoteAddr, r.URL.Path}
@@ -132,24 +132,24 @@ func Secure() {
 
 		})))
 
-	port := fmt.Sprintf("%d", viper.GetInt("server.https.port"))
+	port := fmt.Sprintf("%d", config.C.Server.Https.Port)
 
-	if viper.GetBool("server.https.localhost_only") {
+	if config.C.Server.Https.LocalhostOnly {
 		log.Printf("Starting Secure Info Server: https://localhost:%s) / https://127.0.0.1:%s / https://[::1]:%s", port, port, port)
 		go func() {
 
 			//log.Fatal(graceful.ListenAndServeTLS("127.0.0.1:"+port,
-			//	viper.GetString("server.tlscert"), viper.GetString("server.tlskey"), infoMux))
+			//	config.C.Server.TlsCert, config.C.Server.TlsKey, infoMux))
 			log.Fatal(http.ListenAndServeTLS("127.0.0.1:"+port,
-				viper.GetString("server.tlscert"), viper.GetString("server.tlskey"), infoMux))
+				config.C.Server.TlsCert, config.C.Server.TlsKey, infoMux))
 		}()
 
 		go func() {
 
 			//log.Fatal(graceful.ListenAndServeTLS("[::1]:"+port,
-			//	viper.GetString("server.tlscert"), viper.GetString("server.tlskey"), infoMux))
+			//	config.C.Server.TlsCert, config.C.Server.TlsKey, infoMux))
 			log.Fatal(http.ListenAndServeTLS("[::1]:"+port,
-				viper.GetString("server.tlscert"), viper.GetString("server.tlskey"), infoMux))
+				config.C.Server.TlsCert, config.C.Server.TlsKey, infoMux))
 		}()
 
 	} else {
@@ -157,9 +157,9 @@ func Secure() {
 			// ToDo: Get proper ANY here?!
 			log.Printf("Starting Secure Info Server (https://ANY:%s)", port)
 			//log.Fatal(graceful.ListenAndServeTLS(":"+port,
-			//	viper.GetString("server.tlscert"), viper.GetString("server.tlskey"), infoMux))
+			//	config.C.Server.TlsCert, config.C.Server.TlsKey, infoMux))
 			log.Fatal(http.ListenAndServeTLS(":"+port,
-				viper.GetString("server.tlscert"), viper.GetString("server.tlskey"), infoMux))
+				config.C.Server.TlsCert, config.C.Server.TlsKey, infoMux))
 		}()
 	}
 

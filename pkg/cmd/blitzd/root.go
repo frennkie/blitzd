@@ -2,11 +2,11 @@ package blitzd
 
 import (
 	"fmt"
+	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/metric/lnd"
 	"github.com/frennkie/blitzd/internal/util"
 	"github.com/frennkie/blitzd/web"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"log"
 	"net/http"
 )
@@ -41,12 +41,12 @@ var GenCertCmd = &cobra.Command{
 		log.Printf("gencert called")
 		//util.GenRootCa("ca.crt", "ca.key", "foobar", false)
 		err := util.GenRootCaSignedClientServerCert(
-			viper.GetString("alias"),
-			viper.GetString("server.cacert"),
-			viper.GetString("server.tlscert"),
-			viper.GetString("server.tlskey"),
-			viper.GetString("client.tlscert"),
-			viper.GetString("client.tlskey"),
+			config.C.Alias,
+			config.C.Server.CaCert,
+			config.C.Server.TlsCert,
+			config.C.Server.TlsKey,
+			config.C.Client.TlsCert,
+			config.C.Client.TlsKey,
 		)
 		if err != nil {
 			log.Printf("an error occured")
