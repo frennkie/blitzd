@@ -1,17 +1,29 @@
 package servers
 
 import (
+	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/internal/util"
 	v1 "github.com/frennkie/blitzd/pkg/api/v1"
+	"github.com/frennkie/blitzd/pkg/ui/data/swagger"
 	"github.com/frennkie/blitzd/web"
 	"github.com/goji/httpauth"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	assetfs "github.com/philips/go-bindata-assetfs"
 	"github.com/shurcooL/httpfs/html/vfstemplate"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"html/template"
+	"io"
+	"io/ioutil"
 	"log"
+	"mime"
 	"net/http"
+	"strings"
 )
 
 var (
@@ -26,9 +38,69 @@ func authFromConfig(username, password string, r *http.Request) bool {
 		util.CheckPasswordHash(password, config.C.Admin.Password)
 }
 
+func serveSwagger(mux *http.ServeMux) {
+	_ = mime.AddExtensionType(".svg", "image/svg+xml")
+
+	// Expose files in third_party/swagger-ui/ on <host>/swagger-ui
+	fileServer := http.FileServer(&assetfs.AssetFS{
+		Asset:    swagger.Asset,
+		AssetDir: swagger.AssetDir,
+		Prefix:   "third_party/swagger-ui",
+	})
+	prefix := "/swagger-ui/"
+	mux.Handle(prefix, http.StripPrefix(prefix, fileServer))
+}
+
 func Secure() {
 
 	infoMux := http.NewServeMux()
+
+	ctx := context.Background()
+
+	demoAddr := fmt.Sprintf("localhost:%d", config.C.Server.Rpc.Port)
+
+	// START
+
+	// load peer cert/key, cacert
+	clientCert, err := tls.LoadX509KeyPair(config.C.Client.TlsCert, config.C.Client.TlsKey)
+	if err != nil {
+		log.Fatalf("load client cert/key error:%v", err)
+	}
+
+	serverRootCaCert, err := ioutil.ReadFile(config.C.Server.CaCert)
+	if err != nil {
+		log.Fatalf("read ca cert file error:%v", err)
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(serverRootCaCert)
+
+	ta := credentials.NewTLS(&tls.Config{
+		ServerName:   "localhost",
+		Certificates: []tls.Certificate{clientCert},
+		RootCAs:      caCertPool,
+	})
+
+	if config.Verbose {
+		log.Printf("rpcAddress: %s", config.RpcHostPort)
+	}
+
+	dopts := []grpc.DialOption{grpc.WithTransportCredentials(ta)}
+
+	gwmux := runtime.NewServeMux()
+	err = v1.RegisterMetricServiceHandlerFromEndpoint(ctx, gwmux, demoAddr, dopts)
+	if err != nil {
+		fmt.Printf("serve: %v\n", err)
+		return
+	}
+
+	// END
+
+	infoMux.Handle("/api/", gwmux)
+	serveSwagger(infoMux)
+
+	infoMux.HandleFunc("/swagger.json", func(w http.ResponseWriter, req *http.Request) {
+		_, _ = io.Copy(w, strings.NewReader(v1.Swagger))
+	})
 
 	// favicon && /static
 	infoMux.Handle("/favicon.ico", http.FileServer(web.Assets))

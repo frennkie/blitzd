@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	DefaultRPCPort = 39737
+	DefaultRPCPort = 39735
 )
 
 var jsonFlag bool

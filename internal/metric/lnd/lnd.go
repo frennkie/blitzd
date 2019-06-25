@@ -82,37 +82,51 @@ func foo5() {
 
 func version() {
 	title := "version"
+	var interval float64 = 8
 	logM.WithFields(log.Fields{"title": title}).Info("started goroutine")
 
+	// ToDo(frennkie) check and transfer this
+	errored := false
 	for {
+		if errored {
+			// Last execution ran into an error and did not sleep at end of
+			// for loop. Therefore sleep now for interval.
+			time.Sleep(time.Duration(interval) * time.Second)
+			errored = false
+		}
+
 		m := data.NewMetricTimeBased(module, title)
-		m.Interval = 12
+		m.Interval = interval
 
 		usr, err := user.Current()
 		if err != nil {
-			fmt.Println("Cannot get current user:", err)
-			return
+			logM.WithFields(log.Fields{"title": title, "err": err}).Error("Cannot get current user:")
+			errored = true
+			continue
 		}
-		fmt.Println("The user home directory: " + usr.HomeDir)
+		logM.WithFields(log.Fields{"title": title, "home": usr.HomeDir}).Info("The user home directory: " + usr.HomeDir)
 		tlsCertPath := config.C.Module.Lnd.TlsCert
 		macaroonPath := config.C.Module.Lnd.Macaroon
 
 		tlsCreds, err := credentials.NewClientTLSFromFile(tlsCertPath, "")
 		if err != nil {
-			fmt.Println("Cannot get node tls credentials", err)
-			return
+			logM.WithFields(log.Fields{"title": title, "err": err}).Error("Cannot get node tls credentials")
+			errored = true
+			continue
 		}
 
 		macaroonBytes, err := ioutil.ReadFile(macaroonPath)
 		if err != nil {
-			fmt.Println("Cannot read macaroon file", err)
-			return
+			logM.WithFields(log.Fields{"title": title, "err": err}).Error("Cannot read macaroon file")
+			errored = true
+			continue
 		}
 
 		mac := &macaroon.Macaroon{}
 		if err = mac.UnmarshalBinary(macaroonBytes); err != nil {
-			fmt.Println("Cannot unmarshal macaroon", err)
-			return
+			logM.WithFields(log.Fields{"title": title, "err": err}).Error("Cannot unmarshal macaroon")
+			errored = true
+			continue
 		}
 
 		opts := []grpc.DialOption{
@@ -123,17 +137,22 @@ func version() {
 
 		conn, err := grpc.Dial("localhost:10009", opts...)
 		if err != nil {
-			fmt.Println("cannot dial to lnd", err)
-			return
+			logM.WithFields(log.Fields{"title": title, "err": err}).Error("cannot dial to lnd")
+			errored = true
+			continue
 		}
 		client := lnrpc.NewLightningClient(conn)
 
-		ctx := context.Background()
+		ctx, _ := context.WithTimeout(context.Background(), time.Second)
 		getInfoResp, err := client.GetInfo(ctx, &lnrpc.GetInfoRequest{})
 		if err != nil {
-			fmt.Println("Cannot get info from node:", err)
-			return
+			logM.WithFields(log.Fields{"title": title, "err": err}).Error("Cannot get info from node:")
+			errored = true
+			continue
 		}
+
+		//// ToDo(frennkie) was defer cancel() .. but IDE complains about defer in for loops
+		//defer cancel()
 		//spew.Dump(getInfoResp)
 
 		// gather and set data here

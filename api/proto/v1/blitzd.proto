@@ -2,7 +2,24 @@ syntax = "proto3";
 
 package v1;
 
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
+import "protoc-gen-swagger/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+    info: {
+        title: "blitzd";
+        version: "0.14";
+        contact: {
+            name: "blitzd";
+            url: "https://github.com/frennkie/blitzd";
+            email: "frennkie@gmail.com";
+        };
+   };
+   schemes: HTTPS;
+   consumes: "application/json";
+   produces: "application/json";
+};
 
 // An empty request message
 message EmptyRequest {
@@ -89,11 +106,26 @@ message GetMetricAllResponse {
 
 
 service MetricService {
-    rpc GetMetricByPath (GetMetricByPathRequest) returns (GetMetricResponse);
+    rpc GetMetricByPath (GetMetricByPathRequest) returns (GetMetricResponse) {
+        option (google.api.http) = {
+          post: "/api/v1/getmetricbypath"
+          body: "*"
+        };
+    };
 
-    rpc GetMetricAll (EmptyRequest) returns (GetMetricAllResponse);
+    rpc GetMetricAll (EmptyRequest) returns (GetMetricAllResponse) {
+        option (google.api.http) = {
+          post: "/api/v1/getmetricall"
+          body: "*"
+        };
+    };
 
-    rpc GetMetricFoo (GetMetricFooRequest) returns (GetMetricResponse);
+    rpc GetMetricFoo (GetMetricFooRequest) returns (GetMetricResponse) {
+        option (google.api.http) = {
+          post: "/api/v1/getmetricfoo"
+          body: "*"
+        };
+    };
 
 };
 

@@ -1,0 +1,243 @@
+package v1
+
+const (
+	swagger = `{
+  "swagger": "2.0",
+  "info": {
+    "title": "blitzd",
+    "version": "0.14",
+    "contact": {
+      "name": "blitzd",
+      "url": "https://github.com/frennkie/blitzd",
+      "email": "frennkie@gmail.com"
+    }
+  },
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/getmetricall": {
+      "post": {
+        "operationId": "GetMetricAll",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetMetricAllResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1EmptyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetricService"
+        ]
+      }
+    },
+    "/api/v1/getmetricbypath": {
+      "post": {
+        "summary": "Sends a greeting",
+        "operationId": "GetMetricByPath",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetMetricResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1GetMetricByPathRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetricService"
+        ]
+      }
+    },
+    "/api/v1/getmetricfoo": {
+      "post": {
+        "operationId": "GetMetricFoo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetMetricResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1GetMetricFooRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetricService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "v1EmptyRequest": {
+      "type": "object",
+      "title": "An empty request message"
+    },
+    "v1GetMetricAllResponse": {
+      "type": "object",
+      "properties": {
+        "api": {
+          "type": "string",
+          "title": "API versioning"
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Metric"
+          },
+          "title": "Task entity to add"
+        }
+      },
+      "title": "The response message"
+    },
+    "v1GetMetricByPathRequest": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        }
+      },
+      "title": "The request message"
+    },
+    "v1GetMetricFooRequest": {
+      "type": "object",
+      "properties": {
+        "api": {
+          "type": "string",
+          "title": "API versioning"
+        }
+      },
+      "title": "Request message: Get Metric Foo"
+    },
+    "v1GetMetricResponse": {
+      "type": "object",
+      "properties": {
+        "api": {
+          "type": "string",
+          "title": "API versioning"
+        },
+        "metric": {
+          "$ref": "#/definitions/v1Metric",
+          "title": "Task entity to add"
+        }
+      },
+      "title": "The response message"
+    },
+    "v1Kind": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN_KIND",
+        "STATIC",
+        "TIME_BASED",
+        "EVENT_BASED"
+      ],
+      "default": "UNKNOWN_KIND"
+    },
+    "v1Metric": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/v1Kind"
+        },
+        "module": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "number",
+          "format": "double"
+        },
+        "timeout": {
+          "type": "number",
+          "format": "double"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expired_after": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expired": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "value": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "suffix": {
+          "type": "string"
+        },
+        "style": {
+          "$ref": "#/definitions/v1Style"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ShutdownResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "The response message"
+    },
+    "v1Style": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN_STYLE",
+        "NORMAL",
+        "HIGHLIGHT",
+        "WARNING",
+        "ERROR",
+        "CRITICAL"
+      ],
+      "default": "UNKNOWN_STYLE"
+    }
+  }
+}
+`
+)

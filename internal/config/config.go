@@ -214,20 +214,20 @@ func NewConfig() *Config {
 			Rest: ServerConfig{
 				Enabled:       false,
 				LocalhostOnly: true,
-				Port:          39735,
+				Port:          39445,
 			},
 			RestTor: ServerConfigTor{
 				Enabled: false,
-				Port:    39736,
+				Port:    39446,
 			},
 			Rpc: ServerConfig{
 				Enabled:       true,
 				LocalhostOnly: true,
-				Port:          39737,
+				Port:          39735,
 			},
 			RpcTor: ServerConfigTor{
 				Enabled: false,
-				Port:    39738,
+				Port:    39736,
 			},
 		},
 		Service: Service{
