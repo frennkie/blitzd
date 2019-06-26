@@ -61,6 +61,11 @@ sudo apt-get install apache2-utils
 sudo apt-get update
 sudo apt-get install go-dep devscripts libdistro-info-perl dh-systemd protobuf-compiler
 
+sudo apt-get install libprotobuf-dev
+
+go get -u github.com/golang/protobuf/protoc-gen-go
+go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
 
 ### Git Tag
 
