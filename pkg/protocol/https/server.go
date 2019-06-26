@@ -13,7 +13,6 @@ import (
 	"github.com/frennkie/blitzd/web/swagger"
 	"github.com/goji/httpauth"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/philips/go-bindata-assetfs"
 	"github.com/shurcooL/httpfs/html/vfstemplate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -44,12 +43,7 @@ func authFromConfig(username, password string, r *http.Request) bool {
 func serveSwagger(mux *http.ServeMux) {
 	_ = mime.AddExtensionType(".svg", "image/svg+xml")
 
-	// Expose files in third_party/swagger-ui/ on <host>/swagger-ui
-	fileServer := http.FileServer(&assetfs.AssetFS{
-		Asset:    swagger.Asset,
-		AssetDir: swagger.AssetDir,
-		Prefix:   "third_party/swagger-ui",
-	})
+	fileServer := http.FileServer(swagger.Swagger)
 	prefix := "/swagger-ui/"
 	mux.Handle(prefix, http.StripPrefix(prefix, fileServer))
 }
@@ -99,6 +93,7 @@ func Secure() {
 	// END
 
 	infoMux.Handle("/api/", gwmux)
+	//serveSwagger(infoMux)
 	serveSwagger(infoMux)
 
 	infoMux.HandleFunc("/swagger.json", func(w http.ResponseWriter, req *http.Request) {

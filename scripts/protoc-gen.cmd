@@ -14,5 +14,4 @@ RMDIR api\swagger\v1\api /S /Q
 
 go generate web\assets.go
 go generate web\swagger.go
-
-go-bindata -nocompress -o "web\swagger\swagger_bindata.go" -pkg "swagger" "third_party/swagger-ui/..."
+go generate web\swagger_json.go
