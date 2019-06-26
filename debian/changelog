@@ -1,3 +1,9 @@
+blitzd (0.14) unstable; urgency=medium
+
+  * fix build
+
+ -- Robert Habermann <frennkie@gmail.com>  Wed, 26 Jun 2019 23:53:43 +0000
+
 blitzd (0.13) unstable; urgency=medium
 
   * refactor servers
