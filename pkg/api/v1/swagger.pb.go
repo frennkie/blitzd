@@ -1,7 +1,7 @@
 package v1
 
 const (
-	swagger = `{
+	Swagger = `{
   "swagger": "2.0",
   "info": {
     "title": "blitzd",
