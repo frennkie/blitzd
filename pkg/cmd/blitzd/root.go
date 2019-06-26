@@ -5,7 +5,7 @@ import (
 	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/metric/lnd"
 	"github.com/frennkie/blitzd/internal/util"
-	"github.com/frennkie/blitzd/web"
+	"github.com/frennkie/blitzd/web/assets"
 	"github.com/spf13/cobra"
 	"log"
 	"net/http"
@@ -26,8 +26,8 @@ var DemoCmd = &cobra.Command{
 	Use:   "demo",
 	Short: "Demo Code",
 	Run: func(cmd *cobra.Command, args []string) {
-		http.Handle("/favicon.ico", http.FileServer(web.Assets))
-		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(web.Assets)))
+		http.Handle("/favicon.ico", http.FileServer(assets.Assets))
+		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assets.Assets)))
 
 		log.Printf("HTTP Server: http://localhost:18080/")
 		log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:18080"), nil))

@@ -1,4 +1,4 @@
-package servers
+package https
 
 import (
 	"context"
@@ -9,11 +9,11 @@ import (
 	"github.com/frennkie/blitzd/internal/data"
 	"github.com/frennkie/blitzd/internal/util"
 	v1 "github.com/frennkie/blitzd/pkg/api/v1"
-	"github.com/frennkie/blitzd/pkg/ui/data/swagger"
-	"github.com/frennkie/blitzd/web"
+	"github.com/frennkie/blitzd/web/assets"
+	"github.com/frennkie/blitzd/web/swagger"
 	"github.com/goji/httpauth"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	assetfs "github.com/philips/go-bindata-assetfs"
+	"github.com/philips/go-bindata-assetfs"
 	"github.com/shurcooL/httpfs/html/vfstemplate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -23,7 +23,10 @@ import (
 	"log"
 	"mime"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"time"
 )
 
 var (
@@ -103,8 +106,8 @@ func Secure() {
 	})
 
 	// favicon && /static
-	infoMux.Handle("/favicon.ico", http.FileServer(web.Assets))
-	infoMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(web.Assets)))
+	infoMux.Handle("/favicon.ico", http.FileServer(assets.Assets))
+	infoMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assets.Assets)))
 
 	infoMux.HandleFunc("/",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -176,7 +179,7 @@ func Secure() {
 	infoMux.Handle("/info/",
 		httpauth.BasicAuth(authOpts)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			infoTemplate, err := vfstemplate.ParseFiles(web.Assets, template.New("info.tmpl"), "info.tmpl")
+			infoTemplate, err := vfstemplate.ParseFiles(assets.Assets, template.New("info.tmpl"), "info.tmpl")
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -235,4 +238,38 @@ func Secure() {
 		}()
 	}
 
+}
+
+// RunServer runs HTTP/REST gateway
+func RunServerBasic(ctx context.Context, grpcPort, httpPort string) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+	if err := v1.RegisterMetricServiceHandlerFromEndpoint(ctx, mux, "localhost:"+grpcPort, opts); err != nil {
+		log.Fatalf("failed to start HTTP gateway: %v", err)
+	}
+
+	srv := &http.Server{
+		Addr:    ":" + httpPort,
+		Handler: mux,
+	}
+
+	// graceful shutdown
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for range c {
+			// sig is a ^C, handle it
+		}
+
+		_, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+
+		_ = srv.Shutdown(ctx)
+	}()
+
+	log.Println("starting HTTP/REST gateway...")
+	return srv.ListenAndServe()
 }

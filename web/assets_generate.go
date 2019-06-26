@@ -1,21 +1,20 @@
-// +build ignore
-
 package main
 
 import (
 	"github.com/shurcooL/vfsgen"
 	"log"
 	"net/http"
+	"path/filepath"
 )
 
-var Assets http.FileSystem = http.Dir("assets")
+var Assets http.FileSystem = http.Dir(filepath.FromSlash("assets/src"))
 
 func main() {
 	err := vfsgen.Generate(
 		Assets,
 		vfsgen.Options{
-			Filename:     "./web_vfsdata.go",
-			PackageName:  "web",
+			Filename:     "./assets/assets_vfsdata.go",
+			PackageName:  "assets",
 			VariableName: "Assets",
 		})
 	if err != nil {

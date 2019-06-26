@@ -1,6 +1,7 @@
 package blitzd
 
 import (
+	"context"
 	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/metric/bitcoind"
 	"github.com/frennkie/blitzd/internal/metric/lnd"
@@ -8,7 +9,10 @@ import (
 	"github.com/frennkie/blitzd/internal/metric/raspiblitz"
 	"github.com/frennkie/blitzd/internal/metric/system"
 	"github.com/frennkie/blitzd/internal/util"
-	"github.com/frennkie/blitzd/pkg/cmd/servers"
+	"github.com/frennkie/blitzd/pkg/protocol/grpc"
+	"github.com/frennkie/blitzd/pkg/protocol/http"
+	"github.com/frennkie/blitzd/pkg/protocol/https"
+	v1 "github.com/frennkie/blitzd/pkg/service/v1"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -55,7 +59,7 @@ func Init() {
 		"localhost_only": config.C.Server.Http.LocalhostOnly,
 		"port":           config.C.Server.Http.Port}).Debug("starting if enabled")
 	if config.C.Server.Http.Enabled {
-		go servers.Welcome()
+		go http.Welcome()
 	}
 
 	log.WithFields(log.Fields{"server": "HTTPs",
@@ -63,7 +67,7 @@ func Init() {
 		"localhost_only": config.C.Server.Https.LocalhostOnly,
 		"port":           config.C.Server.Https.Port}).Debug("starting if enabled")
 	if config.C.Server.Https.Enabled {
-		go servers.Secure()
+		go https.Secure()
 	}
 
 	log.WithFields(log.Fields{"server": "RPC",
@@ -71,7 +75,14 @@ func Init() {
 		"localhost_only": config.C.Server.Rpc.LocalhostOnly,
 		"port":           config.C.Server.Rpc.Port}).Debug("starting if enabled")
 	if config.C.Server.Rpc.Enabled {
-		_ = servers.RunServer()
+		ctx := context.Background()
+
+		hello := v1.NewHelloServiceServer()
+		helloWorld := v1.NewHelloWorldServiceServer()
+		metric := v1.NewMetricServer()
+		shutdown := v1.NewShutdownServer()
+
+		_ = grpc.RunServer(ctx, hello, helloWorld, metric, shutdown)
 
 		//go func() {
 		//	if err := cmd.RunServer(); err != nil {
@@ -91,7 +102,7 @@ func Init() {
 	//
 	//	// run HTTP gateway
 	//	go func() {
-	//		_ = rest.RunServer(ctx,
+	//		_ = https.RunServer(ctx,
 	//			fmt.Sprintf("%d", config.C.Server.Rpc.Port),
 	//			fmt.Sprintf("%d", config.C.Server.Rest.Port))
 	//	}()

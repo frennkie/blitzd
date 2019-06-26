@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -9,12 +10,16 @@ import (
 	"strings"
 )
 
-// Reads all .json files in the current folder
-// and encodes them as strings literals in textfiles.go
+// Reads all .json files in the specified srcPath folder
+// and encodes them as strings literals in dstPath
 func main() {
 	srcPath := filepath.FromSlash("../api/swagger/v1/")
+	dstPath := filepath.FromSlash("../pkg/api/v1/swagger.pb.go")
 	fs, _ := ioutil.ReadDir(srcPath)
-	out, _ := os.Create(filepath.FromSlash("../pkg/api/v1/swagger.pb.go"))
+	out, _ := os.Create(dstPath)
+
+	fmt.Println("writing", dstPath)
+
 	_, _ = out.Write([]byte("package v1 \n\nconst (\n"))
 	for _, f := range fs {
 		if strings.HasSuffix(f.Name(), ".json") {

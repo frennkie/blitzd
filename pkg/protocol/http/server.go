@@ -1,10 +1,10 @@
-package servers
+package http
 
 import (
 	"fmt"
 	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/util"
-	"github.com/frennkie/blitzd/web"
+	"github.com/frennkie/blitzd/web/assets"
 	"github.com/shurcooL/httpfs/html/vfstemplate"
 	"html/template"
 	"log"
@@ -15,8 +15,8 @@ import (
 func Welcome() {
 	welcomeMux := http.NewServeMux()
 
-	welcomeMux.Handle("/favicon.ico", http.FileServer(web.Assets))
-	welcomeMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(web.Assets)))
+	welcomeMux.Handle("/favicon.ico", http.FileServer(assets.Assets))
+	welcomeMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assets.Assets)))
 
 	// "/" matches everything
 	welcomeMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +64,7 @@ func Welcome() {
 
 		}
 
-		welcomeTemplate, err := vfstemplate.ParseFiles(web.Assets, template.New("welcome.tmpl"), "welcome.tmpl")
+		welcomeTemplate, err := vfstemplate.ParseFiles(assets.Assets, template.New("welcome.tmpl"), "welcome.tmpl")
 		if err != nil {
 			log.Fatal(err)
 		}
