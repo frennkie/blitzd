@@ -43,7 +43,7 @@ func authFromConfig(username, password string, r *http.Request) bool {
 func serveSwagger(mux *http.ServeMux) {
 	_ = mime.AddExtensionType(".svg", "image/svg+xml")
 
-	fileServer := http.FileServer(swagger.Swagger)
+	fileServer := http.FileServer(swagger.SwaggerFs)
 	prefix := "/swagger-ui/"
 	mux.Handle(prefix, http.StripPrefix(prefix, fileServer))
 }
@@ -101,8 +101,8 @@ func Secure() {
 	})
 
 	// favicon && /static
-	infoMux.Handle("/favicon.ico", http.FileServer(assets.Assets))
-	infoMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assets.Assets)))
+	infoMux.Handle("/favicon.ico", http.FileServer(assets.AssetsFs))
+	infoMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assets.AssetsFs)))
 
 	infoMux.HandleFunc("/",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -174,7 +174,7 @@ func Secure() {
 	infoMux.Handle("/info/",
 		httpauth.BasicAuth(authOpts)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			infoTemplate, err := vfstemplate.ParseFiles(assets.Assets, template.New("info.tmpl"), "info.tmpl")
+			infoTemplate, err := vfstemplate.ParseFiles(assets.AssetsFs, template.New("info.tmpl"), "info.tmpl")
 			if err != nil {
 				log.Fatal(err)
 			}

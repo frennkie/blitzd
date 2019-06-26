@@ -15,8 +15,8 @@ import (
 func Welcome() {
 	welcomeMux := http.NewServeMux()
 
-	welcomeMux.Handle("/favicon.ico", http.FileServer(assets.Assets))
-	welcomeMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assets.Assets)))
+	welcomeMux.Handle("/favicon.ico", http.FileServer(assets.AssetsFs))
+	welcomeMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assets.AssetsFs)))
 
 	// "/" matches everything
 	welcomeMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +64,7 @@ func Welcome() {
 
 		}
 
-		welcomeTemplate, err := vfstemplate.ParseFiles(assets.Assets, template.New("welcome.tmpl"), "welcome.tmpl")
+		welcomeTemplate, err := vfstemplate.ParseFiles(assets.AssetsFs, template.New("welcome.tmpl"), "welcome.tmpl")
 		if err != nil {
 			log.Fatal(err)
 		}

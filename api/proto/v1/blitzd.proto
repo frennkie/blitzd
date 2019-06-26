@@ -11,14 +11,14 @@ option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
         title: "blitzd";
         version: "0.14";
         contact: {
-            name: "blitzd";
+            name:"blitzd";
             url: "https://github.com/frennkie/blitzd";
             email: "frennkie@gmail.com";
         };
-   };
-   schemes: HTTPS;
-   consumes: "application/json";
-   produces: "application/json";
+    };
+    schemes: HTTPS;
+    consumes: "application/json";
+    produces: "application/json";
 };
 
 // An empty request message
@@ -43,20 +43,26 @@ message ShutdownResponse {
     string message = 1;
 }
 
+enum Tribool {
+    TRIBOOL_UNSPECIFIED = 0;
+    TRIBOOL_TRUE = 1;
+    TRIBOOL_FALSE = 2;
+}
+
 enum Style {
-    UNKNOWN_STYLE = 0;
-    NORMAL = 1;
-    HIGHLIGHT = 2;
-    WARNING = 3;
-    ERROR = 4;
-    CRITICAL = 5;
+    STYLE_UNSPECIFIED = 0;
+    STYLE_NORMAL = 1;
+    STYLE_HIGHLIGHT = 2;
+    STYLE_WARNING = 3;
+    STYLE_ERROR = 4;
+    STYLE_CRITICAL = 5;
 }
 
 enum Kind {
-    UNKNOWN_KIND = 0;
-    STATIC = 1;
-    TIME_BASED = 2;
-    EVENT_BASED = 3;
+    KIND_UNSPECIFIED = 0;
+    KIND_STATIC = 1;
+    KIND_TIME_BASED = 2;
+    KIND_EVENT_BASED = 3;
 }
 
 message Metric {
@@ -67,7 +73,7 @@ message Metric {
     double timeout = 5;
     google.protobuf.Timestamp updated_at = 6;
     google.protobuf.Timestamp expired_after = 7;
-    bool expired = 8;
+    Tribool expired = 8;
     string value = 9;
     string prefix = 10;
     string suffix = 11;

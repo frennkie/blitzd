@@ -69,7 +69,7 @@ func raspiBlitzConfig() {
 }
 
 func raspiBlitzConfigFunc(absFilePath string) {
-	logM.WithFields(log.Fields{"file": absFilePath, "kind": v1.Kind_EVENT_BASED}).Debug("update")
+	logM.WithFields(log.Fields{"file": absFilePath, "kind": v1.Kind_KIND_EVENT_BASED}).Debug("update")
 
 	file, err := os.Open(absFilePath)
 	if err != nil {

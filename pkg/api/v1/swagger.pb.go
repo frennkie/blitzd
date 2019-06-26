@@ -160,12 +160,12 @@ const (
     "v1Kind": {
       "type": "string",
       "enum": [
-        "UNKNOWN_KIND",
-        "STATIC",
-        "TIME_BASED",
-        "EVENT_BASED"
+        "KIND_UNSPECIFIED",
+        "KIND_STATIC",
+        "KIND_TIME_BASED",
+        "KIND_EVENT_BASED"
       ],
-      "default": "UNKNOWN_KIND"
+      "default": "KIND_UNSPECIFIED"
     },
     "v1Metric": {
       "type": "object",
@@ -196,8 +196,7 @@ const (
           "format": "date-time"
         },
         "expired": {
-          "type": "boolean",
-          "format": "boolean"
+          "$ref": "#/definitions/v1Tribool"
         },
         "value": {
           "type": "string"
@@ -228,14 +227,23 @@ const (
     "v1Style": {
       "type": "string",
       "enum": [
-        "UNKNOWN_STYLE",
-        "NORMAL",
-        "HIGHLIGHT",
-        "WARNING",
-        "ERROR",
-        "CRITICAL"
+        "STYLE_UNSPECIFIED",
+        "STYLE_NORMAL",
+        "STYLE_HIGHLIGHT",
+        "STYLE_WARNING",
+        "STYLE_ERROR",
+        "STYLE_CRITICAL"
       ],
-      "default": "UNKNOWN_STYLE"
+      "default": "STYLE_UNSPECIFIED"
+    },
+    "v1Tribool": {
+      "type": "string",
+      "enum": [
+        "TRIBOOL_UNSPECIFIED",
+        "TRIBOOL_TRUE",
+        "TRIBOOL_FALSE"
+      ],
+      "default": "TRIBOOL_UNSPECIFIED"
     }
   }
 }

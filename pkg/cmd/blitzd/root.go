@@ -26,8 +26,8 @@ var DemoCmd = &cobra.Command{
 	Use:   "demo",
 	Short: "Demo Code",
 	Run: func(cmd *cobra.Command, args []string) {
-		http.Handle("/favicon.ico", http.FileServer(assets.Assets))
-		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assets.Assets)))
+		http.Handle("/favicon.ico", http.FileServer(assets.AssetsFs))
+		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assets.AssetsFs)))
 
 		log.Printf("HTTP Server: http://localhost:18080/")
 		log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:18080"), nil))

@@ -100,3 +100,5 @@ want that behaviour to also happen by default. Also note that if a scalar
 message field is set to its default, the value will not be serialized on the 
 wire.
 ```
+
+Therefore use Tribool (`UNSPECIFIED`; `TRUE`; `FALSE`) instead.

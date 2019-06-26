@@ -70,9 +70,9 @@ func (s *metricServer) GetMetricByPath(ctx context.Context, req *v1.GetMetricByP
 
 		expiredAfter, _ := ptypes.Timestamp(m.ExpiredAfter)
 		if time.Now().After(expiredAfter) {
-			m.Expired = true
+			m.Expired = v1.Tribool_TRIBOOL_TRUE
 		} else {
-			m.Expired = false
+			m.Expired = v1.Tribool_TRIBOOL_FALSE
 		}
 
 		return &v1.GetMetricResponse{Api: "v1", Metric: &m}, nil
@@ -94,9 +94,9 @@ func (s *metricServer) GetMetricAll(context.Context, *v1.EmptyRequest) (*v1.GetM
 
 		expiredAfter, _ := ptypes.Timestamp(metricObject.ExpiredAfter)
 		if time.Now().After(expiredAfter) {
-			metricObject.Expired = true
+			metricObject.Expired = v1.Tribool_TRIBOOL_TRUE
 		} else {
-			metricObject.Expired = false
+			metricObject.Expired = v1.Tribool_TRIBOOL_FALSE
 		}
 
 		mSlice = append(mSlice, &metricObject)
@@ -120,9 +120,9 @@ func (s *metricServer) GetMetricFoo(_ context.Context, req *v1.GetMetricFooReque
 
 		expiredAfter, _ := ptypes.Timestamp(m.ExpiredAfter)
 		if time.Now().After(expiredAfter) {
-			m.Expired = true
+			m.Expired = v1.Tribool_TRIBOOL_TRUE
 		} else {
-			m.Expired = false
+			m.Expired = v1.Tribool_TRIBOOL_FALSE
 		}
 
 		return &v1.GetMetricResponse{Api: "v1", Metric: &m}, nil

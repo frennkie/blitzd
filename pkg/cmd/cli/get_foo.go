@@ -56,6 +56,11 @@ func foo() {
 				fmt.Println(r.Metric.Value)
 			}
 		}
+
+		fmt.Println("---")
+		fmt.Println(r.Metric.Expired)
+		fmt.Println("---")
+
 		os.Exit(0)
 	}
 }

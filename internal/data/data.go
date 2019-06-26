@@ -26,18 +26,18 @@ func NewMetric(module, title string) v1.Metric {
 	expiredAfter, _ := ptypes.TimestampProto(now.Add(DefaultExpireTime))
 
 	metric := v1.Metric{
-		Kind:         0,
+		Kind:         v1.Kind_KIND_UNSPECIFIED,
 		Module:       module,
 		Title:        title,
 		Interval:     time.Duration(5 * time.Second).Seconds(),
 		Timeout:      time.Duration(10 * time.Second).Seconds(),
 		UpdatedAt:    updatedAt,
 		ExpiredAfter: expiredAfter,
-		Expired:      false,
+		Expired:      v1.Tribool_TRIBOOL_UNSPECIFIED,
 		Value:        "",
 		Prefix:       "",
 		Suffix:       "",
-		Style:        0,
+		Style:        v1.Style_STYLE_UNSPECIFIED,
 		Text:         "",
 	}
 
@@ -46,25 +46,25 @@ func NewMetric(module, title string) v1.Metric {
 
 func NewMetricStatic(module, title string) v1.Metric {
 	metric := NewMetric(module, title)
-	metric.Kind = v1.Kind_STATIC
+	metric.Kind = v1.Kind_KIND_STATIC
 	metric.Interval = -1
 	metric.ExpiredAfter = MaxTime
-	metric.Style = v1.Style_NORMAL
+	metric.Style = v1.Style_STYLE_NORMAL
 	return metric
 }
 
 func NewMetricTimeBased(module, title string) v1.Metric {
 	metric := NewMetric(module, title)
-	metric.Kind = v1.Kind_TIME_BASED
-	metric.Style = v1.Style_NORMAL
+	metric.Kind = v1.Kind_KIND_TIME_BASED
+	metric.Style = v1.Style_STYLE_NORMAL
 	return metric
 }
 
 func NewMetricEventBased(module, title string) v1.Metric {
 	metric := NewMetric(module, title)
-	metric.Kind = v1.Kind_EVENT_BASED
+	metric.Kind = v1.Kind_KIND_EVENT_BASED
 	metric.Interval = -1
 	metric.ExpiredAfter = MaxTime
-	metric.Style = v1.Style_NORMAL
+	metric.Style = v1.Style_STYLE_NORMAL
 	return metric
 }
