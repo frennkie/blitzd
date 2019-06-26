@@ -19,86 +19,16 @@ alias = "some-alias"
 
 # client settings
 [client]
-  # cacert:
-  #cacert = "~/.blitzd/blitzd_ca.crt"
 
-  # tlscert:
-  #tlscert = ""
+  [client.tls]
+    # ca:
+    #ca = "~/.blitzd/blitzd_ca.crt"
 
-  # tlskey:
-  #tlskey = ""
+    # cert:
+    #cert = "~/.blitzd/blitzd_client.crt"
 
-# server settings
-[server]
-  # cacert:
-  #cacert = ""
-
-  # tlscert:
-  #tlscert = ""
-
-  # tlskey:
-  #tlskey = ""
-
-  [server.http]
-    # enabled: run this server - or don't
-    #enabled = true
-
-    # localhost_only: whether to listen on localhost only or on all interfaces
-    #localhost_only = true
-
-    # port:
-    #port = 39080
-
-  [server.https]
-    # enabled: run this server - or don't
-    #enabled = true
-
-    # localhost_only: whether to listen on localhost only or on all interfaces
-    #localhost_only = true
-
-    # port:
-    #port = 39443
-
-  [server.https_tor]
-    # enabled: run this server - or don't
-    #enabled = false
-
-    # port:
-    #port = 39444
-
-  [server.rest]
-    # enabled: run this server - or don't
-    #enabled = false
-
-    # localhost_only: whether to listen on localhost only or on all interfaces
-    #localhost_only = true
-
-    # port:
-    #port = 39735
-
-  [server.rest_tor]
-    # enabled: run this server - or don't
-    #enabled = false
-
-    # port:
-    #port = 39736
-
-  [server.rpc]
-    # enabled: run this server - or don't
-    #enabled = true
-
-    # localhost_only: whether to listen on localhost only or on all interfaces
-    #localhost_only = true
-
-    # port:
-    #port = 39737
-
-  [server.rpc_tor]
-    # enabled: run this server - or don't
-    #enabled = false
-
-    # port:
-    #port = 39738
+    # key:
+    #key = "~/.blitzd/blitzd_client.key"
 
 [module]
 
@@ -149,6 +79,56 @@ alias = "some-alias"
     # mount2: mount number 2
     #mount2 = "/mnt/hdd/"
 
+# server settings
+[server]
+
+  [server.tls]
+    # ca:
+    #ca = "~/.blitzd/blitzd_ca.crt"
+
+    # cert:
+    #cert = "~/.blitzd/blitzd_server.crt"
+
+    # key:
+    #key = "~/.blitzd/blitzd_server.crt"
+
+  [server.grpc]
+    # enabled: run this server - or don't
+    #enabled = true
+
+    # localhost_only: whether to listen on localhost only or on all interfaces
+    #localhost_only = true
+
+    # port:
+    #port = 39735
+
+  [server.http]
+    # enabled: run this server - or don't
+    #enabled = true
+
+    # localhost_only: whether to listen on localhost only or on all interfaces
+    #localhost_only = true
+
+    # port:
+    #port = 39080
+
+  [server.https]
+    # enabled: run this server - or don't
+    #enabled = true
+
+    # localhost_only: whether to listen on localhost only or on all interfaces
+    #localhost_only = true
+
+    # port:
+    #port = 39443
+
+    [server.https.rest]
+      # docs:
+      #docs = false
+
+      # enabled:
+      #enabled = false
+
 [service]
 
   [service.shutdown]
@@ -157,3 +137,49 @@ alias = "some-alias"
 
     # script: shutdown script to run when service is called
     #script = "/home/admin/XXreboot.sh"
+
+[tor]
+  # data_dir:
+  #data_dir = "~/.blitzd/tor/"
+
+  # enabled:
+  #enabled = false
+
+  # exe_path:
+  #exe_path = "/usr/sbin/tor"
+
+  # hostname:
+  #hostname = ""
+
+  # public_key_path:
+  #public_key_path = ""
+
+  # secret_key_path:
+  #secret_key_path = ""
+
+  # service_version:
+  #service_version = 3
+
+  [tor.https]
+    # enabled:
+    #enabled = false
+
+    # local_port:
+    #local_port = 39444
+
+  [tor.rpc]
+    # enabled:
+    #enabled = false
+
+    # local_port:
+    #local_port = 39736
+
+  [tor.tls]
+    # ca:
+    #ca = "~/.blitzd/tor/blitzd_tor_ca.crt"
+
+    # cert:
+    #cert = "~/.blitzd/tor/blitzd_tor_server.crt"
+
+    # key:
+    #key = "~/.blitzd/tor/blitzd_tor_server.key"

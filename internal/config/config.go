@@ -65,6 +65,7 @@ type Config struct {
 	Client  Client  `mapstructure:"client" toml:"client"`
 	Server  Server  `mapstructure:"server" toml:"server"`
 	Service Service `mapstructure:"service" toml:"service"`
+	Tor     Tor     `mapstructure:"tor" toml:"tor"`
 }
 
 type Admin struct {
@@ -111,22 +112,19 @@ type System struct {
 }
 
 type Client struct {
-	CaCert  string `mapstructure:"ca_cert" toml:"ca_cert"`
-	TlsCert string `mapstructure:"tls_cert" toml:"tls_cert"`
-	TlsKey  string `mapstructure:"tls_key" toml:"tls_key"`
+	Tls Tls `mapstructure:"tls" toml:"tls"`
+}
+
+type Rest struct {
+	Enabled bool `mapstructure:"enabled" toml:"enabled"`
+	Docs    bool `mapstructure:"docs" toml:"docs"`
 }
 
 type Server struct {
-	CaCert   string          `mapstructure:"ca_cert" toml:"ca_cert"`
-	TlsCert  string          `mapstructure:"tls_cert" toml:"tls_cert"`
-	TlsKey   string          `mapstructure:"tls_key" toml:"tls_key"`
-	Http     ServerConfig    `mapstructure:"http" toml:"http"`
-	Https    ServerConfig    `mapstructure:"https" toml:"https"`
-	HttpsTor ServerConfigTor `mapstructure:"https_tor" toml:"https_tor"`
-	Rest     ServerConfig    `mapstructure:"rest" toml:"rest"`
-	RestTor  ServerConfigTor `mapstructure:"rest" toml:"rest_tor"`
-	Rpc      ServerConfig    `mapstructure:"rpc" toml:"rpc"`
-	RpcTor   ServerConfigTor `mapstructure:"rpc_tor" toml:"rpc_tor"`
+	Tls   Tls               `mapstructure:"tls" toml:"tls"`
+	Http  ServerConfig      `mapstructure:"http" toml:"http"`
+	Https ServerConfigHttps `mapstructure:"https" toml:"https"`
+	Grpc  ServerConfig      `mapstructure:"grpc" toml:"grpc"`
 }
 
 type ServerConfig struct {
@@ -135,9 +133,11 @@ type ServerConfig struct {
 	Port          int  `mapstructure:"port" toml:"port"`
 }
 
-type ServerConfigTor struct {
-	Enabled bool `mapstructure:"enabled" toml:"enabled"`
-	Port    int  `mapstructure:"port" toml:"port"`
+type ServerConfigHttps struct {
+	Enabled       bool `mapstructure:"enabled" toml:"enabled"`
+	LocalhostOnly bool `mapstructure:"localhost_only" toml:"localhost_only"`
+	Port          int  `mapstructure:"port" toml:"port"`
+	Rest          Rest `mapstructure:"rest" toml:"rest"`
 }
 
 type Service struct {
@@ -147,6 +147,30 @@ type Service struct {
 type Shutdown struct {
 	Enabled bool   `mapstructure:"enabled" toml:"enabled"`
 	Script  string `mapstructure:"script" toml:"script"`
+}
+
+type Tls struct {
+	Ca   string `mapstructure:"ca" toml:"ca"`
+	Cert string `mapstructure:"cert" toml:"cert"`
+	Key  string `mapstructure:"key" toml:"key"`
+}
+
+type Tor struct {
+	Enabled        bool       `mapstructure:"enabled" toml:"enabled"`
+	ExePath        string     `mapstructure:"exe_path" toml:"exe_path"`
+	DataDir        string     `mapstructure:"data_dir" toml:"data_dir"`
+	Hostname       string     `mapstructure:"hostname" toml:"hostname"`
+	SecretKeyPath  string     `mapstructure:"secret_key_path" toml:"secret_key_path"`
+	PublicKeyPath  string     `mapstructure:"public_key_path" toml:"public_key_path"`
+	ServiceVersion int        `mapstructure:"service_version" toml:"service_version"`
+	Tls            Tls        `mapstructure:"tls" toml:"tls"`
+	Https          TorService `mapstructure:"https" toml:"https"`
+	Grpc           TorService `mapstructure:"grpc" toml:"grpc"`
+}
+
+type TorService struct {
+	Enabled   bool `mapstructure:"enabled" toml:"enabled"`
+	LocalPort int  `mapstructure:"local_port" toml:"local_port"`
 }
 
 // set Default values
@@ -189,51 +213,64 @@ func NewConfig() *Config {
 			},
 		},
 		Client: Client{
-			CaCert:  filepath.Join(BlitzdDir, "blitzd_ca.crt"),
-			TlsCert: filepath.Join(BlitzdDir, "blitzd_client.crt"),
-			TlsKey:  filepath.Join(BlitzdDir, "blitzd_client.key"),
+			Tls: Tls{
+				Ca:   filepath.Join(BlitzdDir, "blitzd_ca.crt"),
+				Cert: filepath.Join(BlitzdDir, "blitzd_client.crt"),
+				Key:  filepath.Join(BlitzdDir, "blitzd_client.key"),
+			},
 		},
 		Server: Server{
-			CaCert:  filepath.Join(BlitzdDir, "blitzd_ca.crt"),
-			TlsCert: filepath.Join(BlitzdDir, "blitzd_server.crt"),
-			TlsKey:  filepath.Join(BlitzdDir, "blitzd_server.key"),
+			Tls: Tls{
+				Ca:   filepath.Join(BlitzdDir, "blitzd_ca.crt"),
+				Cert: filepath.Join(BlitzdDir, "blitzd_server.crt"),
+				Key:  filepath.Join(BlitzdDir, "blitzd_server.key"),
+			},
 			Http: ServerConfig{
 				Enabled:       true,
 				LocalhostOnly: true,
 				Port:          39080,
 			},
-			Https: ServerConfig{
+			Https: ServerConfigHttps{
 				Enabled:       true,
 				LocalhostOnly: true,
 				Port:          39443,
+				Rest: Rest{
+					Enabled: false,
+					Docs:    false,
+				},
 			},
-			HttpsTor: ServerConfigTor{
-				Enabled: false,
-				Port:    39444,
-			},
-			Rest: ServerConfig{
-				Enabled:       false,
-				LocalhostOnly: true,
-				Port:          39445,
-			},
-			RestTor: ServerConfigTor{
-				Enabled: false,
-				Port:    39446,
-			},
-			Rpc: ServerConfig{
+			Grpc: ServerConfig{
 				Enabled:       true,
 				LocalhostOnly: true,
 				Port:          39735,
-			},
-			RpcTor: ServerConfigTor{
-				Enabled: false,
-				Port:    39736,
 			},
 		},
 		Service: Service{
 			Shutdown: Shutdown{
 				Enabled: false,
 				Script:  "/home/admin/XXreboot.sh",
+			},
+		},
+		Tor: Tor{
+			Enabled:        false,
+			ExePath:        "/usr/sbin/tor",
+			DataDir:        filepath.Join(BlitzdDir, "tor"),
+			Hostname:       "",
+			SecretKeyPath:  "",
+			PublicKeyPath:  "",
+			ServiceVersion: 3,
+			Tls: Tls{
+				Ca:   filepath.Join(BlitzdDir, "tor", "blitzd_tor_ca.crt"),
+				Cert: filepath.Join(BlitzdDir, "tor", "blitzd_tor_server.crt"),
+				Key:  filepath.Join(BlitzdDir, "tor", "blitzd_tor_server.key"),
+			},
+			Https: TorService{
+				Enabled:   false,
+				LocalPort: 39444,
+			},
+			Grpc: TorService{
+				Enabled:   false,
+				LocalPort: 39736,
 			},
 		},
 	}

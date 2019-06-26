@@ -54,12 +54,12 @@ func RunServer(ctx context.Context, APIv1Hello pb.GreeterServer, APIv1HelloWorld
 	APIv1Metric pb.MetricServiceServer, APIv1Shutdown pb.ShutdownServer) error {
 
 	// load peer cert/key, ca cert
-	serverCert, err := tls.LoadX509KeyPair(config.C.Server.TlsCert, config.C.Server.TlsKey)
+	serverCert, err := tls.LoadX509KeyPair(config.C.Server.Tls.Cert, config.C.Server.Tls.Key)
 	if err != nil {
 		log.Printf("load server cert/key error:%v", err)
 		return err
 	}
-	clientRootCaCert, err := ioutil.ReadFile(config.C.Client.CaCert)
+	clientRootCaCert, err := ioutil.ReadFile(config.C.Client.Tls.Ca)
 	if err != nil {
 		log.Printf("read ca cert file error:%v", err)
 		return err
@@ -80,8 +80,8 @@ func RunServer(ctx context.Context, APIv1Hello pb.GreeterServer, APIv1HelloWorld
 	pb.RegisterMetricServiceServer(server, APIv1Metric)
 	pb.RegisterShutdownServer(server, APIv1Shutdown)
 
-	port := fmt.Sprintf("%d", config.C.Server.Rpc.Port)
-	if config.C.Server.Rpc.LocalhostOnly {
+	port := fmt.Sprintf("%d", config.C.Server.Grpc.Port)
+	if config.C.Server.Grpc.LocalhostOnly {
 		log.Printf("Starting gRPC Server (localhost) on port: %s", port)
 
 		lisLocalhostV4, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%s", port))

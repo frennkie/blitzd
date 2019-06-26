@@ -50,61 +50,56 @@ func serveSwagger(mux *http.ServeMux) {
 
 func Secure() {
 
-	infoMux := http.NewServeMux()
+	// secureMux is the collection for HTTPS routes
+	secureMux := http.NewServeMux()
 
-	ctx := context.Background()
+	if config.C.Server.Https.Rest.Enabled {
+		// load peer cert/key, ca_cert
+		clientCert, err := tls.LoadX509KeyPair(config.C.Client.Tls.Cert, config.C.Client.Tls.Key)
+		if err != nil {
+			log.Fatalf("load client cert/key error:%v", err)
+		}
 
-	demoAddr := fmt.Sprintf("localhost:%d", config.C.Server.Rpc.Port)
+		serverRootCaCert, err := ioutil.ReadFile(config.C.Server.Tls.Ca)
+		if err != nil {
+			log.Fatalf("read ca cert file error:%v", err)
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(serverRootCaCert)
 
-	// START
+		ta := credentials.NewTLS(&tls.Config{
+			ServerName:   "localhost",
+			Certificates: []tls.Certificate{clientCert},
+			RootCAs:      caCertPool,
+		})
 
-	// load peer cert/key, cacert
-	clientCert, err := tls.LoadX509KeyPair(config.C.Client.TlsCert, config.C.Client.TlsKey)
-	if err != nil {
-		log.Fatalf("load client cert/key error:%v", err)
+		ctx := context.Background()
+		gwmux := runtime.NewServeMux()
+		demoAddr := fmt.Sprintf("localhost:%d", config.C.Server.Grpc.Port) // ToDo(frennkie) fix this
+		dopts := []grpc.DialOption{grpc.WithTransportCredentials(ta)}
+		err = v1.RegisterMetricServiceHandlerFromEndpoint(ctx, gwmux, demoAddr, dopts)
+		if err != nil {
+			fmt.Printf("serve: %v\n", err)
+			return
+		}
+		secureMux.Handle("/api/", gwmux)
+
+		// Swagger REST API Documentation
+		if config.C.Server.Https.Rest.Docs {
+			serveSwagger(secureMux)
+
+			secureMux.HandleFunc("/swagger.json", func(w http.ResponseWriter, req *http.Request) {
+				_, _ = io.Copy(w, strings.NewReader(v1.Swagger))
+			})
+		}
+
 	}
-
-	serverRootCaCert, err := ioutil.ReadFile(config.C.Server.CaCert)
-	if err != nil {
-		log.Fatalf("read ca cert file error:%v", err)
-	}
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(serverRootCaCert)
-
-	ta := credentials.NewTLS(&tls.Config{
-		ServerName:   "localhost",
-		Certificates: []tls.Certificate{clientCert},
-		RootCAs:      caCertPool,
-	})
-
-	if config.Verbose {
-		log.Printf("rpcAddress: %s", config.RpcHostPort)
-	}
-
-	dopts := []grpc.DialOption{grpc.WithTransportCredentials(ta)}
-
-	gwmux := runtime.NewServeMux()
-	err = v1.RegisterMetricServiceHandlerFromEndpoint(ctx, gwmux, demoAddr, dopts)
-	if err != nil {
-		fmt.Printf("serve: %v\n", err)
-		return
-	}
-
-	// END
-
-	infoMux.Handle("/api/", gwmux)
-	//serveSwagger(infoMux)
-	serveSwagger(infoMux)
-
-	infoMux.HandleFunc("/swagger.json", func(w http.ResponseWriter, req *http.Request) {
-		_, _ = io.Copy(w, strings.NewReader(v1.Swagger))
-	})
 
 	// favicon && /static
-	infoMux.Handle("/favicon.ico", http.FileServer(assets.AssetsFs))
-	infoMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assets.AssetsFs)))
+	secureMux.Handle("/favicon.ico", http.FileServer(assets.AssetsFs))
+	secureMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(assets.AssetsFs)))
 
-	infoMux.HandleFunc("/",
+	secureMux.HandleFunc("/",
 		func(w http.ResponseWriter, r *http.Request) {
 			// "/" matches everything - so only respond to exactly "/", "/about" and "/about/"
 			if r.URL.Path != "/" && r.URL.Path != "/about" && r.URL.Path != "/about/" {
@@ -150,7 +145,7 @@ func Secure() {
 
 		})
 
-	infoMux.Handle("/foobar/",
+	secureMux.Handle("/foobar/",
 		httpauth.BasicAuth(authOpts)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 			htmlRaw := `<!DOCTYPE html>
@@ -171,7 +166,7 @@ func Secure() {
 			_, _ = fmt.Fprintf(w, "%s", html)
 		})))
 
-	infoMux.Handle("/info/",
+	secureMux.Handle("/info/",
 		httpauth.BasicAuth(authOpts)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 			infoTemplate, err := vfstemplate.ParseFiles(assets.AssetsFs, template.New("info.tmpl"), "info.tmpl")
@@ -209,17 +204,17 @@ func Secure() {
 		go func() {
 
 			//log.Fatal(graceful.ListenAndServeTLS("127.0.0.1:"+port,
-			//	config.C.Server.TlsCert, config.C.Server.TlsKey, infoMux))
+			//	config.C.Server.TlsCert, config.C.Server.TlsKey, secureMux))
 			log.Fatal(http.ListenAndServeTLS("127.0.0.1:"+port,
-				config.C.Server.TlsCert, config.C.Server.TlsKey, infoMux))
+				config.C.Server.Tls.Cert, config.C.Server.Tls.Key, secureMux))
 		}()
 
 		go func() {
 
 			//log.Fatal(graceful.ListenAndServeTLS("[::1]:"+port,
-			//	config.C.Server.TlsCert, config.C.Server.TlsKey, infoMux))
+			//	config.C.Server.TlsCert, config.C.Server.TlsKey, secureMux))
 			log.Fatal(http.ListenAndServeTLS("[::1]:"+port,
-				config.C.Server.TlsCert, config.C.Server.TlsKey, infoMux))
+				config.C.Server.Tls.Cert, config.C.Server.Tls.Key, secureMux))
 		}()
 
 	} else {
@@ -227,9 +222,9 @@ func Secure() {
 			// ToDo: Get proper ANY here?!
 			log.Printf("Starting Secure Info Server (https://ANY:%s)", port)
 			//log.Fatal(graceful.ListenAndServeTLS(":"+port,
-			//	config.C.Server.TlsCert, config.C.Server.TlsKey, infoMux))
+			//	config.C.Server.TlsCert, config.C.Server.TlsKey, secureMux))
 			log.Fatal(http.ListenAndServeTLS(":"+port,
-				config.C.Server.TlsCert, config.C.Server.TlsKey, infoMux))
+				config.C.Server.Tls.Cert, config.C.Server.Tls.Key, secureMux))
 		}()
 	}
 

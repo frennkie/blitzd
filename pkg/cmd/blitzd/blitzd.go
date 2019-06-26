@@ -28,53 +28,60 @@ func Init() {
 	log.Printf("Starting version: %s, built at %s", BuildVersion, BuildTime)
 	log.Printf("Git Version: %s", BuildGitVersion)
 
-	if util.FileExists(config.C.Server.TlsCert) && util.FileExists(config.C.Server.TlsKey) {
-		log.Printf("Using Key-Pair: %s;%s", config.C.Server.TlsCert, config.C.Server.TlsKey)
+	if util.FileExists(config.C.Server.Tls.Cert) && util.FileExists(config.C.Server.Tls.Key) {
+		log.Printf("Using Key-Pair: %s;%s", config.C.Server.Tls.Cert, config.C.Server.Tls.Key)
 	} else {
 		// ToDo add some checking (e.g. for existing files) here?!
 		log.Printf("Need to generate Key-Pair")
 		err := util.GenRootCaSignedClientServerCert(
 			config.C.Alias,
-			config.C.Server.CaCert,
-			config.C.Server.TlsCert,
-			config.C.Server.TlsKey,
-			config.C.Client.TlsCert,
-			config.C.Client.TlsKey,
+			config.C.Server.Tls.Ca,
+			config.C.Server.Tls.Cert,
+			config.C.Server.Tls.Key,
+			config.C.Client.Tls.Cert,
+			config.C.Client.Tls.Key,
 		)
 		if err != nil {
 			log.Fatalf("Failed to generate Key-Pair for: Server: %s", err)
 		}
 	}
 
-	log.WithFields(log.Fields{"tls": "server", "path": config.C.Server.CaCert}).Debug("Root CA")
-	log.WithFields(log.Fields{"tls": "server", "path": config.C.Server.TlsCert}).Debug("TLS Cert")
-	log.WithFields(log.Fields{"tls": "server", "path": config.C.Server.TlsKey}).Debug("TLS Key")
+	log.WithFields(log.Fields{"tls": "server", "path": config.C.Server.Tls.Ca}).Debug("Root CA")
+	log.WithFields(log.Fields{"tls": "server", "path": config.C.Server.Tls.Cert}).Debug("TLS Cert")
+	log.WithFields(log.Fields{"tls": "server", "path": config.C.Server.Tls.Key}).Debug("TLS Key")
 
-	log.WithFields(log.Fields{"tls": "client", "path": config.C.Client.CaCert}).Debug("Root CA")
-	log.WithFields(log.Fields{"tls": "client", "path": config.C.Client.TlsCert}).Debug("TLS Cert")
-	log.WithFields(log.Fields{"tls": "client", "path": config.C.Client.TlsKey}).Debug("TLS Key")
+	log.WithFields(log.Fields{"tls": "client", "path": config.C.Client.Tls.Ca}).Debug("Root CA")
+	log.WithFields(log.Fields{"tls": "client", "path": config.C.Client.Tls.Cert}).Debug("TLS Cert")
+	log.WithFields(log.Fields{"tls": "client", "path": config.C.Client.Tls.Ca}).Debug("TLS Key")
 
 	log.WithFields(log.Fields{"server": "HTTP",
 		"enabled":        config.C.Server.Http.Enabled,
 		"localhost_only": config.C.Server.Http.LocalhostOnly,
-		"port":           config.C.Server.Http.Port}).Debug("starting if enabled")
+		"port":           config.C.Server.Http.Port}).Debug("starting server if enabled")
 	if config.C.Server.Http.Enabled {
 		go http.Welcome()
 	}
 
-	log.WithFields(log.Fields{"server": "HTTPs",
+	log.WithFields(log.Fields{"server": "HTTPS",
 		"enabled":        config.C.Server.Https.Enabled,
 		"localhost_only": config.C.Server.Https.LocalhostOnly,
-		"port":           config.C.Server.Https.Port}).Debug("starting if enabled")
+		"port":           config.C.Server.Https.Port}).Debug("starting server if enabled")
 	if config.C.Server.Https.Enabled {
 		go https.Secure()
+
+		log.WithFields(log.Fields{"server": "HTTPS", "feature": "rest-server",
+			"enabled": config.C.Server.Https.Rest.Enabled}).Debug("activating feature if enabled")
+
+		log.WithFields(log.Fields{"server": "HTTPS", "feature": "rest-decs",
+			"enabled": config.C.Server.Https.Rest.Enabled}).Debug("activating feature if enabled")
+
 	}
 
 	log.WithFields(log.Fields{"server": "RPC",
-		"enabled":        config.C.Server.Rpc.Enabled,
-		"localhost_only": config.C.Server.Rpc.LocalhostOnly,
-		"port":           config.C.Server.Rpc.Port}).Debug("starting if enabled")
-	if config.C.Server.Rpc.Enabled {
+		"enabled":        config.C.Server.Grpc.Enabled,
+		"localhost_only": config.C.Server.Grpc.LocalhostOnly,
+		"port":           config.C.Server.Grpc.Port}).Debug("starting server if enabled")
+	if config.C.Server.Grpc.Enabled {
 		ctx := context.Background()
 
 		hello := v1.NewHelloServiceServer()
@@ -92,10 +99,6 @@ func Init() {
 		//}()
 	}
 
-	log.WithFields(log.Fields{"server": "REST",
-		"enabled":        config.C.Server.Rest.Enabled,
-		"localhost_only": config.C.Server.Rest.LocalhostOnly,
-		"port":           config.C.Server.Rest.Port}).Debug("starting if enabled")
 	//if config.C.Server.Rest.Enabled {
 	//
 	//	ctx := context.Background()
@@ -103,7 +106,7 @@ func Init() {
 	//	// run HTTP gateway
 	//	go func() {
 	//		_ = https.RunServer(ctx,
-	//			fmt.Sprintf("%d", config.C.Server.Rpc.Port),
+	//			fmt.Sprintf("%d", config.C.Server.Grpc.Port),
 	//			fmt.Sprintf("%d", config.C.Server.Rest.Port))
 	//	}()
 	//}

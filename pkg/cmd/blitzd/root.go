@@ -42,11 +42,11 @@ var GenCertCmd = &cobra.Command{
 		//util.GenRootCa("ca.crt", "ca.key", "foobar", false)
 		err := util.GenRootCaSignedClientServerCert(
 			config.C.Alias,
-			config.C.Server.CaCert,
-			config.C.Server.TlsCert,
-			config.C.Server.TlsKey,
-			config.C.Client.TlsCert,
-			config.C.Client.TlsKey,
+			config.C.Server.Tls.Ca,
+			config.C.Server.Tls.Cert,
+			config.C.Server.Tls.Ca,
+			config.C.Client.Tls.Cert,
+			config.C.Client.Tls.Key,
 		)
 		if err != nil {
 			log.Printf("an error occured")

@@ -22,13 +22,13 @@ var jsonMarshaler = jsonpb.Marshaler{
 func setupConnection() (*grpc.ClientConn, error) {
 
 	// load peer cert/key, cacert
-	clientCert, err := tls.LoadX509KeyPair(config.C.Client.TlsCert, config.C.Client.TlsKey)
+	clientCert, err := tls.LoadX509KeyPair(config.C.Client.Tls.Cert, config.C.Client.Tls.Key)
 	if err != nil {
 		log.Printf("load client cert/key error:%v", err)
 		return nil, err
 	}
 
-	serverRootCaCert, err := ioutil.ReadFile(config.C.Server.CaCert)
+	serverRootCaCert, err := ioutil.ReadFile(config.C.Server.Tls.Ca)
 	if err != nil {
 		log.Printf("read ca cert file error:%v", err)
 		return nil, err
