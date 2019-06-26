@@ -119,6 +119,7 @@ func Secure() {
 		<li>Me: %s</li>
 		<li><a href="/foobar/">Foobar</a> (password protected)</li>
 		<li><a href="/info/">Info</a> (password protected)</li>
+		<li><a href="/swagger-ui/">REST API Documentation</a> (if enabled)</li>
 	</ul>
 	<br>
 
