@@ -69,7 +69,7 @@ build: build-amd64 build-armhf
 
 
 # ARCH "amd64"
-build-amd64: vfsgen
+build-amd64:
 	@echo "### Build: amd64"
 	@echo "GitVersion: $(GIT_VERSION)"
 	GOARCH=amd64 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/amd64/blitzd cmd/blitzd/main.go
@@ -77,7 +77,7 @@ build-amd64: vfsgen
 
 
 # ARCH "armhf"
-build-armhf: vfsgen
+build-armhf:
 	@echo "### Build: armhf"
 	GOARCH=arm GOARM=7 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/armhf/blitzd cmd/blitzd/main.go
 	GOARCH=arm GOARM=7 $(GOBUILD) -ldflags $(BUILDFLAGS) -o build/armhf/blitz-cli cmd/cli/main.go
