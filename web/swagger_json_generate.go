@@ -17,7 +17,7 @@ func main() {
 
 	fmt.Println("writing", dstPath)
 
-	_, _ = out.Write([]byte("package v1 \n\nconst (\n"))
+	_, _ = out.Write([]byte("package v1\n\nconst (\n"))
 
 	_, _ = out.Write([]byte("	Swagger = `"))
 	f, _ := os.Open(srcPath)
