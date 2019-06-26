@@ -3,7 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
-	pb "github.com/frennkie/blitzd/pkg/api/v1"
+	v1 "github.com/frennkie/blitzd/pkg/api/v1"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
@@ -36,11 +36,11 @@ func foo() {
 		}
 	}()
 
-	c := pb.NewMetricServiceClient(conn)
+	c := v1.NewMetricServiceClient(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	r, err := c.GetMetricFoo(ctx, &pb.GetMetricFooRequest{Api: "v1"})
+	r, err := c.GetMetricFoo(ctx, &v1.GetMetricFooRequest{Api: "v1"})
 	if err != nil {
 		log.Fatalf("an error occured: %v", err)
 	}
@@ -59,6 +59,7 @@ func foo() {
 
 		fmt.Println("---")
 		fmt.Println(r.Metric.Expired)
+		fmt.Println(r.Metric.Expired == v1.Tribool_TRIBOOL_TRUE)
 		fmt.Println("---")
 
 		os.Exit(0)

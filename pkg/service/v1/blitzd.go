@@ -68,7 +68,7 @@ func (s *metricServer) GetMetricByPath(ctx context.Context, req *v1.GetMetricByP
 	if x, found := data.Cache.Get(req.Path); found {
 		m = x.(v1.Metric)
 
-		expiredAfter, _ := ptypes.Timestamp(m.ExpiredAfter)
+		expiredAfter, _ := ptypes.Timestamp(m.ExpireTime)
 		if time.Now().After(expiredAfter) {
 			m.Expired = v1.Tribool_TRIBOOL_TRUE
 		} else {
@@ -92,7 +92,7 @@ func (s *metricServer) GetMetricAll(context.Context, *v1.EmptyRequest) (*v1.GetM
 	for _, v := range m {
 		metricObject := interface{}(v.Object).(v1.Metric)
 
-		expiredAfter, _ := ptypes.Timestamp(metricObject.ExpiredAfter)
+		expiredAfter, _ := ptypes.Timestamp(metricObject.ExpireTime)
 		if time.Now().After(expiredAfter) {
 			metricObject.Expired = v1.Tribool_TRIBOOL_TRUE
 		} else {
@@ -118,7 +118,7 @@ func (s *metricServer) GetMetricFoo(_ context.Context, req *v1.GetMetricFooReque
 	if x, found := data.Cache.Get("lnd.foo5"); found {
 		m = x.(v1.Metric)
 
-		expiredAfter, _ := ptypes.Timestamp(m.ExpiredAfter)
+		expiredAfter, _ := ptypes.Timestamp(m.ExpireTime)
 		if time.Now().After(expiredAfter) {
 			m.Expired = v1.Tribool_TRIBOOL_TRUE
 		} else {

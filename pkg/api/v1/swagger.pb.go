@@ -187,11 +187,11 @@ const (
           "type": "number",
           "format": "double"
         },
-        "updated_at": {
+        "update_time": {
           "type": "string",
           "format": "date-time"
         },
-        "expired_after": {
+        "expire_time": {
           "type": "string",
           "format": "date-time"
         },

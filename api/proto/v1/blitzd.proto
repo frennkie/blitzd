@@ -71,8 +71,8 @@ message Metric {
     string title = 3;
     double interval = 4;
     double timeout = 5;
-    google.protobuf.Timestamp updated_at = 6;
-    google.protobuf.Timestamp expired_after = 7;
+    google.protobuf.Timestamp update_time = 6;
+    google.protobuf.Timestamp expire_time = 7;
     Tribool expired = 8;
     string value = 9;
     string prefix = 10;

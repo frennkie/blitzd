@@ -89,6 +89,7 @@ git tag vX.Y[-rcZ] -m "Message.."
 ### Caution
 
 https://developers.google.com/protocol-buffers/docs/proto3#default
+https://cloud.google.com/apis/design/naming_convention#enum_names
 
 ```
 Note that for scalar message fields, once a message is parsed there's no way 
