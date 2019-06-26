@@ -1,3 +1,10 @@
+blitzd (0.13) unstable; urgency=medium
+
+  * refactor servers
+  * refactor config
+
+ -- Robert Habermann <frennkie@gmail.com>  Wed, 26 Jun 2019 23:34:07 +0000
+
 blitzd (0.12) unstable; urgency=medium
 
   * initial Bitcoind REST API access
