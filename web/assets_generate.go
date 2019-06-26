@@ -7,15 +7,15 @@ import (
 	"path/filepath"
 )
 
-var Assets http.FileSystem = http.Dir(filepath.FromSlash("assets/src"))
+var AssetsFs http.FileSystem = http.Dir(filepath.FromSlash("assets/src"))
 
 func main() {
 	err := vfsgen.Generate(
-		Assets,
+		AssetsFs,
 		vfsgen.Options{
 			Filename:     "./assets/assets_vfsdata.go",
 			PackageName:  "assets",
-			VariableName: "Assets",
+			VariableName: "AssetsFs",
 		})
 	if err != nil {
 		log.Fatalln(err)

@@ -85,3 +85,18 @@ git tag vX.Y[-rcZ] -m "Message.."
   * vfsgen (embedding static asset) https://github.com/shurcooL/vfsgen
   * httpauth (HTTP Basic Authentication) https://github.com/goji/httpauth
 
+
+### Caution
+
+https://developers.google.com/protocol-buffers/docs/proto3#default
+
+```
+Note that for scalar message fields, once a message is parsed there's no way 
+of telling whether a field was explicitly set to the default value (for 
+example   whether a boolean was set to false) or just not set at all: you 
+should bear this in mind when defining your message types. For example, don't 
+have a boolean that switches on some behaviour when set to false if you don't 
+want that behaviour to also happen by default. Also note that if a scalar 
+message field is set to its default, the value will not be serialized on the 
+wire.
+```
