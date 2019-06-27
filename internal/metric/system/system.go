@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/data"
+	"github.com/frennkie/blitzd/internal/metric"
 	"github.com/frennkie/blitzd/internal/util"
 	v1 "github.com/frennkie/blitzd/pkg/api/v1"
 	"github.com/patrickmn/go-cache"
@@ -33,28 +34,22 @@ func Init() {
 	}
 
 	// set static
-	arch()
 	operatingSystem()
 
-	// start goroutine for event-based
+	arch := Arch{Metric: data.NewMetricStatic(module, "arch")}
+	metric.Set(arch)
+
+	// start goroutines for event-based
 	go etcIssue()
 	go lsbRelease()
 
-	// start goroutine for time-based
+	// start goroutines for time-based
+
+	mUptime := Uptime{Metric: data.NewMetricTimeBased(module, "uptimeNG")}
+	mUptime.Metric.Interval = time.Duration(1 * time.Second).Seconds()
+	go metric.Start(mUptime)
+
 	go uptime()
-
-}
-
-func arch() {
-	title := "arch"
-
-	m := data.NewMetricStatic(module, title)
-	m.Value = runtime.GOARCH
-	m.Text = runtime.GOARCH
-
-	// update Metric in Cache
-	data.Cache.Set(fmt.Sprintf("%s.%s", m.Module, m.Title), m, cache.NoExpiration)
-	logM.WithFields(log.Fields{"title": m.Title, "value": m.Value}).Info("set")
 
 }
 
@@ -200,4 +195,41 @@ func etcIssueFunc(absFilePath string) {
 	m.Text = issue
 
 	data.Cache.Set(fmt.Sprintf("%s.%s", module, title), m, cache.DefaultExpiration)
+}
+
+type Arch struct{ v1.Metric }
+
+func (m Arch) Set() {
+	m.Value = runtime.GOARCH
+	m.Text = runtime.GOARCH
+
+	// update Metric in Cache
+	data.Cache.Set(fmt.Sprintf("%s.%s", m.Module, m.Title), m.Metric, cache.NoExpiration)
+	logM.WithFields(log.Fields{"title": m.Title, "value": m.Value}).Info("set")
+}
+
+type Uptime struct{ v1.Metric }
+
+func (m Uptime) Start() {
+	fmt.Println("from Uptime: start: ", m.Title)
+
+	logM.WithFields(log.Fields{"title": m.Title}).Info("started goroutine")
+
+	for {
+
+		uptime, err := host.Uptime()
+		if err != nil {
+			logM.WithFields(log.Fields{"title": m.Title, "err": err}).Warn("error updating metric")
+		} else {
+			m.Value = fmt.Sprintf("%d", uptime)
+			m.Text = fmt.Sprintf("%ds", uptime)
+
+			// update Metric in Cache
+			data.Cache.Set(fmt.Sprintf("%s.%s", m.Module, m.Title), m.Metric, cache.DefaultExpiration)
+			logM.WithFields(log.Fields{"title": m.Title, "value": m.Value}).Trace("updated metric")
+
+			time.Sleep(time.Duration(m.Interval) * time.Second)
+		}
+	}
+
 }
