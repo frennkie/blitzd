@@ -37,7 +37,7 @@ func shutdown() {
 	defer cancel()
 	r, err := c.DoShutdown(ctx, &pb.ShutdownRequest{})
 	if err != nil {
-		log.Fatalf("an error occured: %v", err)
+		log.Fatalf("an error occurred: %v", err)
 	}
 
 	if r != nil {

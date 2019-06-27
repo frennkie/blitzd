@@ -42,7 +42,7 @@ func foo() {
 	defer cancel()
 	r, err := c.GetMetricFoo(ctx, &v1.GetMetricFooRequest{Api: "v1"})
 	if err != nil {
-		log.Fatalf("an error occured: %v", err)
+		log.Fatalf("an error occurred: %v", err)
 	}
 
 	if r != nil {

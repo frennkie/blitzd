@@ -49,7 +49,7 @@ var GenCertCmd = &cobra.Command{
 			config.C.Client.Tls.Key,
 		)
 		if err != nil {
-			log.Printf("an error occured")
+			log.Printf("an error occurred")
 		}
 		log.Printf("success!")
 

@@ -38,7 +38,7 @@ func getAll() {
 	defer cancel()
 	r, err := c.GetMetricAll(ctx, &pb.EmptyRequest{})
 	if err != nil {
-		log.Fatalf("an error occured: %v", err)
+		log.Fatalf("an error occurred: %v", err)
 	}
 
 	if r != nil {

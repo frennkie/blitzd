@@ -50,7 +50,7 @@ func get(args []string) {
 	defer cancel()
 	r, err := c.GetMetricByPath(ctx, &pb.GetMetricByPathRequest{Path: args[0]})
 	if err != nil {
-		log.Fatalf("an error occured: %v", err)
+		log.Fatalf("an error occurred: %v", err)
 	}
 
 	if r != nil {
