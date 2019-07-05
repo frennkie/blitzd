@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/frennkie/blitzd/internal/config"
-	"github.com/frennkie/blitzd/pkg/cmd/blitzd"
+	"github.com/frennkie/blitzd/pkg/blitzd"
 	"github.com/spf13/cobra"
 )
 

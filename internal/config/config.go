@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/btcsuite/btcutil"
+	v1 "github.com/frennkie/blitzd/pkg/api/v1"
 	"github.com/fsnotify/fsnotify"
 	"github.com/pelletier/go-toml"
 	log "github.com/sirupsen/logrus"
@@ -37,7 +38,7 @@ const (
 var (
 	C *Config
 
-	DefaultBlitzdDir = btcutil.AppDataDir(defaultBlitzdDirName, false)
+	DefaultBlitzdDir = btcutil.AppDataDir(defaultBlitzdDirName, true)
 	BlitzdDir        string
 	RpcHostPort      string
 	Verbose          bool
@@ -73,6 +74,23 @@ type Admin struct {
 	Username string `mapstructure:"username" toml:"username"`
 }
 
+type Metric struct {
+	Enabled  bool    `mapstructure:"enabled" toml:"enabled"`
+	Title    string  `mapstructure:"title" toml:"title"`
+	Kind     v1.Kind `mapstructure:"enabled" toml:"enabled"`
+	Interval float64 `mapstructure:"interval" toml:"interval"`
+	Timeout  float64 `mapstructure:"timeout" toml:"timeout"`
+}
+
+type MetricGroup struct {
+	Enabled  bool              `mapstructure:"enabled" toml:"enabled"`
+	Title    string            `mapstructure:"title" toml:"title"`
+	Kind     v1.Kind           `mapstructure:"enabled" toml:"enabled"`
+	Interval float64           `mapstructure:"interval" toml:"interval"`
+	Timeout  float64           `mapstructure:"timeout" toml:"timeout"`
+	Metrics  map[string]Metric `mapstructure:"metrics" toml:"metrics"`
+}
+
 type Module struct {
 	Bitcoind   Bitcoind   `mapstructure:"bitcoind" toml:"bitcoind"`
 	Lnd        Lnd        `mapstructure:"lnd" toml:"lnd"`
@@ -106,9 +124,11 @@ type RaspiBlitz struct {
 }
 
 type System struct {
-	Enabled bool   `mapstructure:"enabled" toml:"enabled"`
-	Mount1  string `mapstructure:"mount1" toml:"mount1"`
-	Mount2  string `mapstructure:"mount2" toml:"mount2"`
+	Enabled      bool                   `mapstructure:"enabled" toml:"enabled"`
+	Mount1       string                 `mapstructure:"mount1" toml:"mount1"`
+	Mount2       string                 `mapstructure:"mount2" toml:"mount2"`
+	Metrics      map[string]Metric      `mapstructure:"metrics" toml:"metrics"`
+	MetricsGroup map[string]MetricGroup `mapstructure:"metrics" toml:"metrics"`
 }
 
 type Client struct {
@@ -191,6 +211,14 @@ func NewConfig() *Config {
 				RpcAddress:  "localhost:8332",
 				RpcPassword: "bitcoin_rpc_password",
 				RpcUser:     "raspibolt",
+				// Metrics: []Metric{
+				//	{
+				//		Enabled:  false,
+				//		Interval: 0,
+				//		Timeout:  0,
+				//	},
+				//},
+				//MetricGroups: nil,
 			},
 			Lnd: Lnd{
 				Enabled:    false,
@@ -210,6 +238,21 @@ func NewConfig() *Config {
 				Enabled: true,
 				Mount1:  "/",
 				Mount2:  "/mnt/hdd/",
+				Metrics: map[string]Metric{
+					"uptime": {true, "uptime", v1.Kind_KIND_TIME_BASED, 0, 0},
+				},
+				MetricsGroup: map[string]MetricGroup{
+					"load": {
+						Enabled:  false,
+						Title:    "",
+						Kind:     0,
+						Interval: 0,
+						Timeout:  0,
+						Metrics: map[string]Metric{
+							"one": {true, "one", v1.Kind_KIND_TIME_BASED, 0, 0},
+						},
+					},
+				},
 			},
 		},
 		Client: Client{
@@ -321,17 +364,21 @@ func InitConfig() {
 	// refresh configuration with all merged values
 	_ = viper.Unmarshal(&C)
 
+	var defCfgFile string
 	// read default
 	if runtime.GOOS == "windows" {
-		viper.Set("default_config_path", defaultCfgFileWin32)
-		viper.SetConfigFile(filepath.FromSlash(defaultCfgFileWin32))
+		defCfgFile = filepath.FromSlash(defaultCfgFileWin32)
 	} else {
-		viper.Set("default_config_path", defaultCfgFile)
-		viper.SetConfigFile(filepath.FromSlash(defaultCfgFile))
+		defCfgFile = filepath.FromSlash(defaultCfgFile)
 	}
 
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatal("Can't read config:", err)
+	viper.Set("default_config_path", defCfgFile)
+	if _, err := os.Stat(defCfgFile); os.IsNotExist(err) {
+		log.Debugf("default config file does not exist - skipping: %s", defCfgFile)
+		viper.SetConfigFile(defCfgFile)
+		if err := viper.ReadInConfig(); err != nil {
+			log.Fatal("Can't read config:", err)
+		}
 	}
 
 	// check custom config

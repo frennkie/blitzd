@@ -1,9 +1,9 @@
 REM ### run this from main dir ###
-protoc -I. -Ithird_party --go_out=plugins=grpc:pkg                      api\proto\v1\helloworld.proto
-protoc -I. -Ithird_party --go_out=plugins=grpc:pkg                      api\proto\v1\hello.proto
-protoc -I. -Ithird_party --go_out=plugins=grpc:pkg                      api\proto\v1\blitzd.proto
+protoc.exe -I. -Ithird_party --go_out=plugins=grpc:pkg                      api\proto\v1\helloworld.proto
+protoc.exe -I. -Ithird_party --go_out=plugins=grpc:pkg                      api\proto\v1\hello.proto
+protoc.exe -I. -Ithird_party --go_out=plugins=grpc:pkg                      api\proto\v1\blitzd.proto
 
-protoc -I. -Ithird_party --grpc-gateway_out=logtostderr=true:pkg        api\proto\v1\blitzd.proto
+protoc.exe -I. -Ithird_party --grpc-gateway_out=logtostderr=true:pkg        api\proto\v1\blitzd.proto
 
 MOVE pkg\api\proto\v1\* pkg\api\v1\
 RMDIR pkg\api\proto /S /Q

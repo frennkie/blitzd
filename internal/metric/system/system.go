@@ -2,6 +2,7 @@ package system
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"github.com/frennkie/blitzd/internal/config"
 	"github.com/frennkie/blitzd/internal/data"
@@ -49,7 +50,31 @@ func Init() {
 	mUptime.Metric.Interval = time.Duration(1 * time.Second).Seconds()
 	go metric.Start(mUptime)
 
+	ctx := context.Background()
+
+	go func(ctx context.Context) {
+
+		mLoad := Load{Metric: data.NewMetricTimeBased(module, "loadNG")}
+		mLoad.Interval = time.Duration(5 * time.Second).Seconds()
+		mLoad.Prefix = "Hallo, "
+		mLoad.Suffix = " Konstantin!"
+
+		for {
+			m, _ := mLoad.generateValue(ctx)
+			// mLoad.Text = fmt.Sprintf("%ds", uptime)
+
+			// update Metric in Cache
+			data.Cache.Set(fmt.Sprintf("%s.%s", m.Module, m.Title), m, cache.DefaultExpiration)
+			logM.WithFields(log.Fields{"title": m.Title, "value": m.Value}).Trace("updated metric")
+
+			time.Sleep(time.Duration(m.Interval) * time.Second)
+		}
+
+	}(ctx)
+
 	go uptime()
+
+	// config.C.Module.System.Metrics[0]
 
 }
 
@@ -232,4 +257,15 @@ func (m Uptime) Start() {
 		}
 	}
 
+}
+
+//Load
+type Load struct {
+	v1.Metric
+}
+
+func (m Load) generateValue(ctx context.Context) (v1.Metric, error) {
+	mMetric := data.NewMetricTimeBased("system", "loadNNG")
+	mMetric.Value = "honk"
+	return mMetric, nil
 }
